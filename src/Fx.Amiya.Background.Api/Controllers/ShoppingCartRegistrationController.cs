@@ -778,16 +778,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                         }
                         if (worksheet.Cells[x, 4].Value != null)
                         {
-                            double tempValue;
-                            if (double.TryParse(worksheet.Cells[x, 4].Value.ToString(), out tempValue))
-                            {
-                                var dealDate = DateTime.FromOADate(double.Parse(worksheet.Cells[x, 4].Value.ToString()));
-                                addDto.RecordDate = dealDate;
-                            }
-                            else
-                            {
-                                addDto.RecordDate = Convert.ToDateTime(worksheet.Cells[x, 4].Value.ToString());
-                            }
+                            addDto.RecordDate = Convert.ToDateTime(worksheet.Cells[x, 4].Value.ToString());
                         }
                         else
                         {

@@ -2572,7 +2572,49 @@ namespace Fx.Amiya.Service
             return await x.ToListAsync();
         }
 
+        /// <summary>
+        /// 根据条件获取直播前小黄车业绩
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <param name="isEffectiveCustomerData"></param>
+        /// <param name="assistantIdList"></param>
+        /// <returns></returns>
+        public async Task<List<ShoppingCartRegistrationDto>> GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAsync(DateTime startDate, DateTime endDate, string baseId,List<int> assistantIds, BelongChannel? belongChannel = null)
+        {
+            var result = from d in dalShoppingCartRegistration.GetAll()
+            .Where(o => o.RecordDate >= startDate && o.RecordDate < endDate)
+            .Where(o => o.AssignEmpId != null && o.IsReturnBackPrice == false) select d;
+            if (!string.IsNullOrEmpty(baseId))
+            {
+                result = from d in result.Where(o => o.BaseLiveAnchorId == baseId)
+                         select d;
+            }
+            else {
+                result = from d in result.Where(o => assistantIds.Contains(o.CreateBy))
+                         select d;
+            }
+            
+           
+            if (belongChannel.HasValue)
+            {
+                result = result.Where(e => e.BelongChannel == (int)belongChannel);
+            }
+            var x = from d in result
+                    select new ShoppingCartRegistrationDto
+                    {
+                        IsReturnBackPrice = d.IsReturnBackPrice,
+                        AssignEmpId = d.AssignEmpId,
+                        IsAddWeChat = d.IsAddWeChat,
+                        Price = d.Price,
+                        Phone = d.Phone,
+                        CreateBy = d.CreateBy,
+                        RecordDate = d.RecordDate,
+                        BelongChannel = d.BelongChannel
+                    };
 
+            return await x.ToListAsync();
+        }
 
 
 

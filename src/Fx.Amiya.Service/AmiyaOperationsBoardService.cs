@@ -4162,10 +4162,7 @@ namespace Fx.Amiya.Service
             {
                 basePhoneList = basePhoneList.Where(e => e.CreateBy == query.AssistantId.Value);
             }
-            else
-            {
-                basePhoneList = basePhoneList.Where(e => assistantIdList.Contains(e.CreateBy));
-            }
+           
             var dataList = basePhoneList.ToList();
             var phoneList = dataList.Select(e => e.Phone).ToList();
             var performanceData = await dalContentPlatFormOrderDealInfo.GetAll()
@@ -4734,8 +4731,8 @@ namespace Fx.Amiya.Service
                 .Select(e => new BeforeLiveDepartmentContentPlatformPerformanceRateDataItemDto
                 {
                     Name = e.Key,
-                    Value = DecimalExtension.CalculateTargetComplete(performanceList.Sum(e => e.Price), totalPerformance).Value,
-                    Performance = ChangePriceToTenThousand(performanceList.Sum(e => e.Price))
+                    Value = DecimalExtension.CalculateTargetComplete(e.Sum(e => e.Price), totalPerformance).Value,
+                    Performance = ChangePriceToTenThousand(e.Sum(e => e.Price))
                 }).ToList();
             data.TikTokPerformance = ChangePriceToTenThousand(performanceList.Where(e => e.ContentPlateformId == "4e4e9564-f6c3-47b6-a7da-e4518bab66a1").Sum(e => e.Price));
             data.TikTokPerformanceRate = performanceList.Where(e => e.ContentPlateformId == "4e4e9564-f6c3-47b6-a7da-e4518bab66a1").GroupBy(e => e.LiveAnchorName)

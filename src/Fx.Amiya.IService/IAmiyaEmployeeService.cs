@@ -1,4 +1,5 @@
 ﻿
+using Fx.Amiya.Dto;
 using Fx.Amiya.Dto.AmiyaEmployee;
 using Fx.Common;
 using Fx.Infrastructure;
@@ -231,6 +232,10 @@ namespace Fx.Amiya.IService
         /// <param name="employeeId"></param>
         /// <returns></returns>
         Task<bool> IsAdminOrHasPremissionLookDataCenterAsync(int employeeId);
+        /// <summary>
+        /// 获取员工名称列表
+        /// </summary>
+        public List<BaseIdAndNameDto<int>> GetEmployeeNameList();
 
     }
 }

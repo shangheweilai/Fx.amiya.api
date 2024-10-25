@@ -36,6 +36,7 @@ namespace Fx.Amiya.Background.Api.Controllers
         private readonly ILiveAnchorService liveAnchorService;
         private readonly IContentPlatformService contentPlatformService;
         private readonly ILiveAnchorWeChatInfoService liveAnchorWeChatInfoService;
+        private readonly IAmiyaEmployeeService amiyaEmployeeService;
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -44,7 +45,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             IContentPlateFormOrderService contentPlateFormOrderService,
             IHttpContextAccessor httpContextAccessor,
             IOperationLogService operationLogService,
-            ILiveAnchorService liveAnchorService, IContentPlatformService contentPlatformService, ILiveAnchorWeChatInfoService liveAnchorWeChatInfoService)
+            ILiveAnchorService liveAnchorService, IContentPlatformService contentPlatformService, ILiveAnchorWeChatInfoService liveAnchorWeChatInfoService, IAmiyaEmployeeService amiyaEmployeeService)
         {
             this.shoppingCartRegistrationService = shoppingCartRegistrationService;
             this.httpContextAccessor = httpContextAccessor;
@@ -53,6 +54,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             this.liveAnchorService = liveAnchorService;
             this.contentPlatformService = contentPlatformService;
             this.liveAnchorWeChatInfoService = liveAnchorWeChatInfoService;
+            this.amiyaEmployeeService = amiyaEmployeeService;
         }
 
 
@@ -726,6 +728,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             var getCustomerTypeList = shoppingCartRegistrationService.GetShoppingCartGetCustomerTypeText();
             var customerTypeList = shoppingCartRegistrationService.GetCustomerTypeList();
             var importantList = shoppingCartRegistrationService.GetEmergencyLevelList();
+            var employeeList = amiyaEmployeeService.GetEmployeeNameList();
             using (var stream = new MemoryStream())
             {
                 await file.CopyToAsync(stream);//取到文件流
@@ -933,12 +936,45 @@ namespace Fx.Amiya.Background.Api.Controllers
                             addDto.Remark = worksheet.Cells[x, 14].Value.ToString();
                         }
 
+                        if (worksheet.Cells[x, 15].Value != null)
+                        {
+                            addDto.CustomerWechatNo = worksheet.Cells[x, 15].Value.ToString();
+                        }
+
+                        if (worksheet.Cells[x, 16].Value != null)
+                        {
+                            addDto.FromTitle = worksheet.Cells[x, 16].Value.ToString();
+                        }
+
+                        if (worksheet.Cells[x, 17].Value != null) {
+                            var assignName = worksheet.Cells[x, 17].Value.ToString();
+                            var assignId = employeeList.Where(e => e.Name == assignName).FirstOrDefault()?.Id ?? null;
+                            if (assignId == null)
+                                throw new Exception($"指派人:{assignName}不存在");
+                            addDto.AssignEmpId = assignId;
+                        }
+
+                        if (worksheet.Cells[x, 18].Value != null)
+                        {
+                            var isAddWechat = worksheet.Cells[x, 18].Value.ToString();
+                            switch (isAddWechat) {
+                                case "是": 
+                                    addDto.IsAddWeChat= true;
+                                    break;
+                                case "否":
+                                    addDto.IsAddWeChat = false;
+                                    break;
+                                default:
+                                    throw new Exception("是否加v只能是 是或者否");
+                                    break;
+                            }
+                        }
+
                         //addDto.ContentPlatFormId = "9196b247-1ab9-4d0c-a11e-a1ef09019878";
                         addDto.SubPhone = "";
                         addDto.IsConsultation = false;
                         addDto.ConsultationType = 4;
                         addDto.IsWriteOff = false;
-                        addDto.IsAddWeChat = false;
                         addDto.IsReturnBackPrice = false;
                         addDto.IsReContent = false;
                         addDto.CreateBy = employeeId;

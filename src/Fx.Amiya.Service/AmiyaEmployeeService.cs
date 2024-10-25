@@ -15,6 +15,7 @@ using Fx.Common.Utils;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Web;
+using Fx.Amiya.Dto;
 
 namespace Fx.Amiya.Service
 {
@@ -25,6 +26,14 @@ namespace Fx.Amiya.Service
         private IOrderAppInfoService orderAppInfoService;
         private IEmployeeBindLiveAnchorService employeeBindLiveAnchorService;
         private IDalLiveAnchorBaseInfo dalLiveAnchorBaseInfo;
+
+        public List<BaseIdAndNameDto<int>> GetEmployeeNameList() { 
+            return  dalAmiyaEmployee.GetAll().Where(e=>e.Valid==true).Select(e=>new BaseIdAndNameDto<int> {
+                Id=e.Id,
+                Name=e.Name
+            }).ToList();
+        }
+
         public AmiyaEmployeeService(IDalAmiyaEmployee dalAmiyaEmployee,
             IDalBindCustomerService dalBindCustomerService,
             IOrderAppInfoService orderAppInfoService,

@@ -753,7 +753,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                             string liveanchorName = worksheet.Cells[x, 1].Value.ToString();
                             var liveAnchorId = liveanchorList.Where(e => e.Name == liveanchorName).FirstOrDefault()?.Id ?? 0;
                             if (liveAnchorId == 0)
-                                throw new Exception("主播IP栏目包含不存在的主播");
+                                throw new Exception($"主播IP栏目包含不存在的主播:{liveanchorName}");
                             addDto.LiveAnchorId = liveAnchorId;
                         }
                         else
@@ -764,10 +764,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                         {
                             addDto.CustomerNickName = worksheet.Cells[x, 2].Value.ToString();
                         }
-                        else
-                        {
-                            throw new Exception("客户昵称有参数列为空，请检查表格数据！");
-                        }
+                       
                         if (worksheet.Cells[x, 3].Value != null)
                         {
                             addDto.Phone = worksheet.Cells[x, 3].Value.ToString();
@@ -968,7 +965,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                         addDto.IsWriteOff = false;
                         addDto.IsReturnBackPrice = false;
                         addDto.IsReContent = false;
-                        addDto.CreateBy = employeeId;
+                        addDto.CreateBy = addDto.AssignEmpId.Value;
                         addDto.IsBadReview = false;
                         //addDto.EmergencyLevel = 2;
                         //addDto.Source = 7;

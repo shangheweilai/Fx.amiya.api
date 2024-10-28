@@ -25,17 +25,20 @@ namespace Fx.Amiya.Service
         private readonly IDalContentPlatFormOrderDealInfo dalContentPlatFormOrderDealInfo;
         private readonly IDalAmiyaEmployee dalAmiyaEmployee;
         private IRecommandDocumentSettleService recommandDocumentSettleService;
+        private ICustomerServiceCheckPerformanceService customerServiceCheckPerformanceService;
 
         private readonly IUnitOfWork unitOfWork;
         public CustomerServiceCompensationService(IDalCustomerServiceCompensation dalCustomerServiceCompensation,
             IRecommandDocumentSettleService recommandDocumentSettleService,
-            IUnitOfWork unitOfWork, IDalContentPlatFormOrderDealInfo dalContentPlatFormOrderDealInfo, IDalAmiyaEmployee dalAmiyaEmployee)
+            IUnitOfWork unitOfWork, IDalContentPlatFormOrderDealInfo dalContentPlatFormOrderDealInfo, IDalAmiyaEmployee dalAmiyaEmployee,
+            ICustomerServiceCheckPerformanceService customerServiceCheckPerformanceService)
         {
             this.dalCustomerServiceCompensation = dalCustomerServiceCompensation;
             this.recommandDocumentSettleService = recommandDocumentSettleService;
             this.unitOfWork = unitOfWork;
             this.dalContentPlatFormOrderDealInfo = dalContentPlatFormOrderDealInfo;
             this.dalAmiyaEmployee = dalAmiyaEmployee;
+            this.customerServiceCheckPerformanceService = customerServiceCheckPerformanceService;
         }
 
 
@@ -87,7 +90,8 @@ namespace Fx.Amiya.Service
                                                    ConsulationCardAddWechatPrice = d.ConsulationCardAddWechatPrice,
                                                    CooperationLiveAnchorToHospitalPrice = d.CooperationLiveAnchorToHospitalPrice,
                                                    CooperationLiveAnchorSendOrderPrice = d.CooperationLiveAnchorSendOrderPrice,
-                                                   SpecialHospitalVisitPrice = d.SpecialHospitalVisitPrice
+                                                   SpecialHospitalVisitPrice = d.SpecialHospitalVisitPrice,
+                                                   Verison = d.Verison
                                                };
             FxPageInfo<CustomerServiceCompensationDto> customerServiceCompensationPageInfo = new FxPageInfo<CustomerServiceCompensationDto>();
             customerServiceCompensationPageInfo.TotalCount = await customerServiceCompensations.CountAsync();
@@ -139,11 +143,19 @@ namespace Fx.Amiya.Service
                 customerServiceCompensation.CooperationLiveAnchorSendOrderPrice = addDto.CooperationLiveAnchorSendOrderPrice;
 
                 customerServiceCompensation.SpecialHospitalVisitPrice = addDto.SpecialHospitalVisitPrice;
+                customerServiceCompensation.Verison = addDto.Verison;
 
                 await dalCustomerServiceCompensation.AddAsync(customerServiceCompensation, true);
-
-                //对账单审核记录加入id
-                await recommandDocumentSettleService.AddCustomerServiceCompensationIdAsync(addDto.RecommandDocumentSettleIdList, customerServiceCompensation.Id, addDto.BelongEmpId);
+                if (addDto.Verison == "1.0")
+                {
+                    //对账单审核记录加入id
+                    await recommandDocumentSettleService.AddCustomerServiceCompensationIdAsync(addDto.RecommandDocumentSettleIdList, customerServiceCompensation.Id, addDto.BelongEmpId);
+                }
+                if (addDto.Verison == "2.0")
+                {
+                    //助理新版本提取业绩加入id
+                    await customerServiceCheckPerformanceService.AddCustomerServiceCompensationIdAsync(addDto.RecommandDocumentSettleIdList, customerServiceCompensation.Id, addDto.BelongEmpId);
+                }
                 unitOfWork.Commit();
             }
             catch (Exception err)
@@ -201,6 +213,7 @@ namespace Fx.Amiya.Service
             returnResult.CooperationLiveAnchorToHospitalPrice = result.CooperationLiveAnchorToHospitalPrice;
             returnResult.CooperationLiveAnchorSendOrderPrice = result.CooperationLiveAnchorSendOrderPrice;
             returnResult.SpecialHospitalVisitPrice = result.SpecialHospitalVisitPrice;
+            returnResult.Verison = result.Verison;
             return returnResult;
         }
 
@@ -245,6 +258,7 @@ namespace Fx.Amiya.Service
             result.CooperationLiveAnchorToHospitalPrice = updateDto.CooperationLiveAnchorToHospitalPrice;
             result.CooperationLiveAnchorSendOrderPrice = updateDto.CooperationLiveAnchorSendOrderPrice;
             result.SpecialHospitalVisitPrice = updateDto.SpecialHospitalVisitPrice;
+            result.Verison = updateDto.Verison;
             await dalCustomerServiceCompensation.UpdateAsync(result, true);
         }
 
@@ -264,7 +278,14 @@ namespace Fx.Amiya.Service
                 result.Valid = false;
                 result.DeleteDate = DateTime.Now;
                 await dalCustomerServiceCompensation.UpdateAsync(result, true);
-                await recommandDocumentSettleService.RemoveCustomerServiceCompensationIdAsync(id);
+                if (result.Verison == "1.0")
+                {
+                    await recommandDocumentSettleService.RemoveCustomerServiceCompensationIdAsync(id);
+                }
+                if (result.Verison == "2.0")
+                {
+                    await customerServiceCheckPerformanceService.RemoveCustomerServiceCompensationIdAsync(id);
+                }
                 unitOfWork.Commit();
 
             }

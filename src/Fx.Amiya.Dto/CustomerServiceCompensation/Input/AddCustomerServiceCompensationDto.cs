@@ -133,5 +133,11 @@ namespace Fx.Amiya.Dto.CustomerServiceCompensation.Input
         public decimal CooperationLiveAnchorToHospitalPrice { get; set; }
 
         #endregion
+
+
+        /// <summary>
+        /// 薪资版本
+        /// </summary>
+        public string Verison { get; set; }
     }
 }

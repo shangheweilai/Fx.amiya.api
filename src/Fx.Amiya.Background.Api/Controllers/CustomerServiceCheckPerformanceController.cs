@@ -57,6 +57,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 queryDto.KeyWord = query.KeyWord;
                 queryDto.BelongEmpId = query.BelongEmpId;
                 queryDto.CheckEmpId = query.CheckEmpId;
+                queryDto.customerServiceCompensationId = query.customerServiceCompensationId;
                 List<int> performanceTypeData = new List<int>();
                 if (!string.IsNullOrEmpty(query.PerformanceTypeList))
                 {
@@ -148,7 +149,7 @@ namespace Fx.Amiya.Background.Api.Controllers
         }
 
         /// <summary>
-        /// 批量添加助理提取业绩（只用于成交，在提交前不允许存在业绩类型为“4（助理稽查,5财务稽查”状态）
+        /// 批量添加助理提取业绩（只用于成交，在提交前不允许存在业绩类型为“4（助理稽查）,5（财务稽查）”状态
         /// </summary>
         /// <param name="addVo"></param>
         /// <returns></returns>
@@ -177,8 +178,8 @@ namespace Fx.Amiya.Background.Api.Controllers
                     addDto.BelongEmpId = x.BelongEmpId;
                     addDto.Remark = x.Remark;
                     addDto.Point = x.Point;
-                    addDto.PerformanceCommision = x.PerformanceCommision;
-                    addDto.PerformanceCommisionCheck = x.PerformanceCommisionCheck;
+                    addDto.PerformanceCommision = Math.Round((x.DealPrice * x.Point) / 100, 2, MidpointRounding.AwayFromZero);
+                    addDto.PerformanceCommisionCheck = Math.Round((x.DealPrice * x.Point) / 100, 2, MidpointRounding.AwayFromZero);
                     addDto.CheckEmpId = x.CheckEmpId;
                     addDto.BillId = x.BillId;
                     addDto.CheckBillId = x.CheckBillId;

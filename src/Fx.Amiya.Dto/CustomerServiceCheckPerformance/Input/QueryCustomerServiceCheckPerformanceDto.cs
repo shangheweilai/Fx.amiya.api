@@ -22,5 +22,10 @@ namespace Fx.Amiya.Dto.CustomerServiceCheckPerformance.Input
         /// 业绩类型合集
         /// </summary>
         public List<int> PerformanceTypeList { get; set; }
+
+        /// <summary>
+        /// 薪资单id
+        /// </summary>
+        public string customerServiceCompensationId { get; set; }
     }
 }

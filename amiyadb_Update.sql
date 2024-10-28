@@ -30,3 +30,13 @@ ADD COLUMN `performance_commission` DECIMAL(12,2) NOT NULL DEFAULT 0.00 AFTER `d
 ADD COLUMN `performance_commission_check` DECIMAL(12,2) NOT NULL DEFAULT 0.00 AFTER `performance_commission`;
 ------------------------------------余建明 2024/10/21 END--------------------------------------
 --------------------------------------------------------------------------------------------------------以上部分已更新到线上--------------------------------------
+
+
+------------------------------------余建明 2024/10/28 BEGIN--------------------------------------
+--助理薪资数据加入版本号
+ALTER TABLE `amiyadb`.`tbl_customer_service_compensation` 
+ADD COLUMN `verison` VARCHAR(45) NULL AFTER `special_hospital_visit_price`;
+
+--将当前助理薪资默认为1.0版本
+update  amiyadb.tbl_customer_service_compensation set verison="1.0";
+------------------------------------余建明 2024/10/28 END--------------------------------------

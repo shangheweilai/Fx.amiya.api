@@ -133,5 +133,10 @@ namespace Fx.Amiya.Background.Api.Vo.CustomerServiceCompensation.Input
         /// 对账单审核记录id集合
         /// </summary>
         public List<string> RecommandDocumentSettleIdList { get; set; }
+
+        /// <summary>
+        /// 薪资版本
+        /// </summary>
+        public string Verison { get; set; }
     }
 }

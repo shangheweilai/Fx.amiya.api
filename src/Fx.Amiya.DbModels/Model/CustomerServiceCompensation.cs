@@ -133,5 +133,9 @@ namespace Fx.Amiya.DbModels.Model
         /// 其他扣款
         /// </summary>
         public decimal OtherChargebacks { get; set; }
+        /// <summary>
+        /// 版本
+        /// </summary>
+        public string Verison { get; set; }
     }
 }

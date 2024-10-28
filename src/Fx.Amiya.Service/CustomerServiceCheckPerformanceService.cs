@@ -3,6 +3,7 @@ using Fx.Amiya.Dto;
 using Fx.Amiya.Dto.AmiyaEmployee;
 using Fx.Amiya.Dto.CustomerServiceCheckPerformance.Input;
 using Fx.Amiya.Dto.CustomerServiceCheckPerformance.Result;
+using Fx.Amiya.Dto.ReconciliationDocuments;
 using Fx.Amiya.IDal;
 using Fx.Amiya.IService;
 using Fx.Common;
@@ -42,6 +43,8 @@ namespace Fx.Amiya.Service
                                                    && (!query.Valid.HasValue || d.Valid == query.Valid.Value)
                                                    && (!query.BelongEmpId.HasValue || d.BelongEmpId == query.BelongEmpId.Value)
                                                    && (!query.CheckEmpId.HasValue || d.CheckEmpId == query.CheckEmpId.Value)
+                                                   && (!query.StartDate.HasValue || d.CreateDate >= query.StartDate.Value)
+                                                   && (!query.EndDate.HasValue || d.CreateDate < query.EndDate.Value)
                                                    && (query.PerformanceTypeList == null || query.PerformanceTypeList.Contains(d.PerformanceType))
                                                    select new CustomerServiceCheckPerformanceDto
                                                    {
@@ -70,7 +73,16 @@ namespace Fx.Amiya.Service
                                                    };
             FxPageInfo<CustomerServiceCheckPerformanceDto> customerServiceCheckPerformancePageInfo = new FxPageInfo<CustomerServiceCheckPerformanceDto>();
             customerServiceCheckPerformancePageInfo.TotalCount = await customerServiceCheckPerformances.CountAsync();
-            customerServiceCheckPerformancePageInfo.List = await customerServiceCheckPerformances.OrderByDescending(x => x.CreateDate).Skip((query.PageNum.Value - 1) * query.PageSize.Value).Take(query.PageSize.Value).ToListAsync();
+            customerServiceCheckPerformancePageInfo.List = await customerServiceCheckPerformances.ToListAsync();
+            if (query.PerformanceTypeList.Contains((int)PerformanceType.Check) == false)
+            {
+                customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.Where(e => e.BillId == query.customerServiceCompensationId).ToList();
+            }
+            else
+            {
+                customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.Where(e => e.CheckBillId == query.customerServiceCompensationId).ToList();
+            }
+            customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.OrderByDescending(x => x.CreateDate).Skip((query.PageNum.Value - 1) * query.PageSize.Value).Take(query.PageSize.Value).ToList();
             foreach (var x in customerServiceCheckPerformancePageInfo.List)
             {
                 if (x.CheckEmpId.HasValue)
@@ -236,6 +248,78 @@ namespace Fx.Amiya.Service
                 throw new Exception(er.Message.ToString());
             }
         }
+
+
+        /// <summary>
+        /// 生成薪资单编号
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <param name="customerServiceCompensationId"></param>
+        /// <returns></returns>
+        public async Task AddCustomerServiceCompensationIdAsync(List<string> ids, string customerServiceCompensationId, int CustomerServiceCompensationEmpId)
+        {
+            foreach (var z in ids)
+            {
+                var result = await dalCustomerServiceCheckPerformance.GetAll().Where(x => x.Id == z).FirstOrDefaultAsync();
+                if (result != null)
+                {
+                    if (result.PerformanceType != (int)PerformanceType.Check)
+                    {
+                        result.BillId = customerServiceCompensationId;
+                        await dalCustomerServiceCheckPerformance.UpdateAsync(result, true);
+                    }
+                    else if (result.PerformanceType == (int)PerformanceType.Check)
+                    {
+                        //当该薪资单最终归属客服与当前生成薪资人员相等时则录入薪资单据id
+                        if (result.BelongEmpId == CustomerServiceCompensationEmpId)
+                        {
+                            result.BillId = customerServiceCompensationId;
+                            await dalCustomerServiceCheckPerformance.UpdateAsync(result, true);
+                        }
+                        //当该薪资单最终归属客服与当前生成薪资人员不等时则录入稽查薪资单据id
+                        else
+                        {
+                            result.CheckBillId = customerServiceCompensationId;
+                            await dalCustomerServiceCheckPerformance.UpdateAsync(result, true);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 薪资单作废时移除薪资单
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <param name="customerServiceCompensationId"></param>
+        /// <returns></returns>
+        public async Task RemoveCustomerServiceCompensationIdAsync(string customerServiceCompensationId)
+        {
+            //回退薪资单
+            var list = await dalCustomerServiceCheckPerformance.GetAll().Where(e => e.BillId == customerServiceCompensationId).ToListAsync();
+            var result = list.Count();
+            if (result > 0)
+            {
+                foreach (var item in list)
+                {
+                    item.BillId = null;
+                    await dalCustomerServiceCheckPerformance.UpdateAsync(item, true);
+                }
+            }
+            //回退稽查单
+            var list2 = await dalCustomerServiceCheckPerformance.GetAll().Where(e => e.CheckBillId == customerServiceCompensationId).ToListAsync();
+            var result2 = list2.Count();
+            if (result2 > 0)
+            {
+                foreach (var item in list2)
+                {
+                    item.CheckBillId = null;
+                    await dalCustomerServiceCheckPerformance.UpdateAsync(item, true);
+                }
+            }
+        }
+
 
     }
 }

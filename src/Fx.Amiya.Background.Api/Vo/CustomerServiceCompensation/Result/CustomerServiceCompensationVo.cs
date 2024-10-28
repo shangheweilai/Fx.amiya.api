@@ -139,5 +139,9 @@ namespace Fx.Amiya.Background.Api.Vo.CustomerServiceCompensation.Result
         public decimal CooperationLiveAnchorToHospitalPrice { get; set; }
 
         #endregion
+        /// <summary>
+        /// 版本
+        /// </summary>
+        public string Verison { get; set; }
     }
 }

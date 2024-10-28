@@ -52,6 +52,8 @@ namespace Fx.Amiya.DbModels.DBModelConfigs
             builder.Property(e => e.Valid).HasColumnName("valid").HasColumnType("BIT(1)").IsRequired();
             builder.Property(e => e.DeleteDate).HasColumnName("delete_date").HasColumnType("DATETIME").IsRequired(false);
 
+            builder.Property(e => e.Verison).HasColumnName("verison").HasColumnType("VARCHAR(45)").IsRequired(false);
+
 
             builder.HasOne(t => t.CreateByEmployee).WithMany(t => t.CustomerServiceCompensationCreateByList).HasForeignKey(t => t.CreateBy);
             builder.HasOne(t => t.BelongEmployee).WithMany(t => t.CustomerServiceCompensationBelongEmpList).HasForeignKey(t => t.BelongEmpId);

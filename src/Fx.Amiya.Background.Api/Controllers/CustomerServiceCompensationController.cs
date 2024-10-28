@@ -95,7 +95,8 @@ namespace Fx.Amiya.Background.Api.Controllers
                                                       ConsulationCardAddWechatPrice = d.ConsulationCardAddWechatPrice,
                                                       CooperationLiveAnchorToHospitalPrice = d.CooperationLiveAnchorToHospitalPrice,
                                                       CooperationLiveAnchorSendOrderPrice = d.CooperationLiveAnchorSendOrderPrice,
-                                                      SpecialHospitalVisitPrice=d.SpecialHospitalVisitPrice
+                                                      SpecialHospitalVisitPrice = d.SpecialHospitalVisitPrice,
+                                                      Verison = d.Verison
                                                   };
 
                 FxPageInfo<CustomerServiceCompensationVo> pageInfo = new FxPageInfo<CustomerServiceCompensationVo>();
@@ -156,6 +157,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 addDto.CooperationLiveAnchorToHospitalPrice = addVo.CooperationLiveAnchorToHospitalPrice;
                 addDto.CooperationLiveAnchorSendOrderPrice = addVo.CooperationLiveAnchorSendOrderPrice;
                 addDto.SpecialHospitalVisitPrice = addVo.SpecialHospitalVisitPrice;
+                addDto.Verison = addVo.Verison;
                 await customerServiceCompensationService.AddAsync(addDto);
 
                 return ResultData.Success();
@@ -216,6 +218,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 customerServiceCompensationVo.CooperationLiveAnchorToHospitalPrice = customerServiceCompensation.CooperationLiveAnchorToHospitalPrice;
                 customerServiceCompensationVo.CooperationLiveAnchorSendOrderPrice = customerServiceCompensation.CooperationLiveAnchorSendOrderPrice;
                 customerServiceCompensationVo.SpecialHospitalVisitPrice = customerServiceCompensation.SpecialHospitalVisitPrice;
+                customerServiceCompensationVo.Verison = customerServiceCompensation.Verison;
                 return ResultData<CustomerServiceCompensationVo>.Success().AddData("customerServiceCompensation", customerServiceCompensationVo);
             }
             catch (Exception ex)
@@ -266,6 +269,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 updateDto.CooperationLiveAnchorToHospitalPrice = updateVo.CooperationLiveAnchorToHospitalPrice;
                 updateDto.CooperationLiveAnchorSendOrderPrice = updateVo.CooperationLiveAnchorSendOrderPrice;
                 updateDto.SpecialHospitalVisitPrice = updateVo.SpecialHospitalVisitPrice;
+                updateDto.Verison = updateVo.Verison;
                 await customerServiceCompensationService.UpdateAsync(updateDto);
                 return ResultData.Success();
             }
@@ -314,21 +318,23 @@ namespace Fx.Amiya.Background.Api.Controllers
         /// <param name="queryVo"></param>
         /// <returns></returns>
         [HttpGet("getAssistantDealInfoList")]
-        public async Task<ResultData<FxPageInfo<DealInfoListVo>>> GetAssistantDealInfoListAsync([FromQuery]QueryDealInfoVo queryVo) {
+        public async Task<ResultData<FxPageInfo<DealInfoListVo>>> GetAssistantDealInfoListAsync([FromQuery] QueryDealInfoVo queryVo)
+        {
             FxPageInfo<DealInfoListVo> page = new FxPageInfo<DealInfoListVo>();
             QueryDealInfoDto queryDto = new QueryDealInfoDto();
             queryDto.StartDate = queryVo.StartDate;
             queryDto.EndDate = queryVo.EndDate;
-            queryDto.CreateBy=queryVo.CreateBy;
-            queryDto.BelongEmpId=queryVo.BelongEmpId;
+            queryDto.CreateBy = queryVo.CreateBy;
+            queryDto.BelongEmpId = queryVo.BelongEmpId;
             queryDto.PerformanceType = queryVo.PerformanceType;
             queryDto.Keyword = queryVo.KeyWord;
             queryDto.PageSize = queryVo.PageSize;
             queryDto.PageNum = queryVo.PageNum;
-            var res=await customerServiceCompensationService.GetDealInfoListAsync(queryDto);
-            page.TotalCount= res.TotalCount;
-            page.List=res.List.Select(e=>new DealInfoListVo {
-                DealId=e.DealId,
+            var res = await customerServiceCompensationService.GetDealInfoListAsync(queryDto);
+            page.TotalCount = res.TotalCount;
+            page.List = res.List.Select(e => new DealInfoListVo
+            {
+                DealId = e.DealId,
                 ContentPaltformOrderId = e.ContentPaltformOrderId,
                 DealPrice = e.DealPrice,
                 PerformanceType = e.PerformanceType,

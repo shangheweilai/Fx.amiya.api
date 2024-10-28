@@ -147,6 +147,53 @@ namespace Fx.Amiya.Background.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// 批量添加助理提取业绩（只用于成交，在提交前不允许存在业绩类型为“4（助理稽查,5财务稽查”状态）
+        /// </summary>
+        /// <param name="addVo"></param>
+        /// <returns></returns>
+        [HttpPost("addList")]
+        [FxInternalAuthorize]
+        public async Task<ResultData> AddListAsync(List<AddCustomerServiceCheckPerformanceVo> addVo)
+        {
+            try
+            {
+                List<AddCustomerServiceCheckPerformanceDto> addListDto = new List<AddCustomerServiceCheckPerformanceDto>();
+                var isExistCheck = addVo.Where(x => x.PerformanceType == (int)PerformanceType.Check).Count();
+                if (isExistCheck > 0)
+                {
+                    throw new Exception("选中数据存在稽查业绩，请重新确认后提交！");
+                }
+                foreach (var x in addVo)
+                {
+
+                    AddCustomerServiceCheckPerformanceDto addDto = new AddCustomerServiceCheckPerformanceDto();
+                    addDto.DealInfoId = x.DealInfoId;
+                    addDto.OrderId = x.OrderId;
+                    addDto.OrderFrom = x.OrderFrom;
+                    addDto.DealPrice = x.DealPrice;
+                    addDto.DealCreateDate = x.DealCreateDate;
+                    addDto.PerformanceType = x.PerformanceType;
+                    addDto.BelongEmpId = x.BelongEmpId;
+                    addDto.Remark = x.Remark;
+                    addDto.Point = x.Point;
+                    addDto.PerformanceCommision = x.PerformanceCommision;
+                    addDto.PerformanceCommisionCheck = x.PerformanceCommisionCheck;
+                    addDto.CheckEmpId = x.CheckEmpId;
+                    addDto.BillId = x.BillId;
+                    addDto.CheckBillId = x.CheckBillId;
+                    addListDto.Add(addDto);
+                }
+                await customerServiceCheckPerformanceService.AddListAsync(addListDto);
+
+                return ResultData.Success();
+            }
+            catch (Exception ex)
+            {
+                return ResultData.Fail(ex.Message);
+            }
+        }
+
 
         /// <summary>
         /// 根据助理提取业绩编号获取助理提取业绩信息

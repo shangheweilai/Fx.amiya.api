@@ -22,11 +22,11 @@ ALTER TABLE `tbl_liveanchor_monthly_target_before_living`
 
 ------------------------------------王健 2024/10/17 END--------------------------------------
 
---------------------------------------------------------------------------------------------------------以上部分已更新到线上--------------------------------------
 
 ------------------------------------余建明 2024/10/21 BEGIN--------------------------------------
 --助理提取薪资模块新增提成金额
 ALTER TABLE `amiyadb`.`tbl_customer_service_check_performance` 
-ADD COLUMN `performance_commission` DECIMAL(12,2) NOT NULL DEFAULT 0.00 AFTER `delete_date`;
+ADD COLUMN `performance_commission` DECIMAL(12,2) NOT NULL DEFAULT 0.00 AFTER `delete_date`,
 ADD COLUMN `performance_commission_check` DECIMAL(12,2) NOT NULL DEFAULT 0.00 AFTER `performance_commission`;
 ------------------------------------余建明 2024/10/21 END--------------------------------------
+--------------------------------------------------------------------------------------------------------以上部分已更新到线上--------------------------------------

@@ -6,6 +6,7 @@ using Fx.Amiya.Dto.CustomerServiceCheckPerformance.Result;
 using Fx.Amiya.IDal;
 using Fx.Amiya.IService;
 using Fx.Common;
+using Fx.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -18,10 +19,12 @@ namespace Fx.Amiya.Service
     {
         private readonly IDalCustomerServiceCheckPerformance dalCustomerServiceCheckPerformance;
         private readonly IAmiyaEmployeeService amiyaEmployeeService;
-        public CustomerServiceCheckPerformanceService(IDalCustomerServiceCheckPerformance dalCustomerServiceCheckPerformance, IAmiyaEmployeeService amiyaEmployeeService)
+        private readonly IUnitOfWork unitOfWork;
+        public CustomerServiceCheckPerformanceService(IDalCustomerServiceCheckPerformance dalCustomerServiceCheckPerformance, IAmiyaEmployeeService amiyaEmployeeService, IUnitOfWork unitOfWork)
         {
             this.dalCustomerServiceCheckPerformance = dalCustomerServiceCheckPerformance;
             this.amiyaEmployeeService = amiyaEmployeeService;
+            this.unitOfWork = unitOfWork;
         }
 
 
@@ -117,7 +120,42 @@ namespace Fx.Amiya.Service
         }
 
 
+        public async Task AddListAsync(List<AddCustomerServiceCheckPerformanceDto> addDto)
+        {
+            unitOfWork.BeginTransaction();
+            try
+            {
+                foreach (var x in addDto)
+                {
 
+                    CustomerServiceCheckPerformance customerServiceCheckPerformance = new CustomerServiceCheckPerformance();
+                    customerServiceCheckPerformance.Id = Guid.NewGuid().ToString();
+                    customerServiceCheckPerformance.CreateDate = DateTime.Now;
+                    customerServiceCheckPerformance.Valid = true;
+                    customerServiceCheckPerformance.DealInfoId = x.DealInfoId;
+                    customerServiceCheckPerformance.OrderId = x.OrderId;
+                    customerServiceCheckPerformance.OrderFrom = x.OrderFrom;
+                    customerServiceCheckPerformance.DealPrice = x.DealPrice;
+                    customerServiceCheckPerformance.DealCreateDate = x.DealCreateDate;
+                    customerServiceCheckPerformance.PerformanceType = x.PerformanceType;
+                    customerServiceCheckPerformance.BelongEmpId = x.BelongEmpId;
+                    customerServiceCheckPerformance.Remark = x.Remark;
+                    customerServiceCheckPerformance.Point = x.Point;
+                    customerServiceCheckPerformance.CheckEmpId = x.CheckEmpId;
+                    customerServiceCheckPerformance.BillId = x.BillId;
+                    customerServiceCheckPerformance.CheckBillId = x.CheckBillId;
+                    customerServiceCheckPerformance.PerformanceCommisionCheck = x.PerformanceCommisionCheck;
+                    customerServiceCheckPerformance.PerformanceCommision = x.PerformanceCommision;
+                    await dalCustomerServiceCheckPerformance.AddAsync(customerServiceCheckPerformance, true);
+                }
+                unitOfWork.Commit();
+            }
+            catch (Exception err)
+            {
+                unitOfWork.RollBack();
+                throw new Exception(err.ToString());
+            }
+        }
         public async Task<CustomerServiceCheckPerformanceDto> GetByIdAsync(string id)
         {
             var result = await dalCustomerServiceCheckPerformance.GetAll().Where(x => x.Id == id && x.Valid == true).FirstOrDefaultAsync();

@@ -421,7 +421,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             return ResultData<List<AmiyaEmployeeNameVo>>.Success().AddData("employee", employee.ToList());
         }
         /// <summary>
-        /// 获取运营咨询人员姓名列表
+        /// 获取运直播前人员姓名列表
         /// </summary>
         /// <returns></returns>
         [HttpGet("operatingConsultingNameList")]

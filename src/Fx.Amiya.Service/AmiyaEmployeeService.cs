@@ -718,7 +718,7 @@ namespace Fx.Amiya.Service
         {
             var employee = from d in dalAmiyaEmployee.GetAll()
                            where d.Valid
-                           && d.AmiyaPositionInfo.Id == 19
+                           && (d.AmiyaPositionInfo.Id == 19 || d.AmiyaPositionInfo.Id == 21)
                            select new AmiyaEmployeeNameDto
                            {
                                Id = d.Id,

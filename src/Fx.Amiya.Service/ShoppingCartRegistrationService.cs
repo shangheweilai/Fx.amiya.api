@@ -324,7 +324,7 @@ namespace Fx.Amiya.Service
                 foreach (var addDto in addDtoList)
                 {
                     var searchDataByPhone = await dalShoppingCartRegistration.GetAll().FirstOrDefaultAsync(e => e.Phone == addDto.Phone);
-                    if (searchDataByPhone != null)
+                    if (searchDataByPhone != null&& addDto.Phone != "00000000000")
                     {
                         repeatePhone += addDto.Phone + ",";
                         continue;

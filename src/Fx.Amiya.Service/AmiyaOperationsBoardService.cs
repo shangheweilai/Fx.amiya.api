@@ -4115,18 +4115,31 @@ namespace Fx.Amiya.Service
                 .ToList();
             
             var phoneList = basePhoneList.Select(e => e.Phone).ToList();
-            var myPhoneList = basePhoneList.Where(e => e.CreateBy == query.AssistantId.Value).Select(e => e.Phone).ToList();
+           
             var performanceData = await dalContentPlatFormOrderDealInfo.GetAll()
+                .Where(e=>assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder?e.ContentPlatFormOrder.SupportEmpId:e.ContentPlatFormOrder.BelongEmpId.Value))
                 .Where(e => e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate)
+                .Where(e=>e.ContentPlatFormOrder.BelongChannel==(int)BelongChannel.LiveBefore)
                 .Where(e => e.IsDeal == true)
                 .Where(e => phoneList.Contains(e.ContentPlatFormOrder.Phone))
                 .Select(e => new
                 {
                     Phone = e.ContentPlatFormOrder.Phone,
                     Price = e.Price,
-                    CreateDate=e.CreateDate
+                    CreateDate=e.CreateDate,
+                    SendDate=e.ContentPlatFormOrder.ContentPlatformOrderSendList.FirstOrDefault(e=>e.IsMainHospital==true).SendDate
                 })
+                .OrderBy(e=>e.Phone)
                 .ToListAsync();
+
+            var sendInfo = performanceData.Select(e =>new {e.Phone,e.SendDate } ).ToList();
+            var realPhoneList = (from p in basePhoneList
+                             join s in sendInfo
+                             on p.Phone equals s.Phone
+                             where p.RecordDate <= s.SendDate
+                             select p).ToList();
+            var myPhoneList = basePhoneList.Where(e => e.CreateBy == query.AssistantId.Value).Select(e => e.Phone).ToList();
+            performanceData = performanceData.Where(e=> basePhoneList.Select(e=>e.Phone).Contains(e.Phone)).ToList();
             BeforeLiveClueAndPerformanceDataDto beforeLiveClueAndPerformanceData = new BeforeLiveClueAndPerformanceDataDto();
             beforeLiveClueAndPerformanceData.EmployeeData = new BeforeLiveClueAndPerformanceDataItemDto();
             beforeLiveClueAndPerformanceData.EmployeeData.CustomerCount = basePhoneList.Where(e => e.CreateBy == query.AssistantId.Value).Count();
@@ -4168,7 +4181,9 @@ namespace Fx.Amiya.Service
             var performanceData = await dalContentPlatFormOrderDealInfo.GetAll()
                 .Where(e => e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate)
                 .Where(e => e.IsDeal == true&&e.IsOldCustomer==false)
+                .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder ? e.ContentPlatFormOrder.SupportEmpId : e.ContentPlatFormOrder.BelongEmpId.Value))
                 .Where(e => phoneList.Contains(e.ContentPlatFormOrder.Phone))
+                .Where(e => e.ContentPlatFormOrder.BelongChannel == (int)BelongChannel.LiveBefore)
                 .Select(e => new
                 {
                     CreateDate = e.CreateDate,
@@ -4563,6 +4578,7 @@ namespace Fx.Amiya.Service
             var assistantList = await amiyaEmployeeService.GetByLiveAnchorBaseIdNameListAsync(new List<string> { info.LiveAnchorBaseId });
             var assistantIdList = assistantList.Select(e => e.Id).ToList();
             var performance = dalContentPlatFormOrderDealInfo.GetAll()
+                .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder ? e.ContentPlatFormOrder.SupportEmpId : e.ContentPlatFormOrder.BelongEmpId.Value))
                 .Where(e => e.IsDeal == true && e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate)
                 .Where(e => e.ContentPlatFormOrder.BelongChannel == (int)BelongChannel.LiveBefore)
                 .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder ? e.ContentPlatFormOrder.SupportEmpId : e.ContentPlatFormOrder.BelongEmpId.Value))
@@ -4721,7 +4737,10 @@ namespace Fx.Amiya.Service
                     .Where(e => e.IsDeal == true && e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate).Select(e => e.ContentPlatFormOrder.Phone).ToList();
                 phoneList = totalPhoneList.Where(e => !baseData.Select(e => e).Contains(e)).ToList();
             }
-            var performanceList = dalContentPlatFormOrderDealInfo.GetAll().Where(e => e.IsDeal == true && phoneList.Contains(e.ContentPlatFormOrder.Phone) && e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate)
+            var performanceList = dalContentPlatFormOrderDealInfo.GetAll()
+                .Where(e => e.ContentPlatFormOrder.BelongChannel == (int)BelongChannel.LiveBefore)
+                .Where(e => e.IsDeal == true && phoneList.Contains(e.ContentPlatFormOrder.Phone) && e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate)
+                .Where(e=>assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder?e.ContentPlatFormOrder.SupportEmpId:e.ContentPlatFormOrder.BelongEmpId.Value))
                    .Select(e => new
                    {
                        LiveAnchorName = e.ContentPlatFormOrder.LiveAnchor.Name,

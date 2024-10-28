@@ -791,21 +791,22 @@ namespace Fx.Amiya.Background.Api.Controllers
                         }
                         if (worksheet.Cells[x, 6].Value != null)
                         {
-                            var department = worksheet.Cells[x, 6].Value.ToString();
-                            switch (department)
-                            {
-                                case "直播前":
-                                    addDto.BelongChannel = 1;
-                                    break;
-                                case "直播中":
-                                    addDto.BelongChannel = 2;
-                                    break;
-                                case "直播后":
-                                    addDto.BelongChannel = 3;
-                                    break;
-                                default:
-                                    throw new Exception("归属渠道只能是直播前,直播中,直播后");
-                            }
+                            addDto.BelongChannel = 1;
+                            //var department = worksheet.Cells[x, 6].Value.ToString();
+                            //switch (department)
+                            //{
+                            //    case "直播前":
+                            //        addDto.BelongChannel = 1;
+                            //        break;
+                            //    case "直播中":
+                            //        addDto.BelongChannel = 2;
+                            //        break;
+                            //    case "直播后":
+                            //        addDto.BelongChannel = 3;
+                            //        break;
+                            //    default:
+                            //        throw new Exception("归属渠道只能是直播前,直播中,直播后");
+                            //}
                         }
                         else
                         {
@@ -845,18 +846,19 @@ namespace Fx.Amiya.Background.Api.Controllers
 
                         if (worksheet.Cells[x, 9].Value != null)
                         {
-                            var customerSource = worksheet.Cells[x, 9].Value.ToString();
-                            var customerSourceList = shoppingCartRegistrationService.GetCustomerSourceList(addDto.ContentPlatFormId, addDto.BelongChannel);
-                            var customerSourceId = customerSourceList.Where(e => e.Value == customerSource).FirstOrDefault()?.Key ?? null;
+                            addDto.Source = 3;
+                            //var customerSource = worksheet.Cells[x, 9].Value.ToString();
+                            //var customerSourceList = shoppingCartRegistrationService.GetCustomerSourceList(addDto.ContentPlatFormId, addDto.BelongChannel);
+                            //var customerSourceId = customerSourceList.Where(e => e.Value == customerSource).FirstOrDefault()?.Key ?? null;
 
-                            if (customerSourceId == null)
-                            {
-                                throw new Exception("客户来源不存在");
-                            }
-                            else
-                            {
-                                addDto.Source = customerSourceId.Value;
-                            }
+                            //if (customerSourceId == null)
+                            //{
+                            //    throw new Exception($"客户来源不存在:{addDto.Phone}-{addDto.RecordDate}-{customerSource}");
+                            //}
+                            //else
+                            //{
+                            //    addDto.Source = customerSourceId.Value;
+                            //}
                         }
                         else
                         {
@@ -865,9 +867,10 @@ namespace Fx.Amiya.Background.Api.Controllers
 
                         if (worksheet.Cells[x, 10].Value != null)
                         {
-                            var getCustomerType = worksheet.Cells[x, 10].Value.ToString();
-                            var customerTypeId = getCustomerTypeList.Where(e => e.Value == getCustomerType).FirstOrDefault()?.Key ?? 0;
-                            addDto.GetCustomerType = customerTypeId;
+                            addDto.GetCustomerType = 1;
+                            //var getCustomerType = worksheet.Cells[x, 10].Value.ToString();
+                            //var customerTypeId = getCustomerTypeList.Where(e => e.Value == getCustomerType).FirstOrDefault()?.Key ?? 0;
+                            //addDto.GetCustomerType = customerTypeId;
                         }
                         else
                         {
@@ -876,9 +879,10 @@ namespace Fx.Amiya.Background.Api.Controllers
 
                         if (worksheet.Cells[x, 11].Value != null)
                         {
-                            var customerType = worksheet.Cells[x, 11].Value.ToString();
-                            var customerTypeId = customerTypeList.Where(e => e.Value == customerType).FirstOrDefault()?.Key ?? 0;
-                            addDto.ShoppingCartRegistrationCustomerType = customerTypeId;
+                            addDto.ShoppingCartRegistrationCustomerType = 1;
+                            //var customerType = worksheet.Cells[x, 11].Value.ToString();
+                            //var customerTypeId = customerTypeList.Where(e => e.Value == customerType).FirstOrDefault()?.Key ?? 0;
+                            //addDto.ShoppingCartRegistrationCustomerType = customerTypeId;
                         }
                         else
                         {
@@ -887,11 +891,12 @@ namespace Fx.Amiya.Background.Api.Controllers
 
                         if (worksheet.Cells[x, 12].Value != null)
                         {
-                            var important = worksheet.Cells[x, 12].Value.ToString();
-                            var importantId = importantList.Where(e => e.EmergencyText == important).FirstOrDefault()?.EmergencyLevel ?? null;
-                            if (important == null)
-                                throw new Exception("重要程度不存在！");
-                            addDto.EmergencyLevel = importantId.Value;
+                            addDto.EmergencyLevel = 2;
+                            //var important = worksheet.Cells[x, 12].Value.ToString();
+                            //var importantId = importantList.Where(e => e.EmergencyText == important).FirstOrDefault()?.EmergencyLevel ?? null;
+                            //if (important == null)
+                            //    throw new Exception("重要程度不存在！");
+                            //addDto.EmergencyLevel = importantId.Value;
                         }
                         else
                         {
@@ -900,18 +905,19 @@ namespace Fx.Amiya.Background.Api.Controllers
 
                         if (worksheet.Cells[x, 13].Value != null)
                         {
-                            var isRiBuLuo = worksheet.Cells[x, 13].Value.ToString();
-                            switch (isRiBuLuo)
-                            {
-                                case "是":
-                                    addDto.IsRiBuLuoLiving = true;
-                                    break;
-                                case "否":
-                                    addDto.IsRiBuLuoLiving = false;
-                                    break;
-                                default:
-                                    throw new Exception("是否为日不落参数列只能为是或否");
-                            }
+                            addDto.IsRiBuLuoLiving = false;
+                            //var isRiBuLuo = worksheet.Cells[x, 13].Value.ToString();
+                            //switch (isRiBuLuo)
+                            //{
+                            //    case "是":
+                            //        addDto.IsRiBuLuoLiving = true;
+                            //        break;
+                            //    case "否":
+                            //        addDto.IsRiBuLuoLiving = false;
+                            //        break;
+                            //    default:
+                            //        throw new Exception("是否为日不落参数列只能为是或否");
+                            //}
                         }
                         else
                         {

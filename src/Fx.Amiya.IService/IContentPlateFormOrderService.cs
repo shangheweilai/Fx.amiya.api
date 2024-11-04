@@ -533,6 +533,16 @@ namespace Fx.Amiya.IService
         Task<OrderSendAndDealNumDto> GetAdminCustomerOrderSendAndDealDataByAssistantIdListAsync(DateTime startDate, DateTime endDate, List<string> phoneList);
         Task<OrderSendAndDealNumDto> GetBeforeLiveDepartOrderSendAndDealDataByAssistantIdListAsync(DateTime startDate, DateTime endDate, List<int> AssistantId, List<string> phoneList, bool isCurrent);
         Task<OrderSendAndDealNumDto> GetBeforeLiveEmployeeOrderSendAndDealDataByAssistantIdListAsync(DateTime startDate, DateTime endDate,List<int> assistantIdList, int AssistantId, List<string> phoneList, bool isCurrent);
+
+        /// <summary>
+        /// 获取直播前自播达人当月/历史派单成交数据
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <param name="phoneList"></param>
+        /// <param name="assistantId"></param>
+        /// <returns></returns>
+        Task<OrderSendAndDealNumDto> GetLivingOrderSendAndDealDataAsync(DateTime startDate, DateTime endDate, List<string> baseLiveanchorIds, List<string> phoneList, bool isCurrent);
         #endregion
         #region 医院看板
 

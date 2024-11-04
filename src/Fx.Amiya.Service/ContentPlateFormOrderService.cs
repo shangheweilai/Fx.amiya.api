@@ -5628,6 +5628,62 @@ namespace Fx.Amiya.Service
         }
 
         /// <summary>
+        /// 获取直播前自播达人当月/历史派单成交数据
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <param name="phoneList"></param>
+        /// <param name="assistantId"></param>
+        /// <returns></returns>
+        public async Task<OrderSendAndDealNumDto> GetLivingOrderSendAndDealDataAsync(DateTime startDate, DateTime endDate, List<string> baseLiveanchorIds, List<string> phoneList, bool isCurrent)
+        {
+            OrderSendAndDealNumDto orderData = new OrderSendAndDealNumDto();
+            var querySendOrder = _dalContentPlatformOrder.GetAll().Include(x => x.ContentPlatformOrderSendList)
+            .Where(e => e.ContentPlatformOrderSendList.Where(o => o.IsMainHospital == true && o.SendDate >= startDate && o.SendDate < endDate).Count() == 1)
+            .Where(e => baseLiveanchorIds.Contains(e.LiveAnchor.LiveAnchorBaseId))
+            .Where(e => e.BelongChannel == (int)BelongChannel.Living)
+            .Where(e => e.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder && e.IsOldCustomer == false);
+            if (isCurrent)
+            {
+                orderData.SendOrderNum = await querySendOrder.Where(e => phoneList.Contains(e.Phone))
+                    .Select(e => e.Phone)
+                    .Distinct()
+                    .CountAsync();
+            }
+            else
+            {
+                orderData.SendOrderNum = await querySendOrder.Where(e => !phoneList.Contains(e.Phone))
+                    .Select(e => e.Phone)
+                    .Distinct()
+                    .CountAsync();
+            }
+            var queryVisit = _dalContentPlatformOrder.GetAll().Include(x => x.ContentPlatformOrderDealInfoList)
+            .Where(e => e.BelongChannel == (int)BelongChannel.Living)
+            .Where(o => o.ContentPlatformOrderDealInfoList.Where(x => x.CreateDate >= startDate && x.CreateDate < endDate && x.IsOldCustomer == false).Count() > 0)
+            .Where(e => baseLiveanchorIds.Contains(e.LiveAnchor.LiveAnchorBaseId))
+            .Where(e => e.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder && e.IsToHospital == true);
+            if (isCurrent)
+            {
+                queryVisit = queryVisit.Where(e => phoneList.Contains(e.Phone));
+            }
+            else
+            {
+                queryVisit = queryVisit.Where(e => !phoneList.Contains(e.Phone));
+            }
+            var visitCount = await queryVisit.Select(e => new { e.DealDate, e.OrderStatus, e.Phone, e.DealAmount }).ToListAsync();
+            orderData.VisitNum = visitCount
+                .Select(e => e.Phone)
+                .Distinct()
+                .Count();
+            orderData.DealNum = visitCount.Where(x => x.DealDate >= startDate && x.DealDate < endDate && x.OrderStatus == (int)ContentPlateFormOrderStatus.OrderComplete).Select(e => e.Phone)
+                .Distinct()
+                .Count();
+            orderData.DealPrice = visitCount.Where(x => x.DealDate >= startDate && x.DealDate < endDate && x.OrderStatus == (int)ContentPlateFormOrderStatus.OrderComplete)
+                .Sum(x => x.DealAmount);
+            return orderData;
+        }
+
+        /// <summary>
         /// 根据手机号部门获取个人当月/历史派单成交数据
         /// </summary>
         /// <param name="startDate"></param>

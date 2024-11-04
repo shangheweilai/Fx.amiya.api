@@ -4501,6 +4501,7 @@ namespace Fx.Amiya.Service
             #region 分诊派单
 
             var sendInfoList = await _dalContentPlatformOrderSend.GetAll().Where(e => e.IsMainHospital == true && e.SendDate >= seqDate.StartDate && e.SendDate < seqDate.EndDate)
+                .Where(e=>e.ContentPlatformOrder.BelongChannel==(int)BelongChannel.LiveBefore)
                 .Where(e => assistantIdList.Contains(e.Sender))
                 .Select(e => new { Phone = e.ContentPlatformOrder.Phone, EmpId = e.Sender, SendDate = e.SendDate }).ToListAsync();
             var sendPhoneList = sendInfoList.Distinct().Select(e => e.Phone).ToList();
@@ -4531,6 +4532,7 @@ namespace Fx.Amiya.Service
 
             #region 分诊上门
             var dealInfoList = await dalContentPlatFormOrderDealInfo.GetAll().Where(e => e.CreateDate >= seqDate.StartDate && e.CreateDate < seqDate.EndDate && e.IsOldCustomer == false && e.IsToHospital == true && e.ToHospitalDate.HasValue)
+                    .Where(e=>e.ContentPlatFormOrder.BelongChannel==(int)BelongChannel.LiveBefore)
                     .Where(e => (e.ContentPlatFormOrder.IsSupportOrder ? assistantIdList.Contains(e.ContentPlatFormOrder.SupportEmpId) : assistantIdList.Contains(e.ContentPlatFormOrder.BelongEmpId.Value)))
                     .Select(e => new
                     {

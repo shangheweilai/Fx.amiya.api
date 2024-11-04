@@ -703,7 +703,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             finally
             {
                 operationLog.Source = (int)RequestSource.AmiyaBackground;
-                operationLog.RequestType = (int)RequestType.Update;
+                operationLog.RequestType = (int)RequestType.Delete;
                 operationLog.RouteAddress = httpContextAccessor.HttpContext.Request.Path;
                 await operationLogService.AddOperationLogAsync(operationLog);
             }

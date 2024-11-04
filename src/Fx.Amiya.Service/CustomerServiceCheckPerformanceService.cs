@@ -72,16 +72,20 @@ namespace Fx.Amiya.Service
                                                        CheckBillId = d.CheckBillId,
                                                    };
             FxPageInfo<CustomerServiceCheckPerformanceDto> customerServiceCheckPerformancePageInfo = new FxPageInfo<CustomerServiceCheckPerformanceDto>();
-            customerServiceCheckPerformancePageInfo.TotalCount = await customerServiceCheckPerformances.CountAsync();
             customerServiceCheckPerformancePageInfo.List = await customerServiceCheckPerformances.ToListAsync();
-            if (query.PerformanceTypeList.Contains((int)PerformanceType.Check) == false)
+            if (!string.IsNullOrEmpty(query.customerServiceCompensationId))
             {
-                customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.Where(e => e.BillId == query.customerServiceCompensationId).ToList();
+
+                if (query.PerformanceTypeList.Contains((int)PerformanceType.Check) == false)
+                {
+                    customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.Where(e => e.BillId == query.customerServiceCompensationId).ToList();
+                }
+                else
+                {
+                    customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.Where(e => e.CheckBillId == query.customerServiceCompensationId).ToList();
+                }
             }
-            else
-            {
-                customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.Where(e => e.CheckBillId == query.customerServiceCompensationId).ToList();
-            }
+            customerServiceCheckPerformancePageInfo.TotalCount = customerServiceCheckPerformancePageInfo.List.Count();
             customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.OrderByDescending(x => x.CreateDate).Skip((query.PageNum.Value - 1) * query.PageSize.Value).Take(query.PageSize.Value).ToList();
             foreach (var x in customerServiceCheckPerformancePageInfo.List)
             {

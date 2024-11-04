@@ -78,7 +78,7 @@ namespace Fx.Amiya.Service
                 .Where(e => e.IsOldCustomer == false)
                 .Sum(e => e.Price);
             data.ClueCount = baseData.Count();
-            data.Performance = data.Performance;
+            data.Performance = performance;
             return data;
         }
         /// <summary>
@@ -139,6 +139,7 @@ namespace Fx.Amiya.Service
                 .Where(e => e.BelongChannel == (int)BelongChannel.Living)
                 .Where(e => e.RecordDate >= selectDate.StartDate && e.RecordDate < selectDate.EndDate)
                 .Where(e => e.IsReturnBackPrice == false)
+                .Where(e=>baseLiveanchorIdList.Contains(e.BaseLiveAnchorId))
                 .Select(e => new
                 {
                     BaseLiveAnchorId = e.BaseLiveAnchorId,
@@ -473,7 +474,7 @@ namespace Fx.Amiya.Service
                     {
                         LiveAnchorBaseId = e.ContentPlatFormOrder.LiveAnchor.LiveAnchorBaseId,
                         Phone = e.ContentPlatFormOrder.Phone,
-                        ToHospitalDate = e.ToHospitalDate
+                        ToHospitalDate = e.CreateDate
                     }).ToListAsync();
             var dealPhoneList = dealInfoList.Select(e => e.Phone).ToList();
             List<KeyValuePair<string, int>> dataList2 = new List<KeyValuePair<string, int>>();
@@ -485,7 +486,7 @@ namespace Fx.Amiya.Service
                              select new KeyValuePair<string, int>
                              (
                                  cart.BaseLiveAnchorId,
-                                 (deal.ToHospitalDate.Value - cart.RecordDate).Days
+                                 (deal.ToHospitalDate - cart.RecordDate).Days
                              )).ToList();
             }
             else
@@ -498,7 +499,7 @@ namespace Fx.Amiya.Service
                                  select new KeyValuePair<string, int>
                                  (
                                      cart.BaseLiveAnchorId,
-                                     (deal.ToHospitalDate.Value - cart.RecordDate).Days
+                                     (deal.ToHospitalDate- cart.RecordDate).Days
                                  )).ToList();
             }
 

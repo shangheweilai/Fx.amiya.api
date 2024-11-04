@@ -5585,7 +5585,7 @@ namespace Fx.Amiya.Service
             var querySendOrder = _dalContentPlatformOrder.GetAll().Include(x => x.ContentPlatformOrderSendList)
             .Where(e => e.ContentPlatformOrderSendList.Where(o => o.IsMainHospital == true && o.SendDate >= startDate && o.SendDate < endDate).Count() == 1)
             .Where(e => AssistantId.Contains(e.IsSupportOrder ? e.SupportEmpId : e.BelongEmpId.Value))
-            .Where(e=>e.BelongChannel==(int)BelongChannel.LiveBefore)
+            .Where(e => e.BelongChannel == (int)BelongChannel.LiveBefore)
             .Where(e => e.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder && e.IsOldCustomer == false);
             if (isCurrent)
             {
@@ -5657,29 +5657,35 @@ namespace Fx.Amiya.Service
                     .Distinct()
                     .CountAsync();
             }
-            var queryVisit = _dalContentPlatformOrder.GetAll().Include(x => x.ContentPlatformOrderDealInfoList)
-            .Where(e => e.BelongChannel == (int)BelongChannel.Living)
-            .Where(o => o.ContentPlatformOrderDealInfoList.Where(x => x.CreateDate >= startDate && x.CreateDate < endDate && x.IsOldCustomer == false).Count() > 0)
-            .Where(e => baseLiveanchorIds.Contains(e.LiveAnchor.LiveAnchorBaseId))
-            .Where(e => e.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder && e.IsToHospital == true);
+            var queryVisit = dalContentPlatFormOrderDealInfo.GetAll()
+            .Where(e => e.ContentPlatFormOrder.BelongChannel == (int)BelongChannel.Living)
+            .Where(x => x.CreateDate >= startDate && x.CreateDate < endDate && x.IsOldCustomer == false)
+            .Where(e => baseLiveanchorIds.Contains(e.ContentPlatFormOrder.LiveAnchor.LiveAnchorBaseId))
+            .Where(e => e.IsToHospital == true)
+            .Select(e=>new { 
+                e.Price,
+                e.ContentPlatFormOrder.Phone,
+                e.CreateDate,
+                e.IsDeal
+            });
             if (isCurrent)
             {
                 queryVisit = queryVisit.Where(e => phoneList.Contains(e.Phone));
             }
             else
             {
-                queryVisit = queryVisit.Where(e => !phoneList.Contains(e.Phone));
+                queryVisit = queryVisit.Where(e => !phoneList.Contains(e.Phone)&&e.CreateDate<startDate);
             }
-            var visitCount = await queryVisit.Select(e => new { e.DealDate, e.OrderStatus, e.Phone, e.DealAmount }).ToListAsync();
+            var visitCount = await queryVisit.Select(e => new { e.CreateDate, e.Phone, e.Price,e.IsDeal }).ToListAsync();
             orderData.VisitNum = visitCount
                 .Select(e => e.Phone)
                 .Distinct()
                 .Count();
-            orderData.DealNum = visitCount.Where(x => x.DealDate >= startDate && x.DealDate < endDate && x.OrderStatus == (int)ContentPlateFormOrderStatus.OrderComplete).Select(e => e.Phone)
+            orderData.DealNum = visitCount.Where(x => x.CreateDate >= startDate && x.CreateDate < endDate && x.IsDeal ==true).Select(e => e.Phone)
                 .Distinct()
                 .Count();
-            orderData.DealPrice = visitCount.Where(x => x.DealDate >= startDate && x.DealDate < endDate && x.OrderStatus == (int)ContentPlateFormOrderStatus.OrderComplete)
-                .Sum(x => x.DealAmount);
+            orderData.DealPrice = visitCount.Where(x => x.CreateDate >= startDate && x.CreateDate < endDate && x.IsDeal==true)
+                .Sum(x => x.Price);
             return orderData;
         }
 
@@ -5695,7 +5701,7 @@ namespace Fx.Amiya.Service
         {
             OrderSendAndDealNumDto orderData = new OrderSendAndDealNumDto();
             var querySendOrder = _dalContentPlatformOrder.GetAll().Include(x => x.ContentPlatformOrderSendList)
-            .Where(e=>e.BelongChannel==(int)BelongChannel.LiveBefore)
+            .Where(e => e.BelongChannel == (int)BelongChannel.LiveBefore)
             .Where(e => e.ContentPlatformOrderSendList.Where(o => o.IsMainHospital == true && o.SendDate >= startDate && o.SendDate < endDate).Count() == 1)
             .Where(e => e.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder && e.IsOldCustomer == false);
             if (isCurrent)
@@ -5709,12 +5715,12 @@ namespace Fx.Amiya.Service
             {
                 //本月本部门直播前派单的所有手机号
                 var departTotalPhone = _dalContentPlatformOrder.GetAll().Include(x => x.ContentPlatformOrderSendList)
-                .Where(e=>e.BelongChannel==(int)BelongChannel.LiveBefore)
-                .Where(e=>assistantIdList.Contains(e.IsSupportOrder?e.SupportEmpId:e.BelongEmpId.Value))
+                .Where(e => e.BelongChannel == (int)BelongChannel.LiveBefore)
+                .Where(e => assistantIdList.Contains(e.IsSupportOrder ? e.SupportEmpId : e.BelongEmpId.Value))
                 .Where(e => e.ContentPlatformOrderSendList.Where(o => o.IsMainHospital == true && o.SendDate >= startDate && o.SendDate < endDate).Count() == 1).Select(e => e.Phone).ToList();
                 //属于该运营人员的派单手机号(历史和当月)
-                var employeePhoneList = dalShoppingCartRegistration.GetAll().Where(e=>e.CreateBy==AssistantId).Where(e => departTotalPhone.Contains(e.Phone)).Select(e=>e.Phone).ToList();
-               //历史派单手机号
+                var employeePhoneList = dalShoppingCartRegistration.GetAll().Where(e => e.CreateBy == AssistantId).Where(e => departTotalPhone.Contains(e.Phone)).Select(e => e.Phone).ToList();
+                //历史派单手机号
                 var historyPhone = employeePhoneList.Where(e => !phoneList.Contains(e)).ToList();
                 orderData.SendOrderNum = await querySendOrder.Where(e => historyPhone.Contains(e.Phone))
                     .Select(e => e.Phone)
@@ -5724,7 +5730,7 @@ namespace Fx.Amiya.Service
 
             var queryVisit = _dalContentPlatformOrder.GetAll().Include(x => x.ContentPlatformOrderDealInfoList)
             .Where(o => o.ContentPlatformOrderDealInfoList.Where(x => x.CreateDate >= startDate && x.CreateDate < endDate).Count() > 0)
-            .Where(e => e.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder && e.IsToHospital == true&&e.IsOldCustomer==false);
+            .Where(e => e.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder && e.IsToHospital == true && e.IsOldCustomer == false);
             if (isCurrent)
             {
                 queryVisit = queryVisit.Where(e => phoneList.Contains(e.Phone));

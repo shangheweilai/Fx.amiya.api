@@ -5645,6 +5645,9 @@ namespace Fx.Amiya.Service
             .Where(e => e.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder && e.IsOldCustomer == false);
             if (isCurrent)
             {
+                var phoneLi =  querySendOrder.Where(e => phoneList.Contains(e.Phone))
+                    .Select(e => e.Phone)
+                    .ToList();
                 orderData.SendOrderNum = await querySendOrder.Where(e => phoneList.Contains(e.Phone))
                     .Select(e => e.Phone)
                     .Distinct()
@@ -5652,6 +5655,9 @@ namespace Fx.Amiya.Service
             }
             else
             {
+                var phoneLi =  querySendOrder.Where(e => !phoneList.Contains(e.Phone))
+                    .Select(e => e.Phone)
+                   .ToList();
                 orderData.SendOrderNum = await querySendOrder.Where(e => !phoneList.Contains(e.Phone))
                     .Select(e => e.Phone)
                     .Distinct()

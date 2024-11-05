@@ -406,7 +406,7 @@ namespace Fx.Amiya.Service
             var seqDate = DateTimeExtension.GetStartDateEndDate(query.StartDate,query.EndDate);
             var cartInfoList = _dalShoppingCartRegistration.GetAll()
                 .Where(e => e.IsReturnBackPrice == false && e.BelongChannel == (int)BelongChannel.Living)
-                .Where(e => e.CreateDate >= seqDate.StartDate && e.CreateDate < seqDate.EndDate)
+                .Where(e => e.RecordDate >= seqDate.StartDate && e.RecordDate < seqDate.EndDate)
                 .Where(e => baseLiveanchorIdList.Contains(e.BaseLiveAnchorId))
                 .Select(e => new
                 {

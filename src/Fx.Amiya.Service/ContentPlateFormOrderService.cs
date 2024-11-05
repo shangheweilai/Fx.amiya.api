@@ -5680,7 +5680,7 @@ namespace Fx.Amiya.Service
             }
             else
             {
-                queryVisit = queryVisit.Where(e => !phoneList.Contains(e.Phone)&&e.CreateDate<startDate);
+                queryVisit = queryVisit.Where(e => !phoneList.Contains(e.Phone));
             }
             var visitCount = await queryVisit.Select(e => new { e.CreateDate, e.Phone, e.Price,e.IsDeal }).ToListAsync();
             orderData.VisitNum = visitCount

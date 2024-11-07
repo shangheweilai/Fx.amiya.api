@@ -42,7 +42,14 @@ namespace Fx.Amiya.Background.Api.Controllers
             
             var res =await amiyaLivingOperationBoardService.GetLivingCustomerAndPerformanceDataAsync(queryDto);
             data.ClueCount = res.ClueCount;
+            data.CurrentClueCount = res.CurrentClueCount;
+            data.ClueTargetCompleteRate = res.ClueTargetCompleteRate;
+            data.ClueChain = res.ClueChain;
+            data.ClueYearOnYear = res.ClueYearOnYear;
             data.Performance = res.Performance;
+            data.CurrentPerformance = res.CurrentPerformance;
+            data.PerformanceChain = res.PerformanceChain;
+            data.PerformanceYearOnYear = res.PerformanceYearOnYear;
             return ResultData<LivingCustomerAndPerformanceDataVo>.Success().AddData("data",data);
         }
         /// <summary>
@@ -183,13 +190,6 @@ namespace Fx.Amiya.Background.Api.Controllers
                 Value=e.Value
             }).ToList();
 
-            data.AccountTotalClue = res.AccountTotalClue;
-            data.AccountClueRate = res.AccountClueRate.Select(e => new LivingContentplatformClueDataItemVo
-            {
-                Name = e.Name,
-                Performance = e.Performance,
-                Value = e.Value
-            }).ToList();
 
             data.TikTokTotalClue = res.TikTokTotalClue;
             data.TikTokClueRate = res.TikTokClueRate.Select(e => new LivingContentplatformClueDataItemVo
@@ -206,23 +206,6 @@ namespace Fx.Amiya.Background.Api.Controllers
                 Performance = e.Performance,
                 Value = e.Value
             }).ToList();
-
-            data.XiaoHongShuTotalClue = res.XiaoHongShuTotalClue;
-            data.XiaoHongShuClueRate = res.XiaoHongShuClueRate.Select(e => new LivingContentplatformClueDataItemVo
-            {
-                Name = e.Name,
-                Performance = e.Performance,
-                Value = e.Value
-            }).ToList();
-
-            data.RiBuLuoTotalClue = res.RiBuLuoTotalClue;
-            data.RiBuLuoClueRate = res.RiBuLuoClueRate.Select(e => new LivingContentplatformClueDataItemVo
-            {
-                Name = e.Name,
-                Performance = e.Performance,
-                Value = e.Value
-            }).ToList();
-
             return ResultData<LivingContentplatformClueDataVo>.Success().AddData("data", data);
         }
         /// <summary>
@@ -245,13 +228,22 @@ namespace Fx.Amiya.Background.Api.Controllers
                 Value = e.Value
             }).ToList();
 
-            data.AccountTotalPerformance = res.AccountTotalPerformance;
-            data.AccountPerformanceRate = res.AccountPerformanceRate.Select(e => new LivingContentplatformPerformanceDataItemVo
+            data.TikTokAccountTotalPerformance = res.TikTokAccountTotalPerformance;
+            data.TikTokAccountPerformanceRate = res.TikTokAccountPerformanceRate.Select(e => new LivingContentplatformPerformanceDataItemVo
             {
                 Name = e.Name,
                 Performance = e.Performance,
                 Value = e.Value
             }).ToList();
+
+            data.WechatVideoAccountTotalPerformance = res.WechatVideoAccountTotalPerformance;
+            data.WechatVideoAccountPerformanceRate = res.WechatVideoAccountPerformanceRate.Select(e => new LivingContentplatformPerformanceDataItemVo
+            {
+                Name = e.Name,
+                Performance = e.Performance,
+                Value = e.Value
+            }).ToList();
+
             return ResultData<LivingContentplatformPerformanceDataVo>.Success().AddData("data", data);
         }
 

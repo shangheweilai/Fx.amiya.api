@@ -17,13 +17,21 @@ namespace Fx.Amiya.Background.Api.Vo.AmiyaLivingOperationBoard.Result
         /// </summary>
         public List<LivingContentplatformPerformanceDataItemVo> ContentPlatformPerformanceRate { get; set; }
         /// <summary>
-        /// 账号总业绩
+        /// 抖音账号总业绩
         /// </summary>
-        public decimal AccountTotalPerformance { get; set; }
+        public decimal TikTokAccountTotalPerformance { get; set; }
         /// <summary>
-        /// 账号业绩占比
+        /// 抖音账号业绩占比
         /// </summary>
-        public List<LivingContentplatformPerformanceDataItemVo> AccountPerformanceRate { get; set; }
+        public List<LivingContentplatformPerformanceDataItemVo> TikTokAccountPerformanceRate { get; set; }
+        /// <summary>
+        /// 视频号账号总业绩
+        /// </summary>
+        public decimal WechatVideoAccountTotalPerformance { get; set; }
+        /// <summary>
+        /// 视频号账号业绩占比
+        /// </summary>
+        public List<LivingContentplatformPerformanceDataItemVo> WechatVideoAccountPerformanceRate { get; set; }
     }
     public class LivingContentplatformPerformanceDataItemVo
     {

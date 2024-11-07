@@ -16,14 +16,7 @@ namespace Fx.Amiya.Dto.AmiyaLivingOperationBoard
         /// 平台获客占比
         /// </summary>
         public List<LivingContentplatformClueDataItemDto> ContentPlatformClueRate { get; set; }
-        /// <summary>
-        /// 账号获客总数
-        /// </summary>
-        public int AccountTotalClue { get; set; }
-        /// <summary>
-        /// 账号获客占比
-        /// </summary>
-        public List<LivingContentplatformClueDataItemDto> AccountClueRate { get; set; }
+        
         /// <summary>
         /// 抖音获客总数
         /// </summary>
@@ -40,22 +33,6 @@ namespace Fx.Amiya.Dto.AmiyaLivingOperationBoard
         /// 视频号获客占比
         /// </summary>
         public List<LivingContentplatformClueDataItemDto> WechatVideoClueRate { get; set; }
-        /// <summary>
-        /// 小黄车获客总数
-        /// </summary>
-        public int XiaoHongShuTotalClue { get; set; }
-        /// <summary>
-        /// 小红书获客占比
-        /// </summary>
-        public List<LivingContentplatformClueDataItemDto> XiaoHongShuClueRate { get; set; }
-        /// <summary>
-        /// 日不落获客总数
-        /// </summary>
-        public int RiBuLuoTotalClue { get; set; }
-        /// <summary>
-        /// 日不落获客占比
-        /// </summary>
-        public List<LivingContentplatformClueDataItemDto> RiBuLuoClueRate { get; set; }
 
     }
     public class LivingContentplatformClueDataItemDto

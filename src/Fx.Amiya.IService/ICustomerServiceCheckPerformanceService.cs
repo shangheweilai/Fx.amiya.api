@@ -12,6 +12,7 @@ namespace Fx.Amiya.IService
         Task AddAsync(AddCustomerServiceCheckPerformanceDto addDto);
         Task AddListAsync(List<AddCustomerServiceCheckPerformanceDto> addDto);
         Task<CustomerServiceCheckPerformanceDto> GetByIdAsync(string id);
+        Task<CustomerServiceCheckPerformanceDto> GetByDealIdAsync(string dealId);
         Task UpdateAsync(UpdateCustomerServiceCheckPerformanceDto updateDto);
         Task DeleteAsync(string id);
         Task AddCustomerServiceCompensationIdAsync(List<string> ids, string customerServiceCompensationId, int CustomerServiceCompensationEmpId);

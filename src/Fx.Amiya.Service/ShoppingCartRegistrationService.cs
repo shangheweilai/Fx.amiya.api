@@ -861,7 +861,6 @@ namespace Fx.Amiya.Service
 
                 if (shoppingCartRegistration == null)
                     throw new Exception("小黄车登记编号错误");
-
                 await dalShoppingCartRegistration.DeleteAsync(shoppingCartRegistration, true);
             }
             catch (Exception ex)

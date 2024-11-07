@@ -281,7 +281,7 @@ namespace Fx.Amiya.Background.Api.Controllers
         /// <summary>
         /// 复制助理薪资单
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="copy"></param>
         /// <returns></returns>
         [FxInternalAuthorize]
         [HttpPost("copyCompensation")]
@@ -348,6 +348,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 BelongEmpName = e.BelongEmpName,
                 SupportEmpId = e.SupportEmpId,
                 SupportEmpName = e.SupportEmpName,
+                IsCheckPerformance = e.IsCheckPerformance
             }).ToList();
             return ResultData<FxPageInfo<DealInfoListVo>>.Success().AddData("data", page);
         }

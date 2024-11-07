@@ -63,5 +63,10 @@ namespace Fx.Amiya.Background.Api.Vo.CustomerServiceCompensation.Result
         /// 辅助客服名
         /// </summary>
         public string SupportEmpName { get; set; }
+
+        /// <summary>
+        /// 提取状态
+        /// </summary>
+        public string IsCheckPerformance { get; set; }
     }
 }

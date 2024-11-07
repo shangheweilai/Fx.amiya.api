@@ -369,6 +369,15 @@ namespace Fx.Amiya.Service
                 item.CreateByName = employeeIdNameList.FirstOrDefault(e => e.Id == item.CreateById)?.Name ?? "其他";
                 item.SupportEmpName = employeeIdNameList.FirstOrDefault(e => e.Id == item.SupportEmpId)?.Name ?? "其他";
                 item.BelongEmpName = employeeIdNameList.FirstOrDefault(e => e.Id == item.BelongEmpId)?.Name ?? "其他";
+                var checkPerformance = await customerServiceCheckPerformanceService.GetByDealIdAsync(item.DealId);
+                if (!string.IsNullOrEmpty(checkPerformance.DealInfoId))
+                {
+                    item.IsCheckPerformance = "已提取";
+                }
+                else
+                {
+                    item.IsCheckPerformance = "未提取";
+                }
             }
             return pageData;
         }

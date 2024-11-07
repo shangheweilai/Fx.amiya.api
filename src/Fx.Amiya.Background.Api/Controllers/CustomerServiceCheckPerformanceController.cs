@@ -50,7 +50,10 @@ namespace Fx.Amiya.Background.Api.Controllers
             {
                 QueryCustomerServiceCheckPerformanceDto queryDto = new QueryCustomerServiceCheckPerformanceDto();
                 queryDto.StartDate = query.StartDate;
-                queryDto.EndDate = query.EndDate;
+                if (query.EndDate.HasValue)
+                {
+                    queryDto.EndDate = query.EndDate.Value.AddDays(1).AddMilliseconds(-1);
+                }
                 queryDto.PageNum = query.PageNum;
                 queryDto.PageSize = query.PageSize;
                 queryDto.Valid = query.Valid;

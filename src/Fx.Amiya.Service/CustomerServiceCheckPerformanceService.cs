@@ -201,6 +201,35 @@ namespace Fx.Amiya.Service
             return returnResult;
         }
 
+        public async Task<CustomerServiceCheckPerformanceDto> GetByDealIdAsync(string dealId)
+        {
+            var result = await dalCustomerServiceCheckPerformance.GetAll().Where(x => x.DealInfoId == dealId && x.Valid == true).FirstOrDefaultAsync();
+            if (result == null)
+            {
+                return new CustomerServiceCheckPerformanceDto();
+            }
+
+            CustomerServiceCheckPerformanceDto returnResult = new CustomerServiceCheckPerformanceDto();
+            returnResult.Id = result.Id;
+            returnResult.CreateDate = result.CreateDate;
+            returnResult.Valid = result.Valid;
+            returnResult.DealInfoId = result.DealInfoId;
+            returnResult.OrderId = result.OrderId;
+            returnResult.OrderFrom = result.OrderFrom;
+            returnResult.DealPrice = result.DealPrice;
+            returnResult.DealCreateDate = result.DealCreateDate;
+            returnResult.PerformanceType = result.PerformanceType;
+            returnResult.BelongEmpId = result.BelongEmpId;
+            returnResult.Remark = result.Remark;
+            returnResult.Point = result.Point;
+            returnResult.PerformanceCommision = result.PerformanceCommision;
+            returnResult.PerformanceCommisionCheck = result.PerformanceCommisionCheck;
+            returnResult.CheckEmpId = result.CheckEmpId;
+            returnResult.BillId = result.BillId;
+            returnResult.CheckBillId = result.CheckBillId;
+            return returnResult;
+        }
+
         /// <summary>
         /// 修改助理提取业绩
         /// </summary>

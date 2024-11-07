@@ -64,5 +64,10 @@ namespace Fx.Amiya.Dto.CustomerServiceCompensation.Result
         /// 辅助客服名
         /// </summary>
         public string SupportEmpName { get; set; }
+
+        /// <summary>
+        /// 是否提取
+        /// </summary>
+        public string IsCheckPerformance { get; set; }
     }
 }

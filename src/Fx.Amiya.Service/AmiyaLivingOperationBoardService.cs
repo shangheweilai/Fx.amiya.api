@@ -114,7 +114,7 @@ namespace Fx.Amiya.Service
             data.ClueYearOnYear = DecimalExtension.CalculateTargetComplete(data.ClueCount, historyData).Value;
             
             data.Performance = performance.Sum(e=>e.Price);
-            data.CurrentClueCount = performance.Where(e => e.CreateDate.Date == DateTime.Now.Date).Sum(e=>e.Price);
+            data.CurrentPerformance = performance.Where(e => e.CreateDate.Date == DateTime.Now.Date).Sum(e=>e.Price);
             data.PerformanceChain = DecimalExtension.CalculateTargetComplete(data.Performance,lastPerformance).Value;
             data.PerformanceYearOnYear = DecimalExtension.CalculateTargetComplete(data.Performance, historyPerformance).Value;
             return data;
@@ -691,7 +691,7 @@ namespace Fx.Amiya.Service
                     Value = DecimalExtension.CalculateTargetComplete(e.Sum(e => e.Price), totalPerformance).Value,
                     Performance = ChangePriceToTenThousand(e.Sum(e => e.Price))
                 }).ToList();
-            livingData.TikTokAccountTotalPerformance = performanceList.Where(e => e.ContentPlateformId == "4e4e9564-f6c3-47b6-a7da-e4518bab66a1").Sum(e => e.Price);
+            livingData.TikTokAccountTotalPerformance = ChangePriceToTenThousand(performanceList.Where(e => e.ContentPlateformId == "4e4e9564-f6c3-47b6-a7da-e4518bab66a1").Sum(e => e.Price));
             livingData.TikTokAccountPerformanceRate = performanceList.Where(e=>e.ContentPlateformId== "4e4e9564-f6c3-47b6-a7da-e4518bab66a1").GroupBy(e => e.LiveAnchorName)
                 .Select(e => new LivingContentplatformPerformanceDataItemDto
                 {
@@ -699,7 +699,7 @@ namespace Fx.Amiya.Service
                     Value = DecimalExtension.CalculateTargetComplete(e.Sum(e => e.Price), totalPerformance).Value,
                     Performance = ChangePriceToTenThousand(e.Sum(e => e.Price))
                 }).ToList();
-            livingData.WechatVideoAccountTotalPerformance = performanceList.Where(e => e.ContentPlateformId == "9196b247-1ab9-4d0c-a11e-a1ef09019878").Sum(e=>e.Price);
+            livingData.WechatVideoAccountTotalPerformance = ChangePriceToTenThousand(performanceList.Where(e => e.ContentPlateformId == "9196b247-1ab9-4d0c-a11e-a1ef09019878").Sum(e=>e.Price));
             livingData.WechatVideoAccountPerformanceRate = performanceList.Where(e => e.ContentPlateformId == "9196b247-1ab9-4d0c-a11e-a1ef09019878").GroupBy(e => e.LiveAnchorName)
                 .Select(e => new LivingContentplatformPerformanceDataItemDto
                 {

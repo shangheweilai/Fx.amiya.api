@@ -2651,7 +2651,7 @@ namespace Fx.Amiya.Service
             AssistantNewCustomerOperationDataDetails consulationdetails = new AssistantNewCustomerOperationDataDetails();
             consulationdetails.Key = "Consulation";
             consulationdetails.Name = "分诊量";
-            consulationdetails.Value = baseBusinessPerformance.Where(x => x.AssignEmpId != 0 && x.AssignEmpId.HasValue && x.IsReturnBackPrice == false).Count();
+            consulationdetails.Value = baseBusinessPerformance.Where(x => x.AssignEmpId != 0 && x.AssignEmpId.HasValue).Count();
             newCustomerOperationDataDto.newCustomerOperationDataDetails.Add(consulationdetails);
 
             //线索有效率
@@ -2664,7 +2664,7 @@ namespace Fx.Amiya.Service
             //加v
             addWechatdetails.Key = "AddWeChat";
             addWechatdetails.Name = "加v量";
-            addWechatdetails.Value = baseBusinessPerformance.Where(x => x.IsAddWeChat == true && x.AssignEmpId != 0 && x.AssignEmpId.HasValue && x.IsReturnBackPrice == false).Count();
+            addWechatdetails.Value = baseBusinessPerformance.Where(x => x.IsAddWeChat == true && x.AssignEmpId != 0 && x.AssignEmpId.HasValue).Count();
             newCustomerOperationDataDto.newCustomerOperationDataDetails.Add(addWechatdetails);
 
             //加v率

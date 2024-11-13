@@ -20,6 +20,10 @@ namespace Fx.Amiya.Dto.AmiyaOperationsBoardService.Input
         /// 助理id
         /// </summary>
         public int? AssistantId { get; set; }
+        /// <summary>
+        /// 是否为当月
+        /// </summary>
+        public bool IsCurrent { get; set; }
     }
     public class QueryLiveAnchorPerformanceDto
     {

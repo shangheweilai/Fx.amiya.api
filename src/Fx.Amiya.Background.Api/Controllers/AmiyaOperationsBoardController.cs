@@ -990,8 +990,6 @@ namespace Fx.Amiya.Background.Api.Controllers
             newCustomerOperationDataVo.RefundCardRate = performance.NewCustomerData.RefundCardRate.HasValue ? performance.NewCustomerData.RefundCardRate.Value : 0.00M;
             newCustomerOperationDataVo.RefundCardRateHealthValueSum = performance.NewCustomerData.RefundCardRateHealthValueSum;
             newCustomerOperationDataVo.RefundCardRateHealthValueThisMonth = performance.NewCustomerData.RefundCardRateHealthValueThisMonth;
-            //newCustomerOperationDataVo.ClueEffictiveRate = performance.NewCustomerData.ClueEffictiveRate.HasValue ? performance.NewCustomerData.ClueEffictiveRate.Value : 0.00M;
-            //newCustomerOperationDataVo.ClueEffictiveRateHealthValueThisMonth = performance.NewCustomerData.ClueEffictiveRateHealthValueThisMonth;
             newCustomerOperationDataVo.AddWeChatRate = performance.NewCustomerData.AddWeChatRate.HasValue ? performance.NewCustomerData.AddWeChatRate.Value : 0.00M;
             newCustomerOperationDataVo.AddWeChatRateHealthValueSum = performance.NewCustomerData.AddWeChatRateHealthValueSum;
             newCustomerOperationDataVo.AddWeChatRateHealthValueThisMonth = performance.NewCustomerData.AddWeChatRateHealthValueThisMonth;
@@ -1004,15 +1002,8 @@ namespace Fx.Amiya.Background.Api.Controllers
             newCustomerOperationDataVo.DealRate = performance.NewCustomerData.DealRate.HasValue ? performance.NewCustomerData.DealRate.Value : 0.00M;
             newCustomerOperationDataVo.DealRateHealthValueSum = performance.NewCustomerData.DealRateHealthValueSum;
             newCustomerOperationDataVo.DealRateHealthValueThisMonth = performance.NewCustomerData.DealRateHealthValueThisMonth;
-            //能效转化
-            //newCustomerOperationDataVo.FlowClueToDealPrice = performance.NewCustomerData.FlowClueToDealPrice.HasValue ? performance.NewCustomerData.FlowClueToDealPrice.Value : 0.00M;
             newCustomerOperationDataVo.AllocationConsulationToDealRate = performance.NewCustomerData.AllocationConsulationToDealRate.HasValue ? performance.NewCustomerData.AllocationConsulationToDealRate.Value : 0.00M;
-            //newCustomerOperationDataVo.AllocationConsulationToDealPrice = performance.NewCustomerData.AllocationConsulationToDealPrice.HasValue ? performance.NewCustomerData.AllocationConsulationToDealPrice.Value : 0.00M;
-            //newCustomerOperationDataVo.AddWeChatToDealPrice = performance.NewCustomerData.AddWeChatToDealPrice.HasValue ? performance.NewCustomerData.AddWeChatToDealPrice.Value : 0.00M;
             newCustomerOperationDataVo.SendOrderToDealRate = performance.NewCustomerData.SendOrderToDealRate.HasValue ? performance.NewCustomerData.SendOrderToDealRate.Value : 0.00M;
-            //newCustomerOperationDataVo.SendOrderToDealPrice = performance.NewCustomerData.SendOrderToDealPrice.HasValue ? performance.NewCustomerData.SendOrderToDealPrice.Value : 0.00M;
-            //newCustomerOperationDataVo.VisitToDealPrice = performance.NewCustomerData.VisitToDealPrice.HasValue ? performance.NewCustomerData.VisitToDealPrice.Value : 0.00M;
-            //newCustomerOperationDataVo.DealToPrice = performance.NewCustomerData.DealToPrice.HasValue ? performance.NewCustomerData.DealToPrice.Value : 0.00M;
             newCustomerOperationDataVo.newCustomerOperationDataDetails = new List<AssistantNewCustomerOperationDataDetailsVo>();
             foreach (var x in performance.NewCustomerData.newCustomerOperationDataDetails)
             {
@@ -1361,6 +1352,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             queryDto.StartDate = query.StartDate;
             queryDto.EndDate = query.EndDate;
             queryDto.AssistantId = query.AssistantId;
+            queryDto.IsCurrent = query.IsCurrent;
             var res = await amiyaOperationsBoardService.GetAssistantTransformCycleDataAsync(queryDto);
             data.EffectiveSendCycle = res.EffectiveSendCycle;
             data.EffectiveToHospitalCycle = res.EffectiveToHospitalCycle;
@@ -1643,7 +1635,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             BeforeLiveClueAndPerformanceDataVo data = new BeforeLiveClueAndPerformanceDataVo();
             data.DepartmentData = new BeforeLiveClueAndPerformanceDataItemVo();
             data.EmployeeData = new BeforeLiveClueAndPerformanceDataItemVo();
-            data.DepartmentData.CurrentDayCustomerCount=res.DepartmentData.CurrentDayCustomerCount;
+            data.DepartmentData.CurrentDayCustomerCount = res.DepartmentData.CurrentDayCustomerCount;
             data.DepartmentData.CurrentDayPerformance = res.DepartmentData.CurrentDayPerformance;
             data.DepartmentData.CustomerCount = res.DepartmentData.CustomerCount;
             data.DepartmentData.Performance = res.DepartmentData.Performance;
@@ -1749,7 +1741,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             var res = await amiyaOperationsBoardService.GetBeforeLiveTransformCycleDataAsync(queryDto);
             BeforeLiveTransformCycleDataVo data = new BeforeLiveTransformCycleDataVo();
             data.SendCycleData = res.SendCycleData;
-            data.ToHospitalCycleData = res.ToHospitalCycleData.OrderBy(e=>e.Value).ToList();
+            data.ToHospitalCycleData = res.ToHospitalCycleData.OrderBy(e => e.Value).ToList();
             return ResultData<BeforeLiveTransformCycleDataVo>.Success().AddData("data", data);
         }
         /// <summary>
@@ -1766,7 +1758,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             queryDto.AssistantId = query.AssistantId;
             var res = await amiyaOperationsBoardService.GetBeforeLivePerformanceRateAsync(queryDto);
             BeforeLiveTargetCompleteAndPerformanceRateVo data = new BeforeLiveTargetCompleteAndPerformanceRateVo();
-            data.PerformanceRate = res.PerformanceRate.OrderByDescending(e=>e.Value).ToList();
+            data.PerformanceRate = res.PerformanceRate.OrderByDescending(e => e.Value).ToList();
             return ResultData<BeforeLiveTargetCompleteAndPerformanceRateVo>.Success().AddData("data", data);
         }
         /// <summary>
@@ -1783,7 +1775,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             queryDto.AssistantId = query.AssistantId;
             var res = await amiyaOperationsBoardService.GetBeforeLiveTargetCompleteRateAsync(queryDto);
             BeforeLiveTargetCompleteRateVo data = new BeforeLiveTargetCompleteRateVo();
-            data.TargetComplete = res.TargetComplete.OrderByDescending(e=>e.Value).ToList();
+            data.TargetComplete = res.TargetComplete.OrderByDescending(e => e.Value).ToList();
             return ResultData<BeforeLiveTargetCompleteRateVo>.Success().AddData("data", data);
         }
         /// <summary>
@@ -1792,7 +1784,7 @@ namespace Fx.Amiya.Background.Api.Controllers
         /// <param name="query"></param>
         /// <returns></returns>
         [HttpGet("getBeforeLiveDepartmentContentPlatformClueRate")]
-        public async Task<ResultData<BeforeLiveDepartmentContentPlatformClueRateVo>> GetBeforeLiveDepartmentContentPlatformClueRateAsync([FromQuery]QueryBeforeLiveDataVo query)
+        public async Task<ResultData<BeforeLiveDepartmentContentPlatformClueRateVo>> GetBeforeLiveDepartmentContentPlatformClueRateAsync([FromQuery] QueryBeforeLiveDataVo query)
         {
             QueryBeforeLiveDataDto queryDto = new QueryBeforeLiveDataDto();
             queryDto.StartDate = query.StartDate;
@@ -1805,7 +1797,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             {
                 Name = e.Name,
                 Value = e.Value,
-                Performance=e.Performance
+                Performance = e.Performance
             }).ToList();
             data.TikTokPerformance = res.TikTokClue;
             data.TikTokClueRate = res.TikTokClueRate.Select(e => new BeforeLiveDepartmentContentPlatformClueRateDataItemVo
@@ -1828,7 +1820,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 Value = e.Value,
                 Performance = e.Performance
             }).ToList();
-            return ResultData<BeforeLiveDepartmentContentPlatformClueRateVo>.Success().AddData("data",data);
+            return ResultData<BeforeLiveDepartmentContentPlatformClueRateVo>.Success().AddData("data", data);
         }
         /// <summary>
         /// 获取直播前部门平台业绩占比数据
@@ -1836,7 +1828,8 @@ namespace Fx.Amiya.Background.Api.Controllers
         /// <param name="query"></param>
         /// <returns></returns>
         [HttpGet("getBeforeLiveDepartmentContentPlatformPerformanceRate")]
-        public async Task<ResultData<BeforeLiveDepartmentContentPlatformPerformanceRateVo>> GetBeforeLiveDepartmentContentPlatformPerformanceRateAsync([FromQuery]QueryBeforeLiveFilterDataVo query) {
+        public async Task<ResultData<BeforeLiveDepartmentContentPlatformPerformanceRateVo>> GetBeforeLiveDepartmentContentPlatformPerformanceRateAsync([FromQuery] QueryBeforeLiveFilterDataVo query)
+        {
             QueryBeforeLiveFilterDataDto queryDto = new QueryBeforeLiveFilterDataDto();
             queryDto.StartDate = query.StartDate;
             queryDto.EndDate = query.EndDate;
@@ -1846,10 +1839,11 @@ namespace Fx.Amiya.Background.Api.Controllers
             var res = await amiyaOperationsBoardService.GetBeforeLiveDepartmentContentPlatformPerformanceRateAsync(queryDto);
             BeforeLiveDepartmentContentPlatformPerformanceRateVo data = new BeforeLiveDepartmentContentPlatformPerformanceRateVo();
             data.DepartmentPerformance = res.DepartmentPerformance;
-            data.DepartmentContentPlatformPerformanceRate = res.DepartmentContentPlatformPerformanceRate.Select(e => new BeforeLiveDepartmentContentPlatformPerformanceRateDataItemVo {
-                Name=e.Name,
-                Value=e.Value,
-                Performance=e.Performance
+            data.DepartmentContentPlatformPerformanceRate = res.DepartmentContentPlatformPerformanceRate.Select(e => new BeforeLiveDepartmentContentPlatformPerformanceRateDataItemVo
+            {
+                Name = e.Name,
+                Value = e.Value,
+                Performance = e.Performance
             }).ToList();
             data.TikTokPerformance = res.TikTokPerformance;
             data.TikTokPerformanceRate = res.TikTokPerformanceRate.Select(e => new BeforeLiveDepartmentContentPlatformPerformanceRateDataItemVo
@@ -1880,21 +1874,22 @@ namespace Fx.Amiya.Background.Api.Controllers
         /// <param name="query"></param>
         /// <returns></returns>
         [HttpGet("getBeforeLiveLiveanchorIPData")]
-        public async Task<ResultData<List<BeforeLiveLiveanchorIPDataVo>>> GetBeforeLiveLiveanchorIPDataAsync([FromQuery]QueryBeforeLiveDataVo query) {
+        public async Task<ResultData<List<BeforeLiveLiveanchorIPDataVo>>> GetBeforeLiveLiveanchorIPDataAsync([FromQuery] QueryBeforeLiveDataVo query)
+        {
             QueryBeforeLiveDataDto queryDto = new QueryBeforeLiveDataDto();
             queryDto.StartDate = query.StartDate;
             queryDto.EndDate = query.EndDate;
             queryDto.AssistantId = query.AssistantId;
             var data = await amiyaOperationsBoardService.GetBeforeLiveLiveanchorIPDataAsync(queryDto);
-            var res= data.Select(e => new BeforeLiveLiveanchorIPDataVo
+            var res = data.Select(e => new BeforeLiveLiveanchorIPDataVo
             {
-                LiveanchorIP=e.LiveanchorIP,
+                LiveanchorIP = e.LiveanchorIP,
                 ClueCount = e.ClueCount,
                 YearOnYear = e.YearOnYear,
                 Chain = e.Chain,
                 TargetComplete = e.TargetComplete,
-            }).OrderByDescending(e=>e.TargetComplete).ToList();
-            return ResultData<List<BeforeLiveLiveanchorIPDataVo>>.Success().AddData("data",res);
+            }).OrderByDescending(e => e.TargetComplete).ToList();
+            return ResultData<List<BeforeLiveLiveanchorIPDataVo>>.Success().AddData("data", res);
         }
 
         #endregion

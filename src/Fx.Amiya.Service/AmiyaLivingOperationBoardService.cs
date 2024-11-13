@@ -70,6 +70,7 @@ namespace Fx.Amiya.Service
                .Where(e => e.RecordDate >= selectDate.StartDate && e.RecordDate < selectDate.EndDate)
                .Where(e => e.BelongChannel == (int)BelongChannel.Living)
                .Select(e => new { e.Phone,e.RecordDate }).ToList();
+            var currentPhoneList= baseData.Select(e=>e.Phone).ToList();
             var lastData = _dalShoppingCartRegistration.GetAll()
               .Where(e => e.IsReturnBackPrice == false)
               .Where(e => string.IsNullOrEmpty(query.BaseLiveAnchorId) || e.BaseLiveAnchorId == query.BaseLiveAnchorId)
@@ -92,7 +93,7 @@ namespace Fx.Amiya.Service
                 .Where(e => e.ContentPlatFormOrder.BelongChannel == (int)BelongChannel.Living)
                 .Where(e => e.IsDeal == true)
                 .Where(e => e.IsOldCustomer == false)
-                .Select(e=>new {e.Price,e.CreateDate });
+                .Select(e=>new {e.Price,e.CreateDate,e.ContentPlatFormOrder.Phone });
             var lastPerformance = dalContentPlatFormOrderDealInfo.GetAll()
                 .Where(e => e.CreateDate >= selectDate.LastMonthStartDate && e.CreateDate < selectDate.LastMonthEndDate)
                 .Where(e => string.IsNullOrEmpty(query.BaseLiveAnchorId) || e.ContentPlatFormOrder.LiveAnchor.LiveAnchorBaseId == query.BaseLiveAnchorId)
@@ -117,6 +118,8 @@ namespace Fx.Amiya.Service
             data.CurrentPerformance = performance.Where(e => e.CreateDate.Date == DateTime.Now.Date).Sum(e=>e.Price);
             data.PerformanceChain = DecimalExtension.CalculateTargetComplete(data.Performance,lastPerformance).Value;
             data.PerformanceYearOnYear = DecimalExtension.CalculateTargetComplete(data.Performance, historyPerformance).Value;
+            var currentPerformance=performance.Where(e=>currentPhoneList.Contains(e.Phone)).Sum(e => e.Price);
+            data.CurrentMontPerformance = currentPerformance;
             return data;
         }
         /// <summary>

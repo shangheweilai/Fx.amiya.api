@@ -36,7 +36,10 @@ namespace Fx.Amiya.Dto.AmiyaLivingOperationBoard
         /// 当日业绩
         /// </summary>
         public decimal CurrentPerformance { get; set; }
-       
+        /// <summary>
+        /// 当月业绩
+        /// </summary>
+        public decimal CurrentMontPerformance { get; set; }
         /// <summary>
         /// 业绩环比
         /// </summary>

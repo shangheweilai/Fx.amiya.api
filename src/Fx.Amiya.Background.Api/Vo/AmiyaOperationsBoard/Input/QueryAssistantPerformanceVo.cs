@@ -19,6 +19,10 @@ namespace Fx.Amiya.Background.Api.Vo.AmiyaOperationsBoard.Input
         /// 助理id
         /// </summary>
         public int AssistantId { get; set; }
+        /// <summary>
+        /// 是否为当月
+        /// </summary>
+        public bool IsCurrent { get; set; }
     }
     /// <summary>
     /// 运营看板查询主播周期转化数据

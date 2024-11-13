@@ -50,6 +50,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             data.CurrentPerformance = res.CurrentPerformance;
             data.PerformanceChain = res.PerformanceChain;
             data.PerformanceYearOnYear = res.PerformanceYearOnYear;
+            data.CurrentMontPerformance=res.CurrentMontPerformance;
             return ResultData<LivingCustomerAndPerformanceDataVo>.Success().AddData("data",data);
         }
         /// <summary>

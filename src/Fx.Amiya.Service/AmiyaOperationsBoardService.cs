@@ -2476,46 +2476,9 @@ namespace Fx.Amiya.Service
                     NewCustomerTarget = e.NewCustomerPerformanceTarget,
                     OldCustomerTarget = e.OldCustomerPerformanceTarget
                 }).ToListAsync();
-
-            //var todayPerformance = dalContentPlatFormOrderDealInfo.GetAll()
-            //   .Where(e => e.IsDeal == true && e.ContentPlatFormOrderId != null)
-            //   .Where(e => e.CreateDate >= DateTime.Now.Date && e.CreateDate < DateTime.Now.AddDays(1).Date)
-            //   .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.BelongEmpId.Value) || assistantIdList.Contains(e.ContentPlatFormOrder.BelongEmpId.Value))
-            //   .Select(e => new
-            //   {
-            //       DealPrice = e.Price,
-            //       IsOldCustomer = e.IsOldCustomer
-            //   }).ToList();
             var todayPerformance = await contentPlatFormOrderDealInfoService.GetPerformanceDetailByDateAndAssistantIdListAsync(DateTime.Now.Date, DateTime.Now.AddDays(1).Date, assistantIdList);
-            //var currentContentOrderList = dalContentPlatFormOrderDealInfo.GetAll()
-            //   .Where(e => e.IsDeal == true&& e.ContentPlatFormOrderId != null)
-            //   .Where(e => e.CreateDate >= sequentialDate.StartDate && e.CreateDate < sequentialDate.EndDate)
-            //   .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.BelongEmpId.Value) || assistantIdList.Contains(e.ContentPlatFormOrder.BelongEmpId.Value))
-            //   .Select(e => new
-            //   {
-            //       DealPrice = e.Price,
-            //       IsOldCustomer = e.IsOldCustomer
-            //   }).ToList();
             var currentContentOrderList = await contentPlatFormOrderDealInfoService.GetPerformanceDetailByDateAndAssistantIdListAsync(sequentialDate.StartDate, sequentialDate.EndDate, assistantIdList);
-            //var lastMonthContentOrderList = dalContentPlatFormOrderDealInfo.GetAll()
-            //   .Where(e => e.IsDeal == true && e.ContentPlatFormOrderId != null)
-            //   .Where(e => e.CreateDate >= sequentialDate.LastMonthStartDate && e.CreateDate < sequentialDate.LastMonthEndDate)
-            //   .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.BelongEmpId.Value) || assistantIdList.Contains(e.ContentPlatFormOrder.BelongEmpId.Value))
-            //   .Select(e => new
-            //   {
-            //       DealPrice = e.Price,
-            //       IsOldCustomer = e.IsOldCustomer
-            //   }).ToList();
             var lastMonthContentOrderList = await contentPlatFormOrderDealInfoService.GetPerformanceDetailByDateAndAssistantIdListAsync(sequentialDate.LastMonthStartDate, sequentialDate.LastMonthEndDate, assistantIdList);
-            //var lastYearContentOrderList = dalContentPlatFormOrderDealInfo.GetAll()
-            //   .Where(e => e.IsDeal == true && e.ContentPlatFormOrderId != null)
-            //   .Where(e => e.CreateDate >= sequentialDate.LastYearThisMonthStartDate && e.CreateDate < sequentialDate.LastYearThisMonthEndDate)
-            //   .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.BelongEmpId.Value) || assistantIdList.Contains(e.ContentPlatFormOrder.BelongEmpId.Value))
-            //   .Select(e => new
-            //   {
-            //       DealPrice = e.Price,
-            //       IsOldCustomer = e.IsOldCustomer
-            //   }).ToList();
             var lastYearContentOrderList = await contentPlatFormOrderDealInfoService.GetPerformanceDetailByDateAndAssistantIdListAsync(sequentialDate.LastYearThisMonthStartDate, sequentialDate.LastYearThisMonthEndDate, assistantIdList);
             AssistantPerformanceDto assistantPerformance = new AssistantPerformanceDto();
             assistantPerformance.NewCustomerPerformance = currentContentOrderList.Where(e => e.IsOldCustomer == false).Sum(e => e.Price);
@@ -2637,15 +2600,6 @@ namespace Fx.Amiya.Service
             var baseOrderPerformance = await contentPlateFormOrderService.GetOrderSendAndDealDataByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, query.IsEffectiveCustomerData, assistantIdList);
             #endregion
 
-            #region 【线索】
-            //线索
-            //AssistantNewCustomerOperationDataDetails addCarddetails = new AssistantNewCustomerOperationDataDetails();
-            //addCarddetails.Key = "AddCard";
-            //addCarddetails.Name = "线索量";
-            //addCarddetails.Value = baseBusinessPerformance.Count();
-            //newCustomerOperationDataDto.newCustomerOperationDataDetails.Add(addCarddetails);
-            #endregion
-
             #region 【分诊】
             //分诊
             AssistantNewCustomerOperationDataDetails consulationdetails = new AssistantNewCustomerOperationDataDetails();
@@ -2653,10 +2607,6 @@ namespace Fx.Amiya.Service
             consulationdetails.Name = "分诊量";
             consulationdetails.Value = baseBusinessPerformance.Where(x => x.AssignEmpId != 0 && x.AssignEmpId.HasValue).Count();
             newCustomerOperationDataDto.newCustomerOperationDataDetails.Add(consulationdetails);
-
-            //线索有效率
-            //newCustomerOperationDataDto.ClueEffictiveRate = DecimalExtension.CalculateTargetComplete(consulationdetails.Value, addCarddetails.Value);
-            //newCustomerOperationDataDto.ClueEffictiveRateHealthValueThisMonth = healthValueList.Where(e => e.Key == "ClueEffictiveRateHealthValueThisMonth").Select(e => e.Rate).FirstOrDefault();
             #endregion
 
             #region 【加v】
@@ -2715,47 +2665,6 @@ namespace Fx.Amiya.Service
             newCustomerOperationDataDto.DealRateHealthValueSum = healthValueList.Where(e => e.Key == "DealRateHealthValueSum").Select(e => e.Rate).FirstOrDefault();
             #endregion
 
-            //if (baseOrderPerformance.DealPrice.HasValue)
-            //{
-            //    //if (addCarddetails.Value != 0)
-            //    //{
-            //    //    //线索成交能效
-            //    //    newCustomerOperationDataDto.FlowClueToDealPrice = Math.Round(baseOrderPerformance.DealPrice.Value / addCarddetails.Value, 2, MidpointRounding.AwayFromZero);
-            //    //}
-            //    if (consulationdetails.Value != 0)
-            //        //分诊成交能效
-            //        newCustomerOperationDataDto.AllocationConsulationToDealPrice = Math.Round(baseOrderPerformance.DealPrice.Value / consulationdetails.Value, 2, MidpointRounding.AwayFromZero);
-            //    if (addWechatdetails.Value != 0)
-            //        //加v成交能效
-            //        newCustomerOperationDataDto.AddWeChatToDealPrice = Math.Round(baseOrderPerformance.DealPrice.Value / addWechatdetails.Value, 2, MidpointRounding.AwayFromZero);
-
-            //    if (sendOrderdetails.Value != 0)
-            //        //派单成交能效
-            //        newCustomerOperationDataDto.SendOrderToDealPrice = Math.Round(baseOrderPerformance.DealPrice.Value / sendOrderdetails.Value, 2, MidpointRounding.AwayFromZero);
-            //    if (visitdetails.Value != 0)
-            //        //上门成交能效
-            //        newCustomerOperationDataDto.VisitToDealPrice = Math.Round(baseOrderPerformance.DealPrice.Value / visitdetails.Value, 2, MidpointRounding.AwayFromZero);
-            //    //成交能效
-            //    if (dealdetails.Value != 0)
-            //    {
-            //        newCustomerOperationDataDto.DealToPrice = Math.Round(baseOrderPerformance.DealPrice.Value / dealdetails.Value, 2, MidpointRounding.AwayFromZero);
-            //    }
-            //}
-            //else
-            //{
-            //    //线索成交能效
-            //    //newCustomerOperationDataDto.FlowClueToDealPrice = 0.00M;
-            //    //分诊成交能效
-            //    newCustomerOperationDataDto.AllocationConsulationToDealPrice = 0.00M;
-            //    //加v成交能效
-            //    newCustomerOperationDataDto.AddWeChatToDealPrice = 0.00M;
-            //    //派单成交能效
-            //    newCustomerOperationDataDto.SendOrderToDealPrice = 0.00M;
-            //    //上门成交能效
-            //    newCustomerOperationDataDto.VisitToDealPrice = 0.00M;
-            //    //成交能效
-            //    newCustomerOperationDataDto.DealToPrice = 0.00M;
-            //}
 
             amiyaOperationDataDto.NewCustomerData = newCustomerOperationDataDto;
             //老客数据
@@ -3042,7 +2951,7 @@ namespace Fx.Amiya.Service
                     sendPhoneList = historySendPhoneList;
                 }
             }
-            #region 机构业绩
+            #region 机构线索
             var hospitalInfo = await hospitalInfoService.GetHospitalNameListAsync(null, null);
             var sendOrderHospitalList = await contentPlateFormOrderService.GetDealCountDataByPhoneListAsync(selectDate.StartDate, selectDate.EndDate, sendPhoneList);
             var hospitalIds = sendOrderHospitalList.Distinct().ToList();
@@ -3317,7 +3226,6 @@ namespace Fx.Amiya.Service
             AssistantTransformCycleDataDto data = new AssistantTransformCycleDataDto();
             var seqDate = DateTimeExtension.GetSequentialDateByStartAndEndDate(query.EndDate.Year, query.EndDate.Month);
             var info = await amiyaEmployeeService.GetByIdAsync(query.AssistantId.Value);
-            //var assistantList = await amiyaEmployeeService.GetByLiveAnchorBaseIdNameListAsync(new List<string> { info.LiveAnchorBaseId });
             var assistantList = await amiyaEmployeeService.GetAssistantAsync();
             var assistantIdList = assistantList.Select(e => e.Id).ToList();
             #region 分诊派单
@@ -3325,6 +3233,7 @@ namespace Fx.Amiya.Service
                 .Where(e => assistantIdList.Contains(e.Sender))
                 .Select(e => new { Phone = e.ContentPlatformOrder.Phone, EmpId = e.Sender, SendDate = e.SendDate }).ToListAsync();
             var sendPhoneList = sendInfoList.Distinct().Select(e => e.Phone).ToList();
+            //本月派单的所有小黄车数据
             var cartInfoList = _dalShoppingCartRegistration.GetAll().Where(e => e.IsReturnBackPrice == false && sendPhoneList.Contains(e.Phone))
                 .Select(e => new
                 {
@@ -3332,6 +3241,14 @@ namespace Fx.Amiya.Service
                     AddPrice = e.Price,
                     RecordDate = e.RecordDate
                 }).ToList();
+            if (query.IsCurrent)
+            {
+                cartInfoList = cartInfoList.Where(e => e.RecordDate >= seqDate.StartDate && e.RecordDate < seqDate.EndDate).ToList();
+            }
+            else
+            {
+                cartInfoList = cartInfoList.Where(e => e.RecordDate < seqDate.StartDate).ToList();
+            }
             var dataList = (from send in sendInfoList
                             join cart in cartInfoList
                             on send.Phone equals cart.Phone
@@ -3341,6 +3258,7 @@ namespace Fx.Amiya.Service
                                 AddPrice = cart.AddPrice,
                                 IntervalDays = (send.SendDate - cart.RecordDate).Days
                             }).ToList();
+
             dataList.RemoveAll(e => e.IntervalDays < 0);
             //转化周期数据
             var res1 = dataList.GroupBy(e => e.EmpId).Select(e =>
@@ -3386,6 +3304,14 @@ namespace Fx.Amiya.Service
                AddPrice = e.Price,
                RecordDate = e.RecordDate
            }).ToList();
+            if (query.IsCurrent)
+            {
+                cartInfoList2 = cartInfoList2.Where(e => e.RecordDate >= seqDate.StartDate && e.RecordDate < seqDate.EndDate).ToList();
+            }
+            else
+            {
+                cartInfoList2 = cartInfoList2.Where(e => e.RecordDate < seqDate.StartDate).ToList();
+            }
             var dataList2 = (from deal in dealInfoList
                              join cart in cartInfoList2
                              on deal.Phone equals cart.Phone
@@ -3446,7 +3372,6 @@ namespace Fx.Amiya.Service
                 EmpId = e.Key,
                 TotalDealCount = e.Select(e => e.Phone).Distinct().Count()
             }).ToList();
-            var list = assistantCurrentMonthDeal.Select(e => e.EmpId).ToList();
             //当月复购率数据
             var res3 = (from total in assistantTotalDealList
                         join current in assistantCurrentMonthDeal
@@ -4111,46 +4036,46 @@ namespace Fx.Amiya.Service
                 .Where(e => e.RecordDate >= selectDate.StartDate && e.RecordDate < selectDate.EndDate)
                 .Where(e => e.BelongChannel == (int)BelongChannel.LiveBefore)
                 .Where(e => e.BaseLiveAnchorId == info.LiveAnchorBaseId)
-                .Select(e => new { e.CreateBy, e.Phone,e.RecordDate })
+                .Select(e => new { e.CreateBy, e.Phone, e.RecordDate })
                 .ToList();
-            
+
             var phoneList = basePhoneList.Select(e => e.Phone).ToList();
-           
+
             var performanceData = await dalContentPlatFormOrderDealInfo.GetAll()
-                .Where(e=>assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder?e.ContentPlatFormOrder.SupportEmpId:e.ContentPlatFormOrder.BelongEmpId.Value))
+                .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder ? e.ContentPlatFormOrder.SupportEmpId : e.ContentPlatFormOrder.BelongEmpId.Value))
                 .Where(e => e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate)
-                .Where(e=>e.ContentPlatFormOrder.BelongChannel==(int)BelongChannel.LiveBefore)
+                .Where(e => e.ContentPlatFormOrder.BelongChannel == (int)BelongChannel.LiveBefore)
                 .Where(e => e.IsDeal == true)
                 .Where(e => phoneList.Contains(e.ContentPlatFormOrder.Phone))
                 .Select(e => new
                 {
                     Phone = e.ContentPlatFormOrder.Phone,
                     Price = e.Price,
-                    CreateDate=e.CreateDate,
-                    SendDate=e.ContentPlatFormOrder.ContentPlatformOrderSendList.FirstOrDefault(e=>e.IsMainHospital==true).SendDate
+                    CreateDate = e.CreateDate,
+                    SendDate = e.ContentPlatFormOrder.ContentPlatformOrderSendList.FirstOrDefault(e => e.IsMainHospital == true).SendDate
                 })
-                .OrderBy(e=>e.Phone)
+                .OrderBy(e => e.Phone)
                 .ToListAsync();
 
-            var sendInfo = performanceData.Select(e =>new {e.Phone,e.SendDate } ).ToList();
+            var sendInfo = performanceData.Select(e => new { e.Phone, e.SendDate }).ToList();
             var realPhoneList = (from p in basePhoneList
-                             join s in sendInfo
-                             on p.Phone equals s.Phone
-                             where p.RecordDate <= s.SendDate
-                             select p).ToList();
+                                 join s in sendInfo
+                                 on p.Phone equals s.Phone
+                                 where p.RecordDate <= s.SendDate
+                                 select p).ToList();
             var myPhoneList = basePhoneList.Where(e => e.CreateBy == query.AssistantId.Value).Select(e => e.Phone).ToList();
-            performanceData = performanceData.Where(e=> basePhoneList.Select(e=>e.Phone).Contains(e.Phone)).ToList();
+            performanceData = performanceData.Where(e => basePhoneList.Select(e => e.Phone).Contains(e.Phone)).ToList();
             BeforeLiveClueAndPerformanceDataDto beforeLiveClueAndPerformanceData = new BeforeLiveClueAndPerformanceDataDto();
             beforeLiveClueAndPerformanceData.EmployeeData = new BeforeLiveClueAndPerformanceDataItemDto();
             beforeLiveClueAndPerformanceData.EmployeeData.CustomerCount = basePhoneList.Where(e => e.CreateBy == query.AssistantId.Value).Count();
             beforeLiveClueAndPerformanceData.EmployeeData.Performance = performanceData.Where(e => myPhoneList.Contains(e.Phone)).Sum(e => e.Price);
-            beforeLiveClueAndPerformanceData.EmployeeData.CurrentDayCustomerCount= basePhoneList.Where(e => e.CreateBy == query.AssistantId.Value&&e.RecordDate.Date==DateTime.Now.Date).Count();
-            beforeLiveClueAndPerformanceData.EmployeeData.CurrentDayPerformance= performanceData.Where(e => myPhoneList.Contains(e.Phone)&&e.CreateDate.Date==DateTime.Now.Date).Sum(e => e.Price);
+            beforeLiveClueAndPerformanceData.EmployeeData.CurrentDayCustomerCount = basePhoneList.Where(e => e.CreateBy == query.AssistantId.Value && e.RecordDate.Date == DateTime.Now.Date).Count();
+            beforeLiveClueAndPerformanceData.EmployeeData.CurrentDayPerformance = performanceData.Where(e => myPhoneList.Contains(e.Phone) && e.CreateDate.Date == DateTime.Now.Date).Sum(e => e.Price);
             beforeLiveClueAndPerformanceData.DepartmentData = new BeforeLiveClueAndPerformanceDataItemDto();
             beforeLiveClueAndPerformanceData.DepartmentData.CustomerCount = basePhoneList.Count();
             beforeLiveClueAndPerformanceData.DepartmentData.Performance = performanceData.Sum(e => e.Price);
-            beforeLiveClueAndPerformanceData.DepartmentData.CurrentDayCustomerCount= basePhoneList.Where(e=>e.RecordDate.Date==DateTime.Now.Date).Count();
-            beforeLiveClueAndPerformanceData.DepartmentData.CurrentDayPerformance = performanceData.Where(e=>e.CreateDate.Date==DateTime.Now.Date).Sum(e => e.Price);
+            beforeLiveClueAndPerformanceData.DepartmentData.CurrentDayCustomerCount = basePhoneList.Where(e => e.RecordDate.Date == DateTime.Now.Date).Count();
+            beforeLiveClueAndPerformanceData.DepartmentData.CurrentDayPerformance = performanceData.Where(e => e.CreateDate.Date == DateTime.Now.Date).Sum(e => e.Price);
             return beforeLiveClueAndPerformanceData;
         }
         /// <summary>
@@ -4175,12 +4100,12 @@ namespace Fx.Amiya.Service
             {
                 basePhoneList = basePhoneList.Where(e => e.CreateBy == query.AssistantId.Value);
             }
-           
+
             var dataList = basePhoneList.ToList();
             var phoneList = dataList.Select(e => e.Phone).ToList();
             var performanceData = await dalContentPlatFormOrderDealInfo.GetAll()
                 .Where(e => e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate)
-                .Where(e => e.IsDeal == true&&e.IsOldCustomer==false)
+                .Where(e => e.IsDeal == true && e.IsOldCustomer == false)
                 .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder ? e.ContentPlatFormOrder.SupportEmpId : e.ContentPlatFormOrder.BelongEmpId.Value))
                 .Where(e => phoneList.Contains(e.ContentPlatFormOrder.Phone))
                 .Where(e => e.ContentPlatFormOrder.BelongChannel == (int)BelongChannel.LiveBefore)
@@ -4224,9 +4149,9 @@ namespace Fx.Amiya.Service
             var assistantList = await amiyaEmployeeService.GetByLiveAnchorBaseIdNameListAsync(new List<string> { info.LiveAnchorBaseId });
             var assistantIdList = assistantList.Select(e => e.Id).ToList();
             //组小黄车数据
-            var baseBusinessPerformance = await shoppingCartRegistrationService.GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, info.LiveAnchorBaseId,assistantIdList, BelongChannel.LiveBefore);
+            var baseBusinessPerformance = await shoppingCartRegistrationService.GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, info.LiveAnchorBaseId, assistantIdList, BelongChannel.LiveBefore);
             //个人小黄车数据
-            var assisatntBusinessPerformance = await shoppingCartRegistrationService.GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, null,new List<int> { query.AssistantId.Value }, BelongChannel.LiveBefore);
+            var assisatntBusinessPerformance = await shoppingCartRegistrationService.GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, null, new List<int> { query.AssistantId.Value }, BelongChannel.LiveBefore);
             #endregion
 
 
@@ -4368,7 +4293,8 @@ namespace Fx.Amiya.Service
                                 (deal.ToHospitalDate.Value - cart.RecordDate).Days
                              )).ToList();
             }
-            else {
+            else
+            {
                 var historyPhone = dealPhoneList.Where(e => !baseBusinessPerformance.Select(e => e.Phone).Contains(e));
                 var cartInfoList1 = _dalShoppingCartRegistration.GetAll().Where(e => historyPhone.Contains(e.Phone)).Select(e => new { e.Phone, e.CreateBy, e.RecordDate }).ToList();
                 dataList2 = (from deal in dealInfoList
@@ -4384,7 +4310,7 @@ namespace Fx.Amiya.Service
             var endIndex2 = DecimalExtension.CalTakeCount(dataList2.Count(), 1);
             var takeList2 = dataList2.OrderBy(e => e.Value).Skip(0).Take(endIndex2);
             //转化周期数据
-            var hospitalCycle= DecimalExtension.CalAvg(takeList2.Sum(e => e.Value), takeList2.Count());
+            var hospitalCycle = DecimalExtension.CalAvg(takeList2.Sum(e => e.Value), takeList2.Count());
             departmentDataDto.HospitalCycle = hospitalCycle;
             #endregion
 
@@ -4462,12 +4388,12 @@ namespace Fx.Amiya.Service
 
             #endregion
             #region 派单转化周期
-            var employeeEndIndex = DecimalExtension.CalTakeCount(dataList.Where(e => e.Key == query.AssistantId).Count(),1);
-            var employeeSendData= dataList.Where(e => e.Key == query.AssistantId).OrderBy(e=>e.Value).ToList().Skip(0).Take(employeeEndIndex);
-            employeeDataDto.SendCycle = DecimalExtension.CalAvg(employeeSendData.Sum(e=>e.Value), employeeSendData.Count());
+            var employeeEndIndex = DecimalExtension.CalTakeCount(dataList.Where(e => e.Key == query.AssistantId).Count(), 1);
+            var employeeSendData = dataList.Where(e => e.Key == query.AssistantId).OrderBy(e => e.Value).ToList().Skip(0).Take(employeeEndIndex);
+            employeeDataDto.SendCycle = DecimalExtension.CalAvg(employeeSendData.Sum(e => e.Value), employeeSendData.Count());
             #endregion
             #region 上门转化周期
-            var employeeEndIndex2 = DecimalExtension.CalTakeCount(dataList2.Where(e => e.Key == query.AssistantId).Count(),1);
+            var employeeEndIndex2 = DecimalExtension.CalTakeCount(dataList2.Where(e => e.Key == query.AssistantId).Count(), 1);
             var employeeToHospitalData = dataList2.Where(e => e.Key == query.AssistantId).OrderBy(e => e.Value).ToList().Skip(0).Take(employeeEndIndex2);
             employeeDataDto.HospitalCycle = DecimalExtension.CalAvg(employeeToHospitalData.Sum(e => e.Value), employeeToHospitalData.Count());
             #endregion
@@ -4487,7 +4413,7 @@ namespace Fx.Amiya.Service
             var liveBeforeAssistantList = await amiyaEmployeeService.GetLiveBeforeEmployeeNameListAsync();
             //var assistantList = await amiyaEmployeeService.GetAssistantAsync();
             var liveBeforeAssistantIdList = liveBeforeAssistantList.Select(e => e.Id).ToList();
-            var assistantList =await amiyaEmployeeService.GetAllAssistantAsync();
+            var assistantList = await amiyaEmployeeService.GetAllAssistantAsync();
             var assistantIdList = assistantList.Select(e => e.Id).ToList();
             var cartInfoList = _dalShoppingCartRegistration.GetAll()
                 .Where(e => e.IsReturnBackPrice == false && e.BelongChannel == (int)BelongChannel.LiveBefore)
@@ -4501,7 +4427,7 @@ namespace Fx.Amiya.Service
             #region 分诊派单
 
             var sendInfoList = await _dalContentPlatformOrderSend.GetAll().Where(e => e.IsMainHospital == true && e.SendDate >= seqDate.StartDate && e.SendDate < seqDate.EndDate)
-                .Where(e=>e.ContentPlatformOrder.BelongChannel==(int)BelongChannel.LiveBefore)
+                .Where(e => e.ContentPlatformOrder.BelongChannel == (int)BelongChannel.LiveBefore)
                 .Where(e => assistantIdList.Contains(e.Sender))
                 .Select(e => new { Phone = e.ContentPlatformOrder.Phone, EmpId = e.Sender, SendDate = e.SendDate }).ToListAsync();
             var sendPhoneList = sendInfoList.Distinct().Select(e => e.Phone).ToList();
@@ -4519,7 +4445,7 @@ namespace Fx.Amiya.Service
             //转化周期数据
             var res1 = dataList.GroupBy(e => e.EmpId).Select(e =>
             {
-                var endIndex = DecimalExtension.CalTakeCount(e.Count(),1);
+                var endIndex = DecimalExtension.CalTakeCount(e.Count(), 1);
                 var resData = e.OrderBy(e => e.IntervalDays).Skip(0).Take(endIndex);
                 return new KeyValuePair<string, int>(
                 liveBeforeAssistantList.Where(a => a.Id == e.Key).FirstOrDefault()?.Name ?? "其它",
@@ -4532,7 +4458,7 @@ namespace Fx.Amiya.Service
 
             #region 分诊上门
             var dealInfoList = await dalContentPlatFormOrderDealInfo.GetAll().Where(e => e.CreateDate >= seqDate.StartDate && e.CreateDate < seqDate.EndDate && e.IsOldCustomer == false && e.IsToHospital == true && e.ToHospitalDate.HasValue)
-                    .Where(e=>e.ContentPlatFormOrder.BelongChannel==(int)BelongChannel.LiveBefore)
+                    .Where(e => e.ContentPlatFormOrder.BelongChannel == (int)BelongChannel.LiveBefore)
                     .Where(e => (e.ContentPlatFormOrder.IsSupportOrder ? assistantIdList.Contains(e.ContentPlatFormOrder.SupportEmpId) : assistantIdList.Contains(e.ContentPlatFormOrder.BelongEmpId.Value)))
                     .Select(e => new
                     {
@@ -4590,12 +4516,12 @@ namespace Fx.Amiya.Service
                     e.Price
                 }).ToList();
             var beforeLiveData = await _dalShoppingCartRegistration.GetAll()
-                .Where(e => e.BaseLiveAnchorId==info.LiveAnchorBaseId && e.BelongChannel == (int)BelongChannel.LiveBefore)
-                .Where(e=> beforeLiveNameList.Select(e=>e.Id).Contains(e.CreateBy))
+                .Where(e => e.BaseLiveAnchorId == info.LiveAnchorBaseId && e.BelongChannel == (int)BelongChannel.LiveBefore)
+                .Where(e => beforeLiveNameList.Select(e => e.Id).Contains(e.CreateBy))
                 .Where(e => performance.Select(e => e.Phone).Contains(e.Phone))
                 .Select(e => new { e.CreateBy, e.Phone }).ToListAsync();
             var beforePhone = beforeLiveData.Select(e => e.Phone).ToList();
-            var totalPerformance = performance.Where(e=>beforePhone.Contains(e.Phone)).Sum(e => e.Price);
+            var totalPerformance = performance.Where(e => beforePhone.Contains(e.Phone)).Sum(e => e.Price);
             var list = beforeLiveData.GroupBy(e => e.CreateBy).Select(e =>
             {
                 var amount = performance.Where(x => e.Select(e => e.Phone).Contains(x.Phone)).Sum(e => e.Price);
@@ -4613,13 +4539,13 @@ namespace Fx.Amiya.Service
         /// <returns></returns>
         public async Task<BeforeLiveTargetCompleteRateDto> GetBeforeLiveTargetCompleteRateAsync(QueryBeforeLiveDataDto query)
         {
-            var employeeList =await amiyaEmployeeService.GetLiveBeforeEmployeeNameListAsync();
+            var employeeList = await amiyaEmployeeService.GetLiveBeforeEmployeeNameListAsync();
             BeforeLiveTargetCompleteRateDto data = new BeforeLiveTargetCompleteRateDto();
             var selectDate = DateTimeExtension.GetStartDateEndDate(query.StartDate, query.EndDate);
             var info = await amiyaEmployeeService.GetByIdAsync(query.AssistantId.Value);
             var assistantList = await amiyaEmployeeService.GetByLiveAnchorBaseIdNameListAsync(new List<string> { info.LiveAnchorBaseId });
             var assistantIdList = assistantList.Select(e => e.Id).ToList();
-            var baseData = await _dalShoppingCartRegistration.GetAll().Where(e => e.RecordDate >= selectDate.StartDate && e.RecordDate < selectDate.EndDate && e.BaseLiveAnchorId == info.LiveAnchorBaseId &&e.IsReturnBackPrice==false && e.BelongChannel == (int)BelongChannel.LiveBefore)
+            var baseData = await _dalShoppingCartRegistration.GetAll().Where(e => e.RecordDate >= selectDate.StartDate && e.RecordDate < selectDate.EndDate && e.BaseLiveAnchorId == info.LiveAnchorBaseId && e.IsReturnBackPrice == false && e.BelongChannel == (int)BelongChannel.LiveBefore)
                 .Select(e => e.CreateBy).ToListAsync();
             var clueData = baseData.GroupBy(e => e).Select(e => new { Key = e.Key, Count = e.Count() });
             var targetListData = dalLiveAnchorMonthlyTargetBeforeLiving
@@ -4649,7 +4575,7 @@ namespace Fx.Amiya.Service
                 var targetComplete = DecimalExtension.CalculateTargetComplete(e.Count, target).Value;
                 return new KeyValuePair<string, decimal>(name, targetComplete);
             }).ToList();
-            data.TargetComplete.RemoveAll(e=>e.Key=="其他");
+            data.TargetComplete.RemoveAll(e => e.Key == "其他");
             return data;
         }
         /// <summary>
@@ -4664,7 +4590,7 @@ namespace Fx.Amiya.Service
             var info = await amiyaEmployeeService.GetByIdAsync(query.AssistantId.Value);
             var assistantList = await amiyaEmployeeService.GetByLiveAnchorBaseIdNameListAsync(new List<string> { info.LiveAnchorBaseId });
             var assistantIdList = assistantList.Select(e => e.Id).ToList();
-            var baseData = await _dalShoppingCartRegistration.GetAll().Where(e => e.RecordDate >= selectDate.StartDate && e.RecordDate < selectDate.EndDate && e.BaseLiveAnchorId == info.LiveAnchorBaseId && e.BelongChannel == (int)BelongChannel.LiveBefore&&e.IsReturnBackPrice==false)
+            var baseData = await _dalShoppingCartRegistration.GetAll().Where(e => e.RecordDate >= selectDate.StartDate && e.RecordDate < selectDate.EndDate && e.BaseLiveAnchorId == info.LiveAnchorBaseId && e.BelongChannel == (int)BelongChannel.LiveBefore && e.IsReturnBackPrice == false)
                 .Select(e => new
                 {
                     ContentPlatformName = e.Contentplatform.ContentPlatformName,
@@ -4742,7 +4668,7 @@ namespace Fx.Amiya.Service
             var performanceList = dalContentPlatFormOrderDealInfo.GetAll()
                 .Where(e => e.ContentPlatFormOrder.BelongChannel == (int)BelongChannel.LiveBefore)
                 .Where(e => e.IsDeal == true && phoneList.Contains(e.ContentPlatFormOrder.Phone) && e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate)
-                .Where(e=>assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder?e.ContentPlatFormOrder.SupportEmpId:e.ContentPlatFormOrder.BelongEmpId.Value))
+                .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder ? e.ContentPlatFormOrder.SupportEmpId : e.ContentPlatFormOrder.BelongEmpId.Value))
                    .Select(e => new
                    {
                        LiveAnchorName = e.ContentPlatFormOrder.LiveAnchor.Name,
@@ -4787,7 +4713,8 @@ namespace Fx.Amiya.Service
         }
 
 
-        public async Task<List<BeforeLiveLiveanchorIPDataDto>> GetBeforeLiveLiveanchorIPDataAsync(QueryBeforeLiveDataDto query) {
+        public async Task<List<BeforeLiveLiveanchorIPDataDto>> GetBeforeLiveLiveanchorIPDataAsync(QueryBeforeLiveDataDto query)
+        {
             List<BeforeLiveLiveanchorIPDataDto> dataList = new List<BeforeLiveLiveanchorIPDataDto>();
             var targetListData = dalLiveAnchorMonthlyTargetBeforeLiving
                 .GetAll()
@@ -4813,10 +4740,11 @@ namespace Fx.Amiya.Service
             var info = await amiyaEmployeeService.GetByIdAsync(query.AssistantId.Value);
             var assistantList = await amiyaEmployeeService.GetByLiveAnchorBaseIdNameListAsync(new List<string> { info.LiveAnchorBaseId });
             var assistantIdList = assistantList.Select(e => e.Id).ToList();
-            var currentList =await GetBeforeLiveLiveanchorIPDataItemsAsync(selectDate.StartDate,selectDate.EndDate,info.LiveAnchorBaseId);
-            var lastList=await GetBeforeLiveLiveanchorIPDataItemsAsync(selectDate.LastMonthStartDate, selectDate.LastMonthEndDate, info.LiveAnchorBaseId);
-            var historyList=await GetBeforeLiveLiveanchorIPDataItemsAsync(selectDate.LastYearThisMonthStartDate, selectDate.LastYearThisMonthEndDate, info.LiveAnchorBaseId);
-            foreach (var item in currentList) {
+            var currentList = await GetBeforeLiveLiveanchorIPDataItemsAsync(selectDate.StartDate, selectDate.EndDate, info.LiveAnchorBaseId);
+            var lastList = await GetBeforeLiveLiveanchorIPDataItemsAsync(selectDate.LastMonthStartDate, selectDate.LastMonthEndDate, info.LiveAnchorBaseId);
+            var historyList = await GetBeforeLiveLiveanchorIPDataItemsAsync(selectDate.LastYearThisMonthStartDate, selectDate.LastYearThisMonthEndDate, info.LiveAnchorBaseId);
+            foreach (var item in currentList)
+            {
                 BeforeLiveLiveanchorIPDataDto data = new BeforeLiveLiveanchorIPDataDto();
                 data.LiveanchorIP = item.Name;
                 data.ClueCount = item.ClueCount;
@@ -4824,27 +4752,28 @@ namespace Fx.Amiya.Service
                 var historyCount = historyList.Where(e => e.LiveanchorId == item.LiveanchorId).FirstOrDefault()?.ClueCount ?? 0;
                 var target = realTargetData.Where(e => e.Id == item.LiveanchorId).FirstOrDefault()?.Target ?? 0;
                 data.YearOnYear = DecimalExtension.CalculateTargetComplete(data.ClueCount, lastCount).Value;
-                data.Chain = DecimalExtension.CalculateTargetComplete(data.ClueCount,historyCount).Value;
-                data.TargetComplete= DecimalExtension.CalculateTargetComplete(data.ClueCount, target).Value;
+                data.Chain = DecimalExtension.CalculateTargetComplete(data.ClueCount, historyCount).Value;
+                data.TargetComplete = DecimalExtension.CalculateTargetComplete(data.ClueCount, target).Value;
                 dataList.Add(data);
             }
             return dataList;
         }
         public async Task<List<BeforeLiveLiveanchorIPDataItemDto>> GetBeforeLiveLiveanchorIPDataItemsAsync(DateTime startDate, DateTime endDate, string baseId)
         {
-            var basePhoneList =await _dalShoppingCartRegistration.GetAll()
+            var basePhoneList = await _dalShoppingCartRegistration.GetAll()
                 .Where(e => e.IsReturnBackPrice == false)
                 .Where(e => e.RecordDate >= startDate && e.RecordDate < endDate)
                 .Where(e => e.BelongChannel == (int)BelongChannel.LiveBefore)
-                .Where(e => e.BaseLiveAnchorId==baseId)
-                .Select(e => new  {Phone= e.Phone,LiveanchorId= e.LiveAnchorId,Name=e.LiveAnchor.Name })
+                .Where(e => e.BaseLiveAnchorId == baseId)
+                .Select(e => new { Phone = e.Phone, LiveanchorId = e.LiveAnchorId, Name = e.LiveAnchor.Name })
                 .ToListAsync();
-           
-            return basePhoneList.GroupBy(e=>e.LiveanchorId).Select(e=>new BeforeLiveLiveanchorIPDataItemDto { 
-                LiveanchorId=e.Key,
-                ClueCount=e.Count(),
-                Name=e.FirstOrDefault()?.Name??"其他"
-            }).ToList();  
+
+            return basePhoneList.GroupBy(e => e.LiveanchorId).Select(e => new BeforeLiveLiveanchorIPDataItemDto
+            {
+                LiveanchorId = e.Key,
+                ClueCount = e.Count(),
+                Name = e.FirstOrDefault()?.Name ?? "其他"
+            }).ToList();
         }
 
         #endregion
@@ -4911,7 +4840,7 @@ namespace Fx.Amiya.Service
             return list;
         }
 
-       
+
 
 
         #endregion

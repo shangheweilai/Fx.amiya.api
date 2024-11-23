@@ -24,6 +24,12 @@ namespace Fx.Amiya.IService
         Task<List<LiveAnchorBaseInfoDto>> GetAllLiveAnchorAsync(bool? isSelfLiveAnchor);
 
         /// <summary>
+        /// 获取名索医生列表
+        /// </summary>
+        /// <returns></returns>
+        Task<List<LiveAnchorBaseInfoDto>> GetMingSuoLiveAnchorAsync();
+
+        /// <summary>
         /// 获取主播基础信息列表
         /// </summary>
         /// <param name="name"></param>

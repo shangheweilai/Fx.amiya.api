@@ -61,6 +61,25 @@ namespace Fx.Amiya.Service
             return resultList;
         }
 
+        /// <summary>
+        /// 获取名索医生列表
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<LiveAnchorBaseInfoDto>> GetMingSuoLiveAnchorAsync()
+        {
+            var liveAnchorBaseInfos = from d in dalLiveAnchorBaseInfo.GetAll()
+                                      where (d.LiveAnchorName=="李芬"|| d.LiveAnchorName == "马瑶" || d.LiveAnchorName == "林合晟" )
+                                      select new LiveAnchorBaseInfoDto
+                                      {
+                                          Id = d.Id,
+                                          LiveAnchorName = d.LiveAnchorName,
+                                          Valid = d.Valid,
+                                          IsSelfLivevAnchor = d.IsSelfLivevAnchor,
+                                      };
+            var resultList = await liveAnchorBaseInfos.ToListAsync();
+            return resultList;
+        }
+
 
         public async Task<FxPageInfo<LiveAnchorBaseInfoDto>> GetListAsync(string name, bool valid, int pageNum, int pageSize)
         {

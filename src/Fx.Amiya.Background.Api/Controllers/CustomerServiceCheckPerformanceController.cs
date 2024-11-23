@@ -296,6 +296,25 @@ namespace Fx.Amiya.Background.Api.Controllers
                 return ResultData.Fail(ex.Message);
             }
         }
+        /// <summary>
+        /// 批量作废助理提取业绩
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        [HttpPut("deleteList")]
+        [FxInternalAuthorize]
+        public async Task<ResultData> DeleteAsync(List<string> ids)
+        {
+            try
+            {
+                await customerServiceCheckPerformanceService.DeleteListAsync(ids);
+                return ResultData.Success();
+            }
+            catch (Exception ex)
+            {
+                return ResultData.Fail(ex.Message);
+            }
+        }
 
     }
 }

@@ -75,7 +75,7 @@ namespace Fx.Amiya.Service
         #region  运营主看板
         #region 【业绩】
         /// <summary>
-        /// 获取时间进度和总业绩
+        /// 获取总业绩
         /// </summary>
         /// <returns></returns>
         public async Task<OperationTotalAchievementDataDto> GetTotalAchievementAndDateScheduleAsync(QueryOperationDataDto query)
@@ -2981,7 +2981,7 @@ namespace Fx.Amiya.Service
         {
             AssiatantTargetCompleteAndPerformanceRateDto result = new AssiatantTargetCompleteAndPerformanceRateDto();
             var selectDate = DateTimeExtension.GetSequentialDateByStartAndEndDate(query.EndDate.Year, query.EndDate.Month);
-            var assistantIdAndNameList = (await amiyaEmployeeService.GetAllAssistantAsync()).ToList(); ;
+            var assistantIdAndNameList = (await amiyaEmployeeService.GetAllAssistantAsync()).ToList(); 
             var assistantTarget = await dalEmployeePerformanceTarget.GetAll()
                 .Where(e => e.Valid == true)
                 .Where(e => e.BelongYear == selectDate.EndDate.Year && e.BelongMonth == selectDate.EndDate.Month)
@@ -3405,7 +3405,7 @@ namespace Fx.Amiya.Service
             var nameList = await liveAnchorBaseInfoService.GetAllLiveAnchorAsync(true);
             if (string.IsNullOrEmpty(query.LiveAnchorBaseId))
             {
-                liveanchorIds = nameList.Where(e => e.LiveAnchorName.Contains("刀刀") || e.LiveAnchorName.Contains("吉娜") || e.LiveAnchorName.Contains("璐璐")).Select(e => e.Id).ToList();
+                liveanchorIds = nameList.Where(e => e.LiveAnchorName.Contains("刀刀") || e.LiveAnchorName.Contains("吉娜")).Select(e => e.Id).ToList();
             }
             else
             {

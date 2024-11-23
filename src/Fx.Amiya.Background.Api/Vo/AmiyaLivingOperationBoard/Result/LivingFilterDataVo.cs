@@ -20,6 +20,7 @@ namespace Fx.Amiya.Background.Api.Vo.AmiyaLivingOperationBoard.Result
     }
     public class LivingFilterDataItemVo
     {
+       
         /// <summary>
         /// 加v率
         /// </summary>

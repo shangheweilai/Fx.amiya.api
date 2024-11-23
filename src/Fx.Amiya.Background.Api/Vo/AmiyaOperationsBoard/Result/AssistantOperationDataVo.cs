@@ -28,23 +28,11 @@ namespace Fx.Amiya.Background.Api.Vo.AmiyaOperationsBoard.Result
         /// <summary>
         /// 线索有效率
         /// </summary>
-        //public decimal? ClueEffictiveRate { get; set; }
+        public decimal? ClueEffectiveRate { get; set; }
         /// <summary>
-        /// 线索有效率健康值（当月）
+        /// 线索有效率健康值
         /// </summary>
-        //public decimal? ClueEffictiveRateHealthValueThisMonth { get; set; }
-        /// <summary>
-        /// 退卡率
-        /// </summary>
-        public decimal? RefundCardRate { get; set; }
-        /// <summary>
-        /// 退卡率健康值(累计)
-        /// </summary>
-        public decimal RefundCardRateHealthValueSum { get; set; }
-        /// <summary>
-        /// 退卡率健康值(当月)
-        /// </summary>
-        public decimal RefundCardRateHealthValueThisMonth { get; set; }
+        public decimal ClueEffectiveRateHealthValueThisMonth { get; set; }
         /// <summary>
         /// 加v率
         /// </summary>
@@ -93,40 +81,16 @@ namespace Fx.Amiya.Background.Api.Vo.AmiyaOperationsBoard.Result
         /// 成交率健康值(当月)
         /// </summary>
         public decimal DealRateHealthValueThisMonth { get; set; }
-        ///// <summary>
-        ///// 下卡成交能效（元）
-        ///// </summary>
-        ////public decimal? FlowClueToDealPrice { get; set; }
-        ///// <summary>
-        ///// 分诊成交能效（元）
-        ///// </summary>
-        //public decimal? AllocationConsulationToDealPrice { get; set; }
 
         /// <summary>
         /// 分诊成交转化率
         /// </summary>
         public decimal? AllocationConsulationToDealRate { get; set; }
 
-        ///// <summary>
-        ///// 加v成交能效（元）
-        ///// </summary>
-        //public decimal? AddWeChatToDealPrice { get; set; }
         /// <summary>
         /// 派单成交转化率
         /// </summary>
         public decimal? SendOrderToDealRate { get; set; }
-        /// <summary>
-        ///// 派单成交能效（元）
-        ///// </summary>
-        //public decimal? SendOrderToDealPrice { get; set; }
-        ///// <summary>
-        ///// 上门成交能效（元）
-        ///// </summary>
-        //public decimal? VisitToDealPrice { get; set; }
-        ///// <summary>
-        ///// 成交能效（元）
-        ///// </summary>
-        //public decimal? DealToPrice { get; set; }
 
         /// <summary>
         /// 漏斗图详情数据

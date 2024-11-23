@@ -338,6 +338,8 @@ namespace Fx.Amiya.IService
         /// <returns></returns>
         Task<List<ShoppingCartRegistrationDto>> GetAdminCustomerShopCartRegisterPerformanceByAssistantIdListAsync(DateTime startDate, DateTime endDate, List<int> assistantIds,BelongChannel? belongChannel=null);
         Task<List<ShoppingCartRegistrationDto>> GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAsync(DateTime startDate, DateTime endDate, string baseId, List<int> assistantIds, BelongChannel? belongChannel = null);
+
+        Task<List<ShoppingCartRegistrationDto>> GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAndBaseIdListAsync(DateTime startDate, DateTime endDate, List<string> baseIds, List<int> assistantIds, BelongChannel? belongChannel = null);
         #endregion
     }
 }

@@ -157,14 +157,14 @@ namespace Fx.Amiya.Service
                         {
 
                             x.HasUsedTime = "<span style=color:gray>已过期</span>";
-                            //验证是否需要修改为已过期
-                            if (x.Valid != false)
-                            {
-                                var updateInfo = await dalHospitalInfo.GetAll().SingleOrDefaultAsync(e => e.Id == x.Id);
-                                updateInfo.Valid = false;
-                                await dalHospitalInfo.UpdateAsync(updateInfo, true);
-                                x.Valid = false;
-                            }
+                            ////验证是否需要修改为已过期
+                            //if (x.Valid != false)
+                            //{
+                            //    var updateInfo = await dalHospitalInfo.GetAll().SingleOrDefaultAsync(e => e.Id == x.Id);
+                            //    updateInfo.Valid = false;
+                            //    await dalHospitalInfo.UpdateAsync(updateInfo, true);
+                            //    x.Valid = false;
+                            //}
                         }
                     }
 

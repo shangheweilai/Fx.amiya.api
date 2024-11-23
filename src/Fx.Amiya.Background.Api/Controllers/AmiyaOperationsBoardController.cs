@@ -35,7 +35,6 @@ namespace Fx.Amiya.Background.Api.Controllers
             this.liveAnchorMonthlyTargetLivingService = liveAnchorMonthlyTargetLivingService;
             this.liveAnchorBaseInfoService = liveAnchorBaseInfoService;
         }
-        #region  业绩
         /// <summary>
         /// 根据结束时间获取时间进度
         /// </summary>
@@ -49,6 +48,8 @@ namespace Fx.Amiya.Background.Api.Controllers
             result = date.Value;
             return ResultData<decimal>.Success().AddData("data", result);
         }
+        #region  业绩
+
 
         /// <summary>
         /// 根据条件获取业绩数据
@@ -987,9 +988,9 @@ namespace Fx.Amiya.Background.Api.Controllers
             var performance = await amiyaOperationsBoardService.GetAssistantPerformanceFilterDataAsync(queryDto);
 
             AssistantNewCustomerOperationDataVo newCustomerOperationDataVo = new AssistantNewCustomerOperationDataVo();
-            newCustomerOperationDataVo.RefundCardRate = performance.NewCustomerData.RefundCardRate.HasValue ? performance.NewCustomerData.RefundCardRate.Value : 0.00M;
-            newCustomerOperationDataVo.RefundCardRateHealthValueSum = performance.NewCustomerData.RefundCardRateHealthValueSum;
-            newCustomerOperationDataVo.RefundCardRateHealthValueThisMonth = performance.NewCustomerData.RefundCardRateHealthValueThisMonth;
+            //newCustomerOperationDataVo.RefundCardRate = performance.NewCustomerData.RefundCardRate.HasValue ? performance.NewCustomerData.RefundCardRate.Value : 0.00M;
+            //newCustomerOperationDataVo.RefundCardRateHealthValueSum = performance.NewCustomerData.RefundCardRateHealthValueSum;
+            //newCustomerOperationDataVo.RefundCardRateHealthValueThisMonth = performance.NewCustomerData.RefundCardRateHealthValueThisMonth;
             newCustomerOperationDataVo.AddWeChatRate = performance.NewCustomerData.AddWeChatRate.HasValue ? performance.NewCustomerData.AddWeChatRate.Value : 0.00M;
             newCustomerOperationDataVo.AddWeChatRateHealthValueSum = performance.NewCustomerData.AddWeChatRateHealthValueSum;
             newCustomerOperationDataVo.AddWeChatRateHealthValueThisMonth = performance.NewCustomerData.AddWeChatRateHealthValueThisMonth;
@@ -1893,6 +1894,7 @@ namespace Fx.Amiya.Background.Api.Controllers
         }
 
         #endregion
+
 
         #region【历史版本】
 

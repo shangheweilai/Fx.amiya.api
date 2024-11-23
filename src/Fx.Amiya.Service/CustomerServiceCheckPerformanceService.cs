@@ -281,7 +281,31 @@ namespace Fx.Amiya.Service
                 throw new Exception(er.Message.ToString());
             }
         }
+        /// <summary>
+        /// 批量作废助理提取业绩
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        public async Task DeleteListAsync(List<string> ids)
+        {
+            try
+            {
+                foreach (var id in ids)
+                {
+                    var result = await dalCustomerServiceCheckPerformance.GetAll().SingleOrDefaultAsync(e => e.Id == id && e.Valid == true);
+                    if (result == null)
+                        throw new Exception("未找到助理提取业绩信息");
+                    result.Valid = false;
+                    result.DeleteDate = DateTime.Now;
+                    await dalCustomerServiceCheckPerformance.UpdateAsync(result, true);
+                }
 
+            }
+            catch (Exception er)
+            {
+                throw new Exception(er.Message.ToString());
+            }
+        }
 
         /// <summary>
         /// 生成薪资单编号

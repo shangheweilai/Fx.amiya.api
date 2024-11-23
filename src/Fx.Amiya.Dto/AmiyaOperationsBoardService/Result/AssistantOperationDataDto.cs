@@ -26,14 +26,14 @@ namespace Fx.Amiya.Dto.AmiyaOperationsBoardService.Result
     /// </summary>
     public class AssistantNewCustomerOperationDataDto
     {
-        ///// <summary>
-        ///// 线索有效率
-        ///// </summary>
-        //public decimal? ClueEffictiveRate { get; set; }
-        ///// <summary>
-        ///// 线索有效率健康值（当月）
-        ///// </summary>
-        //public decimal? ClueEffictiveRateHealthValueThisMonth { get; set; }
+        /// <summary>
+        /// 线索有效率
+        /// </summary>
+        public decimal? ClueEffectiveRate { get; set; }
+        /// <summary>
+        /// 线索有效率健康值
+        /// </summary>
+        public decimal ClueEffectiveRateHealthValueThisMonth { get; set; }
         /// <summary>
         /// 退卡率
         /// </summary>

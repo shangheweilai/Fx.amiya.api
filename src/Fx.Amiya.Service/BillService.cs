@@ -914,6 +914,7 @@ namespace Fx.Amiya.Service
 
             FxPageInfo<RecommandDocumentSettleDto> fxPageInfo = new FxPageInfo<RecommandDocumentSettleDto>();
             List<RecommandDocumentSettleDto> recommandDocumentSettleDtos = new List<RecommandDocumentSettleDto>();
+            //string ids = "'";
             foreach (var x in record.List)
             {
                 if (x.HospitalId != 0)
@@ -962,6 +963,7 @@ namespace Fx.Amiya.Service
                         x.DealDate = tmallOrder.WriteOffDate;
                         break;
                 }
+                //ids += x.DealInfoId + "','";
             }
             fxPageInfo.List = record.List;
             fxPageInfo.TotalCount = record.TotalCount;

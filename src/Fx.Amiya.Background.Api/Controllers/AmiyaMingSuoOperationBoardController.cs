@@ -56,6 +56,12 @@ namespace Fx.Amiya.Background.Api.Controllers
             queryOperationDataVo.keyWord = query.keyWord;
             var data = await amiyaMingSuoOperationBoardService.GetTotalAchievementAndDateScheduleAsync(queryOperationDataVo);
 
+            result.TotalClues = data.TotalClues;
+            result.TodayTotalClues = data.TodayTotalClues;
+            result.TotalCluesCompleteRate = data.TotalCluesCompleteRate;
+            result.TotalCluesYearOnYear = data.TotalCluesYearOnYear;
+            result.TotalCluesChainRatio = data.TotalCluesChainRatio;
+
             result.NewCustomerPerformance = data.NewCustomerPerformance;
             result.NewCustomerPerformanceCompleteRate = data.NewCustomerPerformanceCompleteRate;
             result.NewCustomerPerformanceYearOnYear = data.NewCustomerPerformanceYearOnYear;
@@ -79,6 +85,13 @@ namespace Fx.Amiya.Background.Api.Controllers
                 date = x.date,
                 Performance = x.Performance
             }).ToList();
+
+            result.TotalCluesBrokenLineList = data.TotalCluesBrokenLineList.Select(x => new PerformanceBrokenLineListInfoVo
+            {
+                date = x.date,
+                Performance = x.Performance
+            }).ToList();
+
 
             return ResultData<OperationMingSuoAchievementDataVo>.Success().AddData("data", result);
         }

@@ -105,6 +105,11 @@ namespace Fx.Amiya.DbModels.Model
         /// 客户微信号
         /// </summary>
         public string CustomerWechatNo { get; set; }
+
+        /// <summary>
+        /// 是否重复下单
+        /// </summary>
+        public bool IsRepeateCreateOrder { get; set; }
         /// <summary>
         /// 词条来源
         /// </summary>

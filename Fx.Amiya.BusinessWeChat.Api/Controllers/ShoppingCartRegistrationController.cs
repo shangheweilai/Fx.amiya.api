@@ -206,6 +206,7 @@ namespace Fx.Amiya.BusinessWechat.Api.Controllers
                 addDto.IsRiBuLuoLiving = addVo.IsRiBuLuoLiving;
                 addDto.CustomerWechatNo = addVo.CustomerWechatNo;
                 addDto.FromTitle = addVo.FromTitle;
+                addDto.IsRepeateCreateOrder = addVo.IsRepeateCreateOrder;
                 var contentPlatFormOrder = await contentPlateFormOrderService.GetOrderListByPhoneAsync(addVo.Phone);
                 var isSendOrder = contentPlatFormOrder.Where(x => x.OrderStatus != (int)ContentPlateFormOrderStatus.HaveOrder).Count();
                 if (contentPlatFormOrder.Count > 0)

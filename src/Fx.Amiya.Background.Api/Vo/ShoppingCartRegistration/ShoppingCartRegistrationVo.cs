@@ -260,6 +260,10 @@ namespace Fx.Amiya.Background.Api.Vo.ShoppingCartRegistration
         /// 词条来源
         /// </summary>
         public string FromTitle { get; set; }
+        /// <summary>
+        /// 是否重复下单
+        /// </summary>
+        public bool IsRepeateCreateOrder { get; set; }
 
     }
 }

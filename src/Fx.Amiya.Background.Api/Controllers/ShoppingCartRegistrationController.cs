@@ -155,7 +155,8 @@ namespace Fx.Amiya.Background.Api.Controllers
                                                    ActiveEmployeeId = d.ActiveEmployeeId,
                                                    ActiveEmployeeName = d.ActiveEmployeeName,
                                                    CustomerWechatNo = d.CustomerWechatNo,
-                                                   FromTitle = d.FromTitle
+                                                   FromTitle = d.FromTitle,
+                                                   IsRepeateCreateOrder = d.IsRepeateCreateOrder
                                                };
 
                 FxPageInfo<ShoppingCartRegistrationVo> shoppingCartRegistrationPageInfo = new FxPageInfo<ShoppingCartRegistrationVo>();
@@ -228,6 +229,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 addDto.IsRiBuLuoLiving = addVo.IsRiBuLuoLiving;
                 addDto.CustomerWechatNo = addVo.CustomerWechatNo;
                 addDto.FromTitle = addVo.FromTitle;
+                addDto.IsRepeateCreateOrder = addVo.IsRepeateCreateOrder;
                 var contentPlatFormOrder = await contentPlateFormOrderService.GetOrderListByPhoneAsync(addVo.Phone);
                 var isSendOrder = contentPlatFormOrder.Where(x => x.OrderStatus != (int)ContentPlateFormOrderStatus.HaveOrder).Count();
                 if (contentPlatFormOrder.Count > 0)
@@ -309,6 +311,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 shoppingCartRegistrationVo.ActiveEmployeeId = shoppingCartRegistration.ActiveEmployeeId;
                 shoppingCartRegistrationVo.FromTitle = shoppingCartRegistration.FromTitle;
                 shoppingCartRegistrationVo.CustomerWechatNo = shoppingCartRegistration.CustomerWechatNo;
+                shoppingCartRegistrationVo.IsRepeateCreateOrder = shoppingCartRegistration.IsRepeateCreateOrder;
                 return ResultData<ShoppingCartRegistrationVo>.Success().AddData("shoppingCartRegistrationInfo", shoppingCartRegistrationVo);
             }
             catch (Exception ex)
@@ -477,6 +480,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 updateDto.AddWechatPicture = updateVo.AddWechatPicture;
                 updateDto.IsRiBuLuoLiving = updateVo.IsRiBuLuoLiving;
                 updateDto.IsHistoryCustomerActive = updateVo.IsHistoryCustomerActive;
+                updateDto.IsRepeateCreateOrder = updateVo.IsRepeateCreateOrder;
                 if (updateDto.IsHistoryCustomerActive == false)
                 {
 
@@ -724,7 +728,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             var liveanchorList = await liveAnchorService.GetValidAsync();
             var contentPlatformList = await contentPlatformService.GetValidListAsync();
             var liveWechatNoList = await liveAnchorWeChatInfoService.GetValidAsync();
-            
+
             var getCustomerTypeList = shoppingCartRegistrationService.GetShoppingCartGetCustomerTypeText();
             var customerTypeList = shoppingCartRegistrationService.GetCustomerTypeList();
             var importantList = shoppingCartRegistrationService.GetEmergencyLevelList();
@@ -764,7 +768,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                         {
                             addDto.CustomerNickName = worksheet.Cells[x, 2].Value.ToString();
                         }
-                       
+
                         if (worksheet.Cells[x, 3].Value != null)
                         {
                             addDto.Phone = worksheet.Cells[x, 3].Value.ToString();
@@ -940,7 +944,8 @@ namespace Fx.Amiya.Background.Api.Controllers
                             addDto.FromTitle = worksheet.Cells[x, 16].Value.ToString();
                         }
 
-                        if (worksheet.Cells[x, 17].Value != null) {
+                        if (worksheet.Cells[x, 17].Value != null)
+                        {
                             var assignName = worksheet.Cells[x, 17].Value.ToString();
                             var assignId = employeeList.Where(e => e.Name == assignName).FirstOrDefault()?.Id ?? null;
                             if (assignId == null)
@@ -951,9 +956,10 @@ namespace Fx.Amiya.Background.Api.Controllers
                         if (worksheet.Cells[x, 18].Value != null)
                         {
                             var isAddWechat = worksheet.Cells[x, 18].Value.ToString();
-                            switch (isAddWechat) {
-                                case "是": 
-                                    addDto.IsAddWeChat= true;
+                            switch (isAddWechat)
+                            {
+                                case "是":
+                                    addDto.IsAddWeChat = true;
                                     break;
                                 case "否":
                                     addDto.IsAddWeChat = false;

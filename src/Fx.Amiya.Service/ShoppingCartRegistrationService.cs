@@ -160,7 +160,8 @@ namespace Fx.Amiya.Service
                                                    IsHistoryCustomerActive = d.IsHistoryCustomerActive,
                                                    ActiveEmployeeId = d.ActiveEmployeeId,
                                                    CustomerWechatNo = d.CustomerWechatNo,
-                                                   FromTitle = d.FromTitle
+                                                   FromTitle = d.FromTitle,
+                                                   IsRepeateCreateOrder = d.IsRepeateCreateOrder,
                                                };
                 var employee = await dalAmiyaEmployee.GetAll().Include(e => e.AmiyaPositionInfo).SingleOrDefaultAsync(e => e.Id == employeeId);
                 if (!employee.AmiyaPositionInfo.IsDirector)
@@ -285,6 +286,7 @@ namespace Fx.Amiya.Service
                 shoppingCartRegistration.IsHistoryCustomerActive = false;
                 shoppingCartRegistration.CustomerWechatNo = addDto.CustomerWechatNo;
                 shoppingCartRegistration.FromTitle = addDto.FromTitle;
+                shoppingCartRegistration.IsRepeateCreateOrder = addDto.IsRepeateCreateOrder;
                 var baseLiveAnchorId = await _liveAnchorService.GetByIdAsync(addDto.LiveAnchorId);
                 if (!string.IsNullOrEmpty(baseLiveAnchorId.LiveAnchorBaseId))
                 {
@@ -324,7 +326,7 @@ namespace Fx.Amiya.Service
                 foreach (var addDto in addDtoList)
                 {
                     var searchDataByPhone = await dalShoppingCartRegistration.GetAll().FirstOrDefaultAsync(e => e.Phone == addDto.Phone);
-                    if (searchDataByPhone != null&& addDto.Phone != "00000000000")
+                    if (searchDataByPhone != null && addDto.Phone != "00000000000")
                     {
                         repeatePhone += addDto.Phone + ",";
                         continue;
@@ -372,6 +374,7 @@ namespace Fx.Amiya.Service
                     shoppingCartRegistration.ProductType = addDto.ProductType;
                     shoppingCartRegistration.CluePicture = addDto.CluePicture;
                     shoppingCartRegistration.AddWechatPicture = addDto.AddWechatPicture;
+                    shoppingCartRegistration.IsRepeateCreateOrder = false;
                     var baseLiveAnchorId = await _liveAnchorService.GetByIdAsync(addDto.LiveAnchorId);
                     if (!string.IsNullOrEmpty(baseLiveAnchorId.LiveAnchorBaseId))
                     {
@@ -468,6 +471,7 @@ namespace Fx.Amiya.Service
                 shoppingCartRegistrationDto.ActiveEmployeeId = shoppingCartRegistration.ActiveEmployeeId;
                 shoppingCartRegistrationDto.CustomerWechatNo = shoppingCartRegistration.CustomerWechatNo;
                 shoppingCartRegistrationDto.FromTitle = shoppingCartRegistration.FromTitle;
+                shoppingCartRegistrationDto.IsRepeateCreateOrder = shoppingCartRegistration.IsRepeateCreateOrder;
 
                 return shoppingCartRegistrationDto;
             }
@@ -646,7 +650,7 @@ namespace Fx.Amiya.Service
 
         public async Task UpdateAsync(UpdateShoppingCartRegistrationDto updateDto)
         {
-            
+
             var baseLiveAnchorId = await _liveAnchorService.GetByIdAsync(updateDto.LiveAnchorId);
             if (updateDto.Phone != "00000000000")
             {
@@ -684,6 +688,7 @@ namespace Fx.Amiya.Service
                 shoppingCartRegistration.ActiveEmployeeId = updateDto.ActiveEmployeeId;
                 shoppingCartRegistration.CustomerWechatNo = updateDto.CustomerWechatNo;
                 shoppingCartRegistration.FromTitle = updateDto.FromTitle;
+                shoppingCartRegistration.IsRepeateCreateOrder = updateDto.IsRepeateCreateOrder;
                 await dalShoppingCartRegistration.UpdateAsync(shoppingCartRegistration, true);
                 //throw new Exception("数据已编辑成功，因当前登录账号和创建人不一致,该部分数据只有加V与备注修改生效！");
             }
@@ -760,7 +765,7 @@ namespace Fx.Amiya.Service
                 shoppingCartRegistration.ActiveEmployeeId = updateDto.ActiveEmployeeId;
                 shoppingCartRegistration.CustomerWechatNo = updateDto.CustomerWechatNo;
                 shoppingCartRegistration.FromTitle = updateDto.FromTitle;
-                
+                shoppingCartRegistration.IsRepeateCreateOrder = updateDto.IsRepeateCreateOrder;
 
                 await dalShoppingCartRegistration.UpdateAsync(shoppingCartRegistration, true);
             }
@@ -1839,6 +1844,28 @@ namespace Fx.Amiya.Service
             return shoppingCartRegistration;
         }
 
+        public async Task<List<ShoppingCartRegistrationDto>> GetShoppingCartRegistionDataByRecordDateAndBaseIdsAsync(DateTime startDate, DateTime endDate, List<string> liveAnchorBaseId)
+        {
+            var shoppingCartRegistration = await dalShoppingCartRegistration.GetAll()
+                                          .Where(d => (d.RecordDate >= startDate.Date && d.RecordDate < endDate))
+                                          .Where(x => liveAnchorBaseId.Count() == 0 || liveAnchorBaseId.Contains(x.BaseLiveAnchorId))
+                                           .Select(d => new ShoppingCartRegistrationDto
+                                           {
+                                               AddPrice = d.Price,
+                                               Phone = d.Phone,
+                                               IsReturnBackPrice = d.IsReturnBackPrice,
+                                               AssignEmpId = d.AssignEmpId,
+                                               IsAddWeChat = d.IsAddWeChat,
+                                               ContentPlatFormId = d.ContentPlatFormId,
+                                               BaseLiveAnchorId = d.BaseLiveAnchorId,
+                                               BelongChannel = d.BelongChannel,
+                                               Source = d.Source,
+                                               RecordDate = d.RecordDate,
+                                               IsSendOrder = d.IsSendOrder,
+                                           }).ToListAsync();
+            return shoppingCartRegistration;
+        }
+
         /// <summary>
         /// 获取指标转化基础数据
         /// </summary>
@@ -2545,14 +2572,15 @@ namespace Fx.Amiya.Service
         /// <param name="isEffectiveCustomerData"></param>
         /// <param name="assistantIdList"></param>
         /// <returns></returns>
-        public async Task<List<ShoppingCartRegistrationDto>> GetAdminCustomerShopCartRegisterPerformanceByAssistantIdListAsync(DateTime startDate, DateTime endDate, List<int> assistantIds,BelongChannel? belongChannel=null)
+        public async Task<List<ShoppingCartRegistrationDto>> GetAdminCustomerShopCartRegisterPerformanceByAssistantIdListAsync(DateTime startDate, DateTime endDate, List<int> assistantIds, BelongChannel? belongChannel = null)
         {
             var result = from d in dalShoppingCartRegistration.GetAll()
             .Where(o => o.RecordDate >= startDate && o.RecordDate < endDate)
             .Where(o => o.AssignEmpId != null && o.IsReturnBackPrice == false)
             .Where(o => assistantIds.Contains(o.CreateBy))
                          select d;
-            if (belongChannel.HasValue) {
+            if (belongChannel.HasValue)
+            {
                 result = result.Where(e => e.BelongChannel == (int)belongChannel);
             }
             var x = from d in result
@@ -2563,8 +2591,8 @@ namespace Fx.Amiya.Service
                         IsAddWeChat = d.IsAddWeChat,
                         Price = d.Price,
                         Phone = d.Phone,
-                        CreateBy=d.CreateBy,
-                        RecordDate=d.RecordDate,
+                        CreateBy = d.CreateBy,
+                        RecordDate = d.RecordDate,
                         BelongChannel = d.BelongChannel
                     };
 
@@ -2579,22 +2607,24 @@ namespace Fx.Amiya.Service
         /// <param name="isEffectiveCustomerData"></param>
         /// <param name="assistantIdList"></param>
         /// <returns></returns>
-        public async Task<List<ShoppingCartRegistrationDto>> GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAsync(DateTime startDate, DateTime endDate, string baseId,List<int> assistantIds, BelongChannel? belongChannel = null)
+        public async Task<List<ShoppingCartRegistrationDto>> GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAsync(DateTime startDate, DateTime endDate, string baseId, List<int> assistantIds, BelongChannel? belongChannel = null)
         {
             var result = from d in dalShoppingCartRegistration.GetAll()
             .Where(o => o.RecordDate >= startDate && o.RecordDate < endDate)
-            .Where(o => o.AssignEmpId != null && o.IsReturnBackPrice == false) select d;
+            .Where(o => o.AssignEmpId != null && o.IsReturnBackPrice == false)
+                         select d;
             if (!string.IsNullOrEmpty(baseId))
             {
                 result = from d in result.Where(o => o.BaseLiveAnchorId == baseId)
                          select d;
             }
-            else {
+            else
+            {
                 result = from d in result.Where(o => assistantIds.Contains(o.CreateBy))
                          select d;
             }
-            
-           
+
+
             if (belongChannel.HasValue)
             {
                 result = result.Where(e => e.BelongChannel == (int)belongChannel);
@@ -2629,7 +2659,7 @@ namespace Fx.Amiya.Service
             .Where(o => o.RecordDate >= startDate && o.RecordDate < endDate)
             .Where(o => o.AssignEmpId != null && o.IsReturnBackPrice == false)
                          select d;
-            if (baseIds.Count>0)
+            if (baseIds.Count > 0)
             {
                 result = from d in result.Where(o => baseIds.Contains(o.BaseLiveAnchorId))
                          select d;

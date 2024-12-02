@@ -2678,6 +2678,7 @@ namespace Fx.Amiya.Service
             var x = from d in result
                     select new ShoppingCartRegistrationDto
                     {
+                        Id = d.Id,
                         IsReturnBackPrice = d.IsReturnBackPrice,
                         AssignEmpId = d.AssignEmpId,
                         IsAddWeChat = d.IsAddWeChat,

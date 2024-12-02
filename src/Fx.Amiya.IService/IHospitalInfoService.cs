@@ -28,6 +28,11 @@ namespace Fx.Amiya.IService
         Task<FxPageInfo<HospitalInfoDto>> GetListWithPageAsync(string keyword, int? cityId, int pageNum, int pageSize,bool? valid);
 
         /// <summary>
+        /// 获取即将到期的医院列表数据
+        /// </summary>
+        /// <returns></returns>
+        Task<FxPageInfo<HospitalInfoDto>> GetAboutToExpiredListAsync();
+        /// <summary>
         /// 获取医院待审核数据
         /// </summary>
         /// <param name="keyword"></param>

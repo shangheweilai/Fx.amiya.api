@@ -179,6 +179,34 @@ namespace Fx.Amiya.Service
 
 
         /// <summary>
+        /// 获取即将到期的医院列表数据
+        /// </summary>
+        /// <returns></returns>
+        public async Task<FxPageInfo<HospitalInfoDto>> GetAboutToExpiredListAsync()
+        {
+            try
+            {
+                DateTime nowDate = DateTime.Now.AddMonths(1);
+                var hospital = from d in dalHospitalInfo.GetAll()
+                               where (d.DueTime.Value < nowDate && d.Valid == true)
+                               select new HospitalInfoDto
+                               {
+                                   Id = d.Id,
+                                   Name = d.Name,
+
+                               };
+                FxPageInfo<HospitalInfoDto> hospitalPageInfo = new FxPageInfo<HospitalInfoDto>();
+                hospitalPageInfo.TotalCount = await hospital.CountAsync();
+                hospitalPageInfo.List = await hospital.ToListAsync();
+                return hospitalPageInfo;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+
+        /// <summary>
         /// 获取医院资料审核情况列表（分页）
         /// </summary>
         /// <param name="keyword"></param>
@@ -1310,10 +1338,11 @@ namespace Fx.Amiya.Service
         /// <returns></returns>
         public async Task<List<ActiveHospitalInfoDto>> GetActiveHospitalListByTimeAsync(QueryActiveHospitalDto query)
         {
-            return await dalContentPlatformOrderSend.GetAll().Where(e => e.SendDate > query.StartDate && e.SendDate < query.EndDate.AddDays(1).Date).GroupBy(e=>e.HospitalId).Select(e=>new ActiveHospitalInfoDto {
-                HospitalId=e.Key,
-                HospitalName=dalHospitalInfo.GetAll().Where(h=>h.Id==e.Key).Single().Name,
-                SendOrderCount=e.Count()
+            return await dalContentPlatformOrderSend.GetAll().Where(e => e.SendDate > query.StartDate && e.SendDate < query.EndDate.AddDays(1).Date).GroupBy(e => e.HospitalId).Select(e => new ActiveHospitalInfoDto
+            {
+                HospitalId = e.Key,
+                HospitalName = dalHospitalInfo.GetAll().Where(h => h.Id == e.Key).Single().Name,
+                SendOrderCount = e.Count()
             }).ToListAsync();
         }
 
@@ -1441,7 +1470,7 @@ namespace Fx.Amiya.Service
             return hospitalProjectInfoDto;
         }
 
-       
+
 
         #endregion
 

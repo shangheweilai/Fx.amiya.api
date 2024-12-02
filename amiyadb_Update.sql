@@ -39,8 +39,8 @@ ADD COLUMN `verison` VARCHAR(45) NULL AFTER `special_hospital_visit_price`;
 --将当前助理薪资默认为1.0版本
 update  amiyadb.tbl_customer_service_compensation set verison="1.0";
 ------------------------------------余建明 2024/10/28 END--------------------------------------
---------------------------------------------------------------------------------------------------------以上部分已更新到线上--------------------------------------
 
 --小黄车列表新增是否重复下单（针对直播中面诊卡）
 ALTER TABLE `amiyadb`.`tbl_shopping_cart_registration` 
 ADD COLUMN `is_repeate_create_order` BIT(1) NOT NULL DEFAULT b'0' AFTER `from_title`;
+--------------------------------------------------------------------------------------------------------以上部分已更新到线上--------------------------------------

@@ -225,7 +225,11 @@ namespace Fx.Amiya.Service
             //小黄车数据
             var baseBusinessPerformance = await shoppingCartRegistrationService.GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAndBaseIdListAsync(selectDate.StartDate, selectDate.EndDate, baseIds, new List<int>(), BelongChannel.LiveBefore);
             #endregion
-
+            string z = "";
+            foreach (var k in baseBusinessPerformance)
+            {
+                z += k.Id + ",";
+            }
 
             #region 新客数据
             #region 【线索】
@@ -436,7 +440,7 @@ namespace Fx.Amiya.Service
             data.TotalSendCycle = DecimalExtension.CalAvg(currentEffectiveDays + currentPotionelDays, currentEffectiveCount + currentPotionelCount);
             data.ThisMonthSendCycle = DecimalExtension.CalAvg(currentEffectiveDays, currentEffectiveCount);
             data.HistorySendCycle = DecimalExtension.CalAvg(currentPotionelDays, currentPotionelCount);
-            data.SendCycleData = res1;
+            data.SendCycleData = res1.OrderByDescending(x => x.Value).ToList();
 
             #endregion
 
@@ -508,7 +512,7 @@ namespace Fx.Amiya.Service
             data.ThisMonthSendCycle = DecimalExtension.CalAvg(currentEffectiveDays2, currentEffectiveCount2);
             data.ThisMonthToHospitalCycle = DecimalExtension.CalAvg(currentPotionelDays2, currentPotionelCount2);
 
-            data.ToHospitalCycleData = res2;
+            data.ToHospitalCycleData = res2.OrderByDescending(x => x.Value).ToList();
 
 
             #endregion
@@ -562,7 +566,7 @@ namespace Fx.Amiya.Service
                 var targetComplete = DecimalExtension.CalculateTargetComplete(e.Count(), t).Value;
                 return new KeyValuePair<string, decimal>(name, targetComplete);
             }).ToList();
-            data.ClueTargetComplete = clueTargetData;
+            data.ClueTargetComplete = clueTargetData.OrderByDescending(x => x.Value).ToList();
 
             //业绩目标完成率
             data.PerformanceTargetComplete = new List<BaseKeyValueDto<string, decimal>>();
@@ -577,6 +581,7 @@ namespace Fx.Amiya.Service
                 data.PerformanceTargetComplete.Add(liveAnchorPerfomances);
 
             }
+            data.PerformanceTargetComplete = data.PerformanceTargetComplete.OrderByDescending(x => x.Value).ToList();
             return data;
         }
 
@@ -620,6 +625,8 @@ namespace Fx.Amiya.Service
                 rateItem.Value = DecimalExtension.CalculateTargetComplete(sumPerformance, totalPerformance).Value;
                 result.PerformanceRateData.Add(rateItem);
             }
+            result.TargetCompleteData = result.TargetCompleteData.OrderByDescending(x => x.Value).ToList();
+            result.PerformanceRateData = result.PerformanceRateData.OrderByDescending(x => x.Value).ToList();
             return result;
         }
 

@@ -894,6 +894,13 @@ namespace Fx.Amiya.Background.Api.Controllers
             }).ToList();
             return ResultData<List<HospitalTransformDataVo>>.Success().AddData("data", res);
         }
+
+
+
+
+
+
+
         #endregion
 
         #region 助理医美数据运营看板

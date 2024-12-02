@@ -58,6 +58,7 @@ namespace Fx.Amiya.Background.Api
         private ISyncFeishuMultidimensionalTable syncFeishuMultidimensionalTable;
         private ITikTokShortVideoDataService tikTokShortVideoDataService;
         private ITrackService trackService;
+        private IHospitalInfoService hospitalInfoService;
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -84,6 +85,7 @@ namespace Fx.Amiya.Background.Api
             ICustomerService customerService,
              IMemberCard memberCardService,
              IUnitOfWork unitOfWork,
+             IHospitalInfoService hospitalInfoService,
              ISyncTikTokOrder syncTikTokOrder,
              ITrackService trackService,
              ICustomerAppointmentScheduleService customerAppointmentScheduleService,
@@ -111,6 +113,7 @@ namespace Fx.Amiya.Background.Api
             this.orderAppInfoService = orderAppInfoService;
             this.syncFeishuMultidimensionalTable = syncFeishuMultidimensionalTable;
             this.tikTokShortVideoDataService = tikTokShortVideoDataService;
+            this.hospitalInfoService = hospitalInfoService;
         }
 
 
@@ -354,8 +357,8 @@ namespace Fx.Amiya.Background.Api
         /// </summary>
         /// <returns></returns>
         /// <returns></returns>
-        //[Invoke(Begin = "00:00:00", Interval = 1000 * 60 * 3, SkipWhileExecuting = true)]//3分钟运行一次
-        [Invoke(Begin = "00:00:00", Interval = 1000 * 60 * 60 * 24 + 60 * 1000, SkipWhileExecuting = true)]
+        [Invoke(Begin = "00:00:00", Interval = 1000 * 60 * 2, SkipWhileExecuting = true)]//3分钟运行一次
+        //[Invoke(Begin = "00:00:00", Interval = 1000 * 60 * 60 * 24 + 60 * 1000, SkipWhileExecuting = true)]
         public async Task OrderMessageNotice()
         {
             using (var scope = _serviceProvider.CreateScope())
@@ -583,6 +586,24 @@ namespace Fx.Amiya.Background.Api
                     addMessageNoticeDto.NoticeType = (int)MessageNoticeMessageTextEnum.ScheduleNotice;
                     addMessageNoticeDto.NoticeContent = "您今日有'" + todayCustomerAppointScheduleInfo.AppointmentTypeText + "'待处理，客户昵称：" + todayCustomerAppointScheduleInfo.CustomerName + ",联系方式：" + todayCustomerAppointScheduleInfo.Phone + "，请到客户预约日程中处理~";
                     await messageNoticeService.AddAsync(addMessageNoticeDto);
+                }
+                #endregion
+
+                #region【机构合同到期通知(发送角色：特定人员：宇哥账户，张宇苍账户)】
+                var todayHospitalExpired = await hospitalInfoService.GetAboutToExpiredListAsync();
+                foreach (var aboutToExpiredHospital in todayHospitalExpired.List)
+                {
+                    AddMessageNoticeDto addMessageNoticeDto = new AddMessageNoticeDto();
+                    addMessageNoticeDto.AcceptBy = 1;//上线后62改为1
+                    addMessageNoticeDto.NoticeType = (int)MessageNoticeMessageTextEnum.OperationNotice;
+                    addMessageNoticeDto.NoticeContent = "'" + aboutToExpiredHospital.Name + "'的合同即将到期，请到医院列表中进行处理~";
+                    await messageNoticeService.AddAsync(addMessageNoticeDto);
+
+                    AddMessageNoticeDto addMessageNoticeDto2 = new AddMessageNoticeDto();
+                    addMessageNoticeDto2.AcceptBy = 291;
+                    addMessageNoticeDto2.NoticeType = (int)MessageNoticeMessageTextEnum.OperationNotice;
+                    addMessageNoticeDto2.NoticeContent = "'" + aboutToExpiredHospital.Name + "'的合同即将到期，请到医院列表中进行处理~";
+                    await messageNoticeService.AddAsync(addMessageNoticeDto2);
                 }
                 #endregion
             }

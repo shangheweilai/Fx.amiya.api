@@ -115,6 +115,8 @@ namespace Fx.Amiya.Background.Api.Controllers
             MingSuoOperationDataVo data = new MingSuoOperationDataVo();
             data.NewCustomerData = new AssistantNewCustomerOperationDataVo(); 
             data.OldCustomerData =new AssistantOldCustomerOperationDataVo ();
+            data.NewCustomerData.ClueEffectiveRate = res.NewCustomerData.ClueEffectiveRate;
+            data.NewCustomerData.ClueEffectiveRateHealthValueThisMonth = res.NewCustomerData.ClueEffectiveRateHealthValueThisMonth;
             data.NewCustomerData.AddWeChatRate = res.NewCustomerData.AddWeChatRate;
             data.NewCustomerData.AddWeChatRateHealthValueThisMonth = res.NewCustomerData.AddWeChatRateHealthValueThisMonth;
             data.NewCustomerData.SendOrderRate = res.NewCustomerData.SendOrderRate;

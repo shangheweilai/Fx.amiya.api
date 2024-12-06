@@ -2924,13 +2924,14 @@ namespace Fx.Amiya.Service
                 assistantIdList = (await amiyaEmployeeService.GetAllAssistantAsync()).Select(e => e.Id).ToList();
             }
             var shoppingCartRegistionData = await shoppingCartRegistrationService.GetPerformanceByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, assistantIdList);
-            var currentSendPhoneList = shoppingCartRegistionData.Select(e => e.Phone).ToList();
             var totalSendPhoneList = await _dalContentPlatformOrderSend.GetAll()
                 .Where(e => e.IsMainHospital == true && e.SendDate >= selectDate.StartDate && e.SendDate < selectDate.EndDate)
                 .Where(e => e.ContentPlatformOrder.IsSupportOrder ? e.ContentPlatformOrder.SupportEmpId == query.AssistantId : e.ContentPlatformOrder.BelongEmpId == query.AssistantId)
                 .Select(e => e.ContentPlatformOrder.Phone).ToListAsync();
+            var currentSendPhoneList = totalSendPhoneList.Where(e => shoppingCartRegistionData.Select(e=>e.Phone).Contains(e)).ToList();
             var historySendPhoneList = totalSendPhoneList.Where(e => !currentSendPhoneList.Contains(e)).ToList();
             var sendPhoneList = new List<string>();
+            //如何两个都没有选中,则视为都选中查询所有数据
             if (!query.CurrentMonth && !query.History)
             {
                 query.CurrentMonth = true;
@@ -3634,7 +3635,7 @@ namespace Fx.Amiya.Service
         }
 
         /// <summary>
-        /// 个人加v后数据
+        /// 个人客资数据
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
@@ -3735,12 +3736,14 @@ namespace Fx.Amiya.Service
             var baseBusinessPerformance = await shoppingCartRegistrationService.GetAdminCustomerShopCartRegisterPerformanceByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, assistantIdList);
             //个人小黄车数据
             var assisatntBusinessPerformance = await shoppingCartRegistrationService.GetAdminCustomerShopCartRegisterPerformanceByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, new List<int> { query.AssistantId.Value });
+            //获取派单上门成交数据
+            var allOrderPerformance = await contentPlateFormOrderService.GetAdminCustomerOrderSendAndDealDataByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, baseBusinessPerformance.Select(e => e.Phone).ToList());
             #endregion
 
 
             #region 组数据
             #region 【分诊】
-            var allOrderPerformance = await contentPlateFormOrderService.GetAdminCustomerOrderSendAndDealDataByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, baseBusinessPerformance.Select(e => e.Phone).ToList());
+
             //分诊
             AdminCustomerFilterDetailDataDto consulationdetails = new AdminCustomerFilterDetailDataDto();
             consulationdetails.Key = "Consulation";
@@ -3906,6 +3909,7 @@ namespace Fx.Amiya.Service
                              on deal.Phone equals cart.Phone
                              select new
                              {
+
                                  CreateBy = cart.CreateBy,
                                  EmpId = deal.EmpId,
                                  IntervalDays = (deal.ToHospitalDate.Value - cart.RecordDate).Days
@@ -4038,9 +4042,7 @@ namespace Fx.Amiya.Service
                 .Where(e => e.BaseLiveAnchorId == info.LiveAnchorBaseId)
                 .Select(e => new { e.CreateBy, e.Phone, e.RecordDate })
                 .ToList();
-
             var phoneList = basePhoneList.Select(e => e.Phone).ToList();
-
             var performanceData = await dalContentPlatFormOrderDealInfo.GetAll()
                 .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder ? e.ContentPlatFormOrder.SupportEmpId : e.ContentPlatFormOrder.BelongEmpId.Value))
                 .Where(e => e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate)
@@ -4052,19 +4054,10 @@ namespace Fx.Amiya.Service
                     Phone = e.ContentPlatFormOrder.Phone,
                     Price = e.Price,
                     CreateDate = e.CreateDate,
-                    SendDate = e.ContentPlatFormOrder.ContentPlatformOrderSendList.FirstOrDefault(e => e.IsMainHospital == true).SendDate
                 })
                 .OrderBy(e => e.Phone)
                 .ToListAsync();
-
-            var sendInfo = performanceData.Select(e => new { e.Phone, e.SendDate }).ToList();
-            var realPhoneList = (from p in basePhoneList
-                                 join s in sendInfo
-                                 on p.Phone equals s.Phone
-                                 where p.RecordDate <= s.SendDate
-                                 select p).ToList();
             var myPhoneList = basePhoneList.Where(e => e.CreateBy == query.AssistantId.Value).Select(e => e.Phone).ToList();
-            performanceData = performanceData.Where(e => basePhoneList.Select(e => e.Phone).Contains(e.Phone)).ToList();
             BeforeLiveClueAndPerformanceDataDto beforeLiveClueAndPerformanceData = new BeforeLiveClueAndPerformanceDataDto();
             beforeLiveClueAndPerformanceData.EmployeeData = new BeforeLiveClueAndPerformanceDataItemDto();
             beforeLiveClueAndPerformanceData.EmployeeData.CustomerCount = basePhoneList.Where(e => e.CreateBy == query.AssistantId.Value).Count();
@@ -4150,8 +4143,7 @@ namespace Fx.Amiya.Service
             var assistantIdList = assistantList.Select(e => e.Id).ToList();
             //组小黄车数据
             var baseBusinessPerformance = await shoppingCartRegistrationService.GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, info.LiveAnchorBaseId, assistantIdList, BelongChannel.LiveBefore);
-            //个人小黄车数据
-            var assisatntBusinessPerformance = await shoppingCartRegistrationService.GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, null, new List<int> { query.AssistantId.Value }, BelongChannel.LiveBefore);
+           
             #endregion
 
 
@@ -4283,7 +4275,7 @@ namespace Fx.Amiya.Service
 
             if (isCurrent)
             {
-                var cartInfoList1 = baseBusinessPerformance.Where(e => sendPhoneList.Contains(e.Phone)).ToList();
+                var cartInfoList1 = baseBusinessPerformance.Where(e => dealPhoneList.Contains(e.Phone)).ToList();
                 dataList2 = (from deal in dealInfoList
                              join cart in cartInfoList1
                              on deal.Phone equals cart.Phone
@@ -4319,6 +4311,8 @@ namespace Fx.Amiya.Service
             #region 个人
 
             #region 【分诊】
+            //个人小黄车数据
+            var assisatntBusinessPerformance = await shoppingCartRegistrationService.GetBeforeLiveShopCartRegisterPerformanceByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, null, new List<int> { query.AssistantId.Value }, BelongChannel.LiveBefore);
             //当月数据
             var employeePhoneList = assisatntBusinessPerformance.Select(e => e.Phone).ToList();
             var addWechatOrderPerformance = await contentPlateFormOrderService.GetBeforeLiveEmployeeOrderSendAndDealDataByAssistantIdListAsync(selectDate.StartDate, selectDate.EndDate, assistantIdList, query.AssistantId.Value, employeePhoneList, isCurrent);
@@ -4417,7 +4411,7 @@ namespace Fx.Amiya.Service
             var assistantIdList = assistantList.Select(e => e.Id).ToList();
             var cartInfoList = _dalShoppingCartRegistration.GetAll()
                 .Where(e => e.IsReturnBackPrice == false && e.BelongChannel == (int)BelongChannel.LiveBefore)
-                .Where(e => e.CreateDate >= seqDate.StartDate && e.CreateDate < seqDate.EndDate)
+                .Where(e => e.RecordDate >= seqDate.StartDate && e.RecordDate < seqDate.EndDate)
                 .Select(e => new
                 {
                     CreateBy = e.CreateBy,
@@ -4509,7 +4503,6 @@ namespace Fx.Amiya.Service
                 .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder ? e.ContentPlatFormOrder.SupportEmpId : e.ContentPlatFormOrder.BelongEmpId.Value))
                 .Where(e => e.IsDeal == true && e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate)
                 .Where(e => e.ContentPlatFormOrder.BelongChannel == (int)BelongChannel.LiveBefore)
-                .Where(e => assistantIdList.Contains(e.ContentPlatFormOrder.IsSupportOrder ? e.ContentPlatFormOrder.SupportEmpId : e.ContentPlatFormOrder.BelongEmpId.Value))
                 .Select(e => new
                 {
                     e.ContentPlatFormOrder.Phone,
@@ -4543,8 +4536,6 @@ namespace Fx.Amiya.Service
             BeforeLiveTargetCompleteRateDto data = new BeforeLiveTargetCompleteRateDto();
             var selectDate = DateTimeExtension.GetStartDateEndDate(query.StartDate, query.EndDate);
             var info = await amiyaEmployeeService.GetByIdAsync(query.AssistantId.Value);
-            var assistantList = await amiyaEmployeeService.GetByLiveAnchorBaseIdNameListAsync(new List<string> { info.LiveAnchorBaseId });
-            var assistantIdList = assistantList.Select(e => e.Id).ToList();
             var baseData = await _dalShoppingCartRegistration.GetAll().Where(e => e.RecordDate >= selectDate.StartDate && e.RecordDate < selectDate.EndDate && e.BaseLiveAnchorId == info.LiveAnchorBaseId && e.IsReturnBackPrice == false && e.BelongChannel == (int)BelongChannel.LiveBefore)
                 .Select(e => e.CreateBy).ToListAsync();
             var clueData = baseData.GroupBy(e => e).Select(e => new { Key = e.Key, Count = e.Count() });
@@ -4588,8 +4579,6 @@ namespace Fx.Amiya.Service
             BeforeLiveDepartmentContentPlatformClueRateDto beforeLiveDepartment = new BeforeLiveDepartmentContentPlatformClueRateDto();
             var selectDate = DateTimeExtension.GetStartDateEndDate(query.StartDate, query.EndDate);
             var info = await amiyaEmployeeService.GetByIdAsync(query.AssistantId.Value);
-            var assistantList = await amiyaEmployeeService.GetByLiveAnchorBaseIdNameListAsync(new List<string> { info.LiveAnchorBaseId });
-            var assistantIdList = assistantList.Select(e => e.Id).ToList();
             var baseData = await _dalShoppingCartRegistration.GetAll().Where(e => e.RecordDate >= selectDate.StartDate && e.RecordDate < selectDate.EndDate && e.BaseLiveAnchorId == info.LiveAnchorBaseId && e.BelongChannel == (int)BelongChannel.LiveBefore && e.IsReturnBackPrice == false)
                 .Select(e => new
                 {

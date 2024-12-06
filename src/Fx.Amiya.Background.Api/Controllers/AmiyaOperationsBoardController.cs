@@ -1436,7 +1436,7 @@ namespace Fx.Amiya.Background.Api.Controllers
         }
 
         /// <summary>
-        /// 行政客服个人加v后客资数据
+        /// 行政客服个人客资数据
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>

@@ -187,7 +187,6 @@ namespace Fx.Amiya.Service
                     AssignEmpId = e.AssignEmpId,
                     IsAddWechat = e.IsAddWeChat,
                     Phone = e.Phone,
-                    BaseLiveanchorId = e.BaseLiveAnchorId,
                     RecordDate = e.RecordDate,
                 }).ToListAsync();
             #endregion
@@ -226,7 +225,7 @@ namespace Fx.Amiya.Service
             LivingFilterDetailDataDto sendOrderdetails = new LivingFilterDetailDataDto();
             //派单
             sendOrderdetails.Key = "SendOrder";
-            sendOrderdetails.Name = "派单量";
+            sendOrderdetails.Name = "派单量"; 
             sendOrderdetails.Value = allOrderPerformance.SendOrderNum;
             departmentDataDto.DataList.Add(sendOrderdetails);
 
@@ -318,7 +317,7 @@ namespace Fx.Amiya.Service
 
             if (query.IsCurrent)
             {
-                var cartInfoList1 = baseData.Where(e => sendPhoneList.Contains(e.Phone)).ToList();
+                var cartInfoList1 = baseData.Where(e => dealPhoneList.Contains(e.Phone)).ToList();
                 dataList2 = (from deal in dealInfoList
                              join cart in cartInfoList1
                              on deal.Phone equals cart.Phone

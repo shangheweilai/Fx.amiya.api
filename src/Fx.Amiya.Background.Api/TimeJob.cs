@@ -357,8 +357,8 @@ namespace Fx.Amiya.Background.Api
         /// </summary>
         /// <returns></returns>
         /// <returns></returns>
-        [Invoke(Begin = "00:00:00", Interval = 1000 * 60 * 2, SkipWhileExecuting = true)]//3分钟运行一次
-        //[Invoke(Begin = "00:00:00", Interval = 1000 * 60 * 60 * 24 + 60 * 1000, SkipWhileExecuting = true)]
+        // [Invoke(Begin = "00:00:00", Interval = 1000 * 60 * 2, SkipWhileExecuting = true)]//3分钟运行一次
+        [Invoke(Begin = "00:00:00", Interval = 1000 * 60 * 60 * 24 , SkipWhileExecuting = true)]
         public async Task OrderMessageNotice()
         {
             using (var scope = _serviceProvider.CreateScope())
@@ -589,7 +589,7 @@ namespace Fx.Amiya.Background.Api
                 }
                 #endregion
 
-                #region【机构合同到期通知(发送角色：特定人员：宇哥账户，张宇苍账户)】
+                #region【机构合同到期通知(发送角色：特定人员：宇哥账户，张宇苍账户,董敏账户)】
                 var todayHospitalExpired = await hospitalInfoService.GetAboutToExpiredListAsync();
                 foreach (var aboutToExpiredHospital in todayHospitalExpired.List)
                 {
@@ -604,6 +604,11 @@ namespace Fx.Amiya.Background.Api
                     addMessageNoticeDto2.NoticeType = (int)MessageNoticeMessageTextEnum.OperationNotice;
                     addMessageNoticeDto2.NoticeContent = "'" + aboutToExpiredHospital.Name + "'的合同即将到期，请到医院列表中进行处理~";
                     await messageNoticeService.AddAsync(addMessageNoticeDto2);
+                    AddMessageNoticeDto addMessageNoticeDto3 = new AddMessageNoticeDto();
+                    addMessageNoticeDto3.AcceptBy = 80;
+                    addMessageNoticeDto3.NoticeType = (int)MessageNoticeMessageTextEnum.OperationNotice;
+                    addMessageNoticeDto3.NoticeContent = "'" + aboutToExpiredHospital.Name + "'的合同即将到期，请到医院列表中进行处理~";
+                    await messageNoticeService.AddAsync(addMessageNoticeDto3);
                 }
                 #endregion
             }

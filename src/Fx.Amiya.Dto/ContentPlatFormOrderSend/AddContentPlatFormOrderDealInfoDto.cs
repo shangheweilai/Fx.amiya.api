@@ -106,5 +106,10 @@ namespace Fx.Amiya.Dto.ContentPlatFormOrderSend
         /// </summary>
         public List<string> InvitationDocuments { get; set; }
         public List<AddContentPlatFormOrderDealDetailsDto> AddContentPlatFormOrderDealDetailsDtoList { get; set; }
+
+        /// <summary>
+        /// 上一条成交情况id（当业绩类型为“助理补单时有值）
+        /// </summary>
+        public string LastDealInfoId { get; set; }
     }
 }

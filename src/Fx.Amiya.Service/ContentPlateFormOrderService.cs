@@ -2717,8 +2717,6 @@ namespace Fx.Amiya.Service
                     }
                     if (input.IsFinish == true)
                     {
-                        var price = order.DepositAmount.HasValue ? order.DepositAmount.Value : 0.00M;
-                        await bindCustomerServiceService.UpdateConsumePriceAsync(order.Phone, price + input.DealAmount.Value, (int)OrderFrom.ContentPlatFormOrder, order.LiveAnchor.Name, order.LiveAnchorWeChatNo, order.Contentplatform.ContentPlatformName, 1);
                         //await customerBaseInfoService.UpdateState(1, input.CustomerName, order.Phone);
                         order.OrderStatus = Convert.ToInt16(ContentPlateFormOrderStatus.OrderComplete);
                         order.DealAmount += input.DealAmount;
@@ -2755,13 +2753,23 @@ namespace Fx.Amiya.Service
                     }
                     //isRepeateOrder = order.IsRepeatProfundityOrder;
                     isRepeateOrder = dalContentPlatformOrderSend.GetAll().Where(e => e.Id == input.SendOrderId).FirstOrDefault()?.IsRepeatProfundityOrder ?? false;
+                    var price = 0.00M;
+                    if (input.DealPerformanceType == (int)ContentPlateFormOrderDealPerformanceType.CustomerServiceReplenishmentOrder)
+                    {
+                        var lastOrderDealInfo = dalContentPlatFormOrderDealInfo.GetAll().Where(e => e.Id == input.LastDealInfoId).FirstOrDefault();
+                        order.IsOldCustomer = lastOrderDealInfo.IsOldCustomer;
+                        order.DealAmount -= input.DealAmount;
+                        order.DealAmount = order.DealAmount - lastOrderDealInfo.Price + input.DealAmount;
+                        price = price - lastOrderDealInfo.Price;
+                    }
+                    await bindCustomerServiceService.UpdateConsumePriceAsync(order.Phone, price + input.DealAmount.Value, (int)OrderFrom.ContentPlatFormOrder, order.LiveAnchor.Name, order.LiveAnchorWeChatNo, order.Contentplatform.ContentPlatformName, 1);
                     await _dalContentPlatformOrder.UpdateAsync(order, true);
 
 
                     //获取医院客户列表
                     var customer = await hospitalCustomerInfoService.GetByHospitalIdAndPhoneAsync(order.ContentPlatformOrderSendList.OrderByDescending(x => x.SendDate).FirstOrDefault().HospitalId, order.Phone);
                     //操作医院客户表
-                    if (!string.IsNullOrEmpty(customer.Id))
+                    if (!string.IsNullOrEmpty(customer.Id) && input.DealPerformanceType != (int)ContentPlateFormOrderDealPerformanceType.CustomerServiceReplenishmentOrder)
                     {
                         UpdateSendHospitalCustomerInfoDto updateSendHospitalCustomerInfoDto = new UpdateSendHospitalCustomerInfoDto();
                         updateSendHospitalCustomerInfoDto.Id = customer.Id;
@@ -2807,6 +2815,12 @@ namespace Fx.Amiya.Service
                 orderDealDto.CreateBy = input.EmpId;
                 orderDealDto.InvitationDocuments = input.InvitationDocuments;
                 orderDealDto.AddContentPlatFormOrderDealDetailsDtoList = input.AddContentPlatFormOrderDealDetailsDtoList;
+                if (input.DealPerformanceType == (int)ContentPlateFormOrderDealPerformanceType.CustomerServiceReplenishmentOrder)
+                {
+                    var lastOrderDealInfo = dalContentPlatFormOrderDealInfo.GetAll().Where(e => e.Id == input.LastDealInfoId).FirstOrDefault();
+                    orderDealDto.IsOldCustomer = lastOrderDealInfo.IsOldCustomer;
+                }
+                orderDealDto.LastDealInfoId = input.LastDealInfoId;
                 var dealId = await _contentPlatFormOrderDalService.AddAsync(orderDealDto);
 
                 //更新粉丝见面会数据
@@ -4229,7 +4243,7 @@ namespace Fx.Amiya.Service
                 .Select(e => e.Phone)
                 .Distinct()
                 .Count();
-            orderData.DealNum = visitCount.Where(x => x.ContentPlatformOrderDealInfoList.Where(z=>z.CreateDate >= startDate&&z.CreateDate < endDate&& z.IsDeal == true).Count()>0)
+            orderData.DealNum = visitCount.Where(x => x.ContentPlatformOrderDealInfoList.Where(z => z.CreateDate >= startDate && z.CreateDate < endDate && z.IsDeal == true).Count() > 0)
                 .Select(e => e.Phone)
                 .Distinct()
                 .Count();

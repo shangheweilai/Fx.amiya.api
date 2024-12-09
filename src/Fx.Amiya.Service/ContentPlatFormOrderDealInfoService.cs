@@ -908,6 +908,7 @@ namespace Fx.Amiya.Service
                 ContentPlatFOrmOrderDealInfo.DealPerformanceType = addDto.DealPerformanceType;
                 ContentPlatFOrmOrderDealInfo.IsRepeatProfundityOrder = addDto.IsRepeatProfundityOrder;
                 ContentPlatFOrmOrderDealInfo.ConsumptionType = addDto.ConsumptionType;
+                ContentPlatFOrmOrderDealInfo.LastDealInfoId = addDto.LastDealInfoId;
                 await dalContentPlatFormOrderDealInfo.AddAsync(ContentPlatFOrmOrderDealInfo, true);
 
                 //添加邀约凭证图片
@@ -2509,17 +2510,20 @@ namespace Fx.Amiya.Service
 
         #region【系统端运营看板】
 
-        public async Task<List<ContentPlatFormOrderDealInfoDto>> GetSimplePerformanceDetailByDateAsync(DateTime startDate, DateTime endDate)
+        public async Task<List<ContentPlatFormOrderDealInfoDto>> GetSimplePerformanceDetailByDateAsync(int year, List<int> liveAnchorIds, bool? isOldCustomer)
         {
+            DateTime startDate = Convert.ToDateTime(year + "-01-01");
+            DateTime endDate = Convert.ToDateTime(year + "-12-31");
             return dalContentPlatFormOrderDealInfo.GetAll().Include(x => x.ContentPlatFormOrder).ThenInclude(x => x.LiveAnchor)
                 .Where(o => o.CreateDate >= startDate && o.CreateDate < endDate && o.IsDeal == true && o.ContentPlatFormOrderId != null)
+                .Where(o => liveAnchorIds.Count == 0 || liveAnchorIds.Contains(o.ContentPlatFormOrder.LiveAnchorId.Value))
+                .Where(o => !isOldCustomer.HasValue || o.IsOldCustomer == isOldCustomer.Value)
                 .Select(ContentPlatFOrmOrderDealInfo => new ContentPlatFormOrderDealInfoDto
                 {
-                    Id = ContentPlatFOrmOrderDealInfo.Id,
                     Price = ContentPlatFOrmOrderDealInfo.Price,
-                    IsOldCustomer = ContentPlatFOrmOrderDealInfo.IsOldCustomer,
+                    LiveAnchorId = ContentPlatFOrmOrderDealInfo.ContentPlatFormOrder.LiveAnchorId.Value,
                     CreateDate = ContentPlatFOrmOrderDealInfo.CreateDate,
-                    DealDate = ContentPlatFOrmOrderDealInfo.DealDate
+                    IsOldCustomer = ContentPlatFOrmOrderDealInfo.IsOldCustomer,
                 }
                 ).ToList();
         }

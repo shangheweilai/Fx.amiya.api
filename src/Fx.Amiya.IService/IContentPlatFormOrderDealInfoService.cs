@@ -403,10 +403,11 @@ namespace Fx.Amiya.IService
         /// <summary>
         /// 根据时间获取简单的成交业绩（区分新老客）
         /// </summary>
-        /// <param name="startDate"></param>
-        /// <param name="endDate"></param>
+        /// <param name="year"></param>
+        /// <param name="liveAnchorIds"></param>
+        /// <param name="isOldCustomer"></param>
         /// <returns></returns>
-        Task<List<ContentPlatFormOrderDealInfoDto>> GetSimplePerformanceDetailByDateAsync(DateTime startDate, DateTime endDate);
+        Task<List<ContentPlatFormOrderDealInfoDto>> GetSimplePerformanceDetailByDateAsync(int year, List<int> liveAnchorIds, bool? isOldCustomer);
 
         /// <summary>
         /// 根据成交编号获取成交登记日期

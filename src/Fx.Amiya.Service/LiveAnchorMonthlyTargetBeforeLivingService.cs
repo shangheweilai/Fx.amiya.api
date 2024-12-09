@@ -911,6 +911,25 @@ namespace Fx.Amiya.Service
             return liveAnchorBeforeLivingTargetDto;
         }
 
+        /// <summary>
+        /// 根据年份获取主播IP直播前线索目标总计
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="month"></param>
+        /// <param name="liveAnchorIds"></param>
+        /// <returns></returns>
+        public async Task<List<LiveAnchorBaseBusinessMonthTargetBeforeLivingDto>> GetCluePerformanceTargetByYearAsync(int year, List<int> liveAnchorIds)
+        {
+            var performance = dalLiveAnchorMonthlyTargetBeforeLiving.GetAll().Where(t => t.Year == year)
+                .Where(o => liveAnchorIds.Count == 0 || liveAnchorIds.Contains(o.LiveAnchorId))
+                .Select(e => new LiveAnchorBaseBusinessMonthTargetBeforeLivingDto
+                {
+                    CluesTarget = e.TikTokCluesTarget + e.XiaoHongShuCluesTarget + e.VideoCluesTarget,
+                })
+                .ToList();
+            return performance;
+        }
+
 
         /// <summary>
         /// 根据条件获取主播IP直播前线索目标总计

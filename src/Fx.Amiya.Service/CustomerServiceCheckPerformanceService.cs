@@ -82,7 +82,24 @@ namespace Fx.Amiya.Service
                 }
                 else
                 {
-                    customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.Where(e => e.CheckBillId == query.customerServiceCompensationId).ToList();
+                    if (query.BelongEmpId.HasValue)
+                    {
+
+                        var empInfo = await amiyaEmployeeService.GetByIdAsync(query.BelongEmpId.Value);
+                        if (empInfo.PositionId != 30)
+                        {
+                            customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.Where(e => e.BillId == query.customerServiceCompensationId).ToList();
+                        }
+                        else
+                        {
+                            customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.Where(e => e.CheckBillId == query.customerServiceCompensationId).ToList();
+                        }
+                    }
+                    if (query.CheckEmpId.HasValue)
+                    {
+                        customerServiceCheckPerformancePageInfo.List = customerServiceCheckPerformancePageInfo.List.Where(e => e.CheckBillId == query.customerServiceCompensationId).ToList();
+
+                    }
                 }
             }
             customerServiceCheckPerformancePageInfo.TotalCount = customerServiceCheckPerformancePageInfo.List.Count();

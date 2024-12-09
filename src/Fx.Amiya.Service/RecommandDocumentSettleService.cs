@@ -76,6 +76,7 @@ namespace Fx.Amiya.Service
         public async Task<FxPageInfo<RecommandDocumentSettleDto>> GetListWithPageAsync(QueryReconciliationDocumentsSettleDto query)
         {
             var record = _dalRecommandDocumentSettle.GetAll().Include(x => x.AmiyaEmployee)
+              .Where(e => Convert.ToInt32(e.DealInfoId) < 2410010000000000M)
               .Where(e => (string.IsNullOrEmpty(query.KeyWord) || e.RecommandDocumentId.Contains(query.KeyWord) || e.OrderId.Contains(query.KeyWord) || e.DealInfoId.Contains(query.KeyWord) || e.CustomerServiceCompensationId == query.KeyWord || e.InspectCustomerServiceCompensationId == query.KeyWord || e.CheckRemark.Contains(query.KeyWord)))
               .Where(e => !query.StartDate.HasValue || e.CreateDate >= query.StartDate)
               .Where(e => !query.EndDate.HasValue || e.CreateDate <= query.EndDate.Value.AddDays(1).AddMilliseconds(-1))
@@ -143,7 +144,7 @@ namespace Fx.Amiya.Service
             }
             FxPageInfo<RecommandDocumentSettleDto> resultPageInfo = new FxPageInfo<RecommandDocumentSettleDto>();
             resultPageInfo.TotalCount = await record.CountAsync();
-            resultPageInfo.List  = await record.OrderByDescending(x => x.CreateDate).Skip((query.PageNum.Value - 1) * query.PageSize.Value).Take(query.PageSize.Value).ToListAsync();
+            resultPageInfo.List = await record.OrderByDescending(x => x.CreateDate).Skip((query.PageNum.Value - 1) * query.PageSize.Value).Take(query.PageSize.Value).ToListAsync();
             return resultPageInfo;
         }
 

@@ -37,5 +37,13 @@ namespace Fx.Amiya.IService
         /// <returns></returns>
         Task<LiveAnchorBaseBusinessMonthTargetBeforeLivingDto> GetCluePerformanceTargetAsync(int year, int month, List<int> liveAnchorIds);
 
+        /// <summary>
+        /// 根据年份获取直播前月目标数据
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="liveAnchorIds"></param>
+        /// <returns></returns>
+        Task<List<LiveAnchorBaseBusinessMonthTargetBeforeLivingDto>> GetCluePerformanceTargetByYearAsync(int year, List<int> liveAnchorIds);
+
     }
 }

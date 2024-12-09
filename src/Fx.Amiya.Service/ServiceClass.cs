@@ -418,6 +418,9 @@ namespace Fx.Amiya.Service
                 case 7:
                     typeText = "机构报单-API";
                     break;
+                case 8:
+                    typeText = "助理补单";
+                    break;
             }
             return typeText;
         }

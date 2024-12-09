@@ -619,7 +619,11 @@ namespace Fx.Amiya.IService
         /// <summary>
         /// 机构报单-API
         /// </summary>
-        HospitalDeclarationInApi = 7
+        HospitalDeclarationInApi = 7,
+        /// <summary>
+        /// 助理补单
+        /// </summary>
+        CustomerServiceReplenishmentOrder = 8
     }
     /// <summary>
     /// 助理薪资类型

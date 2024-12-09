@@ -164,6 +164,8 @@ namespace Fx.Amiya.IService
         /// <param name="isCity"></param>
         /// <returns></returns>
         Task<List<HospitalPerformanceDto>> GetHospitalPerformanceByDateAsync(QueryHospitalTransformDataDto query);
+
+        Task<PerformanceYearDataListDto> GetTotalAchievementByYearAsync(QueryPerfomanceYearDataDto query);
         #endregion
 
         #region 助理看板

@@ -122,5 +122,10 @@ namespace Fx.Amiya.Background.Api.Vo.ContentPlateFormOrder
         /// 成交明细
         /// </summary>
         public List<AddContentPlatFormOrderDealDetailsVo> AddContentPlatFormOrderDealDetailsVoList { get; set; }
+
+        /// <summary>
+        /// 上一条成交情况id
+        /// </summary>
+        public string LastDealInfoId { get; set; }
     }
 }

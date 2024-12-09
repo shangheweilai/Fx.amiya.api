@@ -1429,6 +1429,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 updateDto.ConsumptionType = updateVo.ConsumptionType;
                 updateDto.InvitationDocuments = updateVo.InvitationDocuments;
                 updateDto.FansMeetingId = updateVo.FansMeetingId;
+                updateDto.LastDealInfoId = updateVo.LastDealInfoId;
 
                 updateDto.FansMeetingProject = updateVo.FansMeetingProject;
                 updateDto.FollowUpContent = updateVo.FollowUpContent;

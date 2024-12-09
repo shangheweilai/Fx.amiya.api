@@ -1614,6 +1614,483 @@ namespace Fx.Amiya.Service
             }
             return res;
         }
+
+
+        /// <summary>
+        /// 获取医美（年度）业绩趋势
+        /// </summary>
+        /// <returns></returns>
+        public async Task<PerformanceYearDataListDto> GetTotalAchievementByYearAsync(QueryPerfomanceYearDataDto query)
+        {
+            #region 实例化输出项
+            PerformanceYearDataListDto result = new PerformanceYearDataListDto();
+            result.TotalPerformanceData = new List<PerformanceYearDataDto>();
+            result.DaoDaoPerformanceData = new List<PerformanceYearDataDto>();
+            result.JiNaPerformanceData = new List<PerformanceYearDataDto>();
+            #endregion
+
+            #region 获取主播信息
+            string text = "（总业绩）";
+            int totalCount = 6;
+            if (query.IsOldCustomer.HasValue)
+            {
+                if (query.IsOldCustomer == false)
+                {
+                    text = "（新客）";
+                    totalCount = 5;
+                }
+                if (query.IsOldCustomer == true)
+                {
+                    text = "（老客）";
+                    totalCount = 5;
+                }
+            }
+            string totalPerformanceName = "啊美雅" + text;
+            string daoDaoPerformanceName = "刀刀" + text;
+            string jiNaPerformanceName = "吉娜" + text;
+            //获取主播信息(自播达人）
+            var liveAnchorBaseInfo = await liveAnchorBaseInfoService.GetValidAsync(true);
+            List<int> LiveAnchorInfo = new List<int>();
+            List<int> LiveAnchorInfoDaoDao = new List<int>();
+            List<int> LiveAnchorInfoJiNa = new List<int>();
+            //获取对应主播IP账户信息
+            var liveAnchorTotal = await liveAnchorService.GetLiveAnchorListByBaseInfoIdListAsync(liveAnchorBaseInfo.Select(x => x.Id).ToList());
+            LiveAnchorInfo = liveAnchorTotal.Select(x => x.Id).ToList();
+            LiveAnchorInfoDaoDao = liveAnchorTotal.Where(x => x.LiveAnchorBaseId == "f0a77257-c905-4719-95c4-ad2c4f33855c").Select(x => x.Id).ToList();
+            LiveAnchorInfoJiNa = liveAnchorTotal.Where(x => x.LiveAnchorBaseId == "af69dcf5-f749-41ea-8b50-fe685facdd8b").Select(x => x.Id).ToList();
+            #endregion
+
+            #region 获取直播后年度目标
+            var targetAfterLiving = await liveAnchorMonthlyTargetAfterLivingService.GetPerformanceByYearAsync(query.Year, LiveAnchorInfo, query.IsOldCustomer);
+            var targetAfterLivingDaodao = targetAfterLiving.Where(x => LiveAnchorInfoDaoDao.Contains(x.LiveAnchorId)).ToList();
+            var targetAfterLivingJiNa = targetAfterLiving.Where(x => LiveAnchorInfoJiNa.Contains(x.LiveAnchorId)).ToList();
+            #endregion
+
+            #region 获取直播后本年度业绩
+            var totalPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, LiveAnchorInfo, query.IsOldCustomer);
+            var daoDaoPerformance = totalPerformance.Where(x => LiveAnchorInfoDaoDao.Contains(x.LiveAnchorId)).ToList();
+            var jiNaPerformance = totalPerformance.Where(x => LiveAnchorInfoJiNa.Contains(x.LiveAnchorId)).ToList();
+            #endregion
+
+            #region 获取直播后上年度业绩
+            var totalPerformanceLastYear = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year - 1, LiveAnchorInfo, query.IsOldCustomer);
+            var daoDaoPerformanceLastYear = totalPerformanceLastYear.Where(x => LiveAnchorInfoDaoDao.Contains(x.LiveAnchorId)).ToList();
+            var jiNaPerformanceLastYear = totalPerformanceLastYear.Where(x => LiveAnchorInfoJiNa.Contains(x.LiveAnchorId)).ToList();
+            #endregion
+            for (int x = 0; x <= totalCount; x++)
+            {
+                PerformanceYearDataDto totalPerformanceYearData = new PerformanceYearDataDto();
+                PerformanceYearDataDto daoDaoPerformanceYearData = new PerformanceYearDataDto();
+                PerformanceYearDataDto jiNaPerformanceYearData = new PerformanceYearDataDto();
+                totalPerformanceYearData.GroupName = totalPerformanceName;
+                daoDaoPerformanceYearData.GroupName = daoDaoPerformanceName;
+                jiNaPerformanceYearData.GroupName = jiNaPerformanceName;
+                switch (x)
+                {
+                    case 0:
+                        totalPerformanceYearData.SortName = daoDaoPerformanceYearData.SortName = jiNaPerformanceYearData.SortName = query.Year + "年预算目标";
+                        #region 整体
+                        totalPerformanceYearData.JanuaryPerformance = targetAfterLiving.Where(x => x.Month == 1).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.FebruaryPerformance = targetAfterLiving.Where(x => x.Month == 2).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.MarchPerformance = targetAfterLiving.Where(x => x.Month == 3).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.AprilPerformance = targetAfterLiving.Where(x => x.Month == 4).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.MayPerformance = targetAfterLiving.Where(x => x.Month == 5).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.JunePerformance = targetAfterLiving.Where(x => x.Month == 6).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.JulyPerformance = targetAfterLiving.Where(x => x.Month == 7).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.AugustPerformance = targetAfterLiving.Where(x => x.Month == 8).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.SeptemberPerformance = targetAfterLiving.Where(x => x.Month == 9).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.OctoberPerformance = targetAfterLiving.Where(x => x.Month == 10).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.NovemberPerformance = targetAfterLiving.Where(x => x.Month == 11).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.DecemberPerformance = targetAfterLiving.Where(x => x.Month == 12).Sum(t => t.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.SumPerformance = targetAfterLiving.Sum(x => x.TotalPerformanceTarget).ToString();
+                        totalPerformanceYearData.AveragePerformance = Math.Round(targetAfterLiving.Sum(x => x.TotalPerformanceTarget) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        #region 刀刀
+                        daoDaoPerformanceYearData.JanuaryPerformance = targetAfterLivingDaodao.Where(x => x.Month == 1).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.FebruaryPerformance = targetAfterLivingDaodao.Where(x => x.Month == 2).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.MarchPerformance = targetAfterLivingDaodao.Where(x => x.Month == 3).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.AprilPerformance = targetAfterLivingDaodao.Where(x => x.Month == 4).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.MayPerformance = targetAfterLivingDaodao.Where(x => x.Month == 5).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.JunePerformance = targetAfterLivingDaodao.Where(x => x.Month == 6).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.JulyPerformance = targetAfterLivingDaodao.Where(x => x.Month == 7).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.AugustPerformance = targetAfterLivingDaodao.Where(x => x.Month == 8).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.SeptemberPerformance = targetAfterLivingDaodao.Where(x => x.Month == 9).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.OctoberPerformance = targetAfterLivingDaodao.Where(x => x.Month == 10).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.NovemberPerformance = targetAfterLivingDaodao.Where(x => x.Month == 11).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.DecemberPerformance = targetAfterLivingDaodao.Where(x => x.Month == 12).Sum(t => t.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.SumPerformance = targetAfterLivingDaodao.Sum(x => x.TotalPerformanceTarget).ToString();
+                        daoDaoPerformanceYearData.AveragePerformance = Math.Round(targetAfterLivingDaodao.Sum(x => x.TotalPerformanceTarget) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        #region 吉娜
+                        jiNaPerformanceYearData.JanuaryPerformance = targetAfterLivingJiNa.Where(x => x.Month == 1).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.FebruaryPerformance = targetAfterLivingJiNa.Where(x => x.Month == 2).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.MarchPerformance = targetAfterLivingJiNa.Where(x => x.Month == 3).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.AprilPerformance = targetAfterLivingJiNa.Where(x => x.Month == 4).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.MayPerformance = targetAfterLivingJiNa.Where(x => x.Month == 5).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.JunePerformance = targetAfterLivingJiNa.Where(x => x.Month == 6).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.JulyPerformance = targetAfterLivingJiNa.Where(x => x.Month == 7).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.AugustPerformance = targetAfterLivingJiNa.Where(x => x.Month == 8).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.SeptemberPerformance = targetAfterLivingJiNa.Where(x => x.Month == 9).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.OctoberPerformance = targetAfterLivingJiNa.Where(x => x.Month == 10).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.NovemberPerformance = targetAfterLivingJiNa.Where(x => x.Month == 11).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.DecemberPerformance = targetAfterLivingJiNa.Where(x => x.Month == 12).Sum(t => t.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.SumPerformance = targetAfterLivingJiNa.Sum(x => x.TotalPerformanceTarget).ToString();
+                        jiNaPerformanceYearData.AveragePerformance = Math.Round(targetAfterLivingDaodao.Sum(x => x.TotalPerformanceTarget) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        break;
+                    case 1:
+
+                        totalPerformanceYearData.SortName = daoDaoPerformanceYearData.SortName = jiNaPerformanceYearData.SortName = query.Year + "年实际业绩";
+                        #region 整体
+                        totalPerformanceYearData.JanuaryPerformance = totalPerformance.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.FebruaryPerformance = totalPerformance.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.MarchPerformance = totalPerformance.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.AprilPerformance = totalPerformance.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.MayPerformance = totalPerformance.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.JunePerformance = totalPerformance.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.JulyPerformance = totalPerformance.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.AugustPerformance = totalPerformance.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.SeptemberPerformance = totalPerformance.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.OctoberPerformance = totalPerformance.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.NovemberPerformance = totalPerformance.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.DecemberPerformance = totalPerformance.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.SumPerformance = totalPerformance.Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.AveragePerformance = Math.Round(totalPerformance.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        #region 刀刀
+                        daoDaoPerformanceYearData.JanuaryPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.FebruaryPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.MarchPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.AprilPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.MayPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.JunePerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.JulyPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.AugustPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.SeptemberPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.OctoberPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.NovemberPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.DecemberPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.SumPerformance = daoDaoPerformance.Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.AveragePerformance = Math.Round(daoDaoPerformance.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        #region 吉娜
+                        jiNaPerformanceYearData.JanuaryPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.FebruaryPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.MarchPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.AprilPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.MayPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.JunePerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.JulyPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.AugustPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.SeptemberPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.OctoberPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.NovemberPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.DecemberPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.SumPerformance = jiNaPerformance.Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.AveragePerformance = Math.Round(jiNaPerformance.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        break;
+                    case 2:
+
+                        totalPerformanceYearData.SortName = daoDaoPerformanceYearData.SortName = jiNaPerformanceYearData.SortName = (query.Year - 1) + "年实际业绩";
+                        #region 整体
+                        totalPerformanceYearData.JanuaryPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.FebruaryPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.MarchPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.AprilPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.MayPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.JunePerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.JulyPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.AugustPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.SeptemberPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.OctoberPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.NovemberPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.DecemberPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.SumPerformance = totalPerformanceLastYear.Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.AveragePerformance = Math.Round(totalPerformanceLastYear.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        #region 刀刀
+                        daoDaoPerformanceYearData.JanuaryPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.FebruaryPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.MarchPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.AprilPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.MayPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.JunePerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.JulyPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.AugustPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.SeptemberPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.OctoberPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.NovemberPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.DecemberPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.SumPerformance = daoDaoPerformanceLastYear.Sum(x => x.Price).ToString();
+                        daoDaoPerformanceYearData.AveragePerformance = Math.Round(daoDaoPerformanceLastYear.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        #region 吉娜
+                        jiNaPerformanceYearData.JanuaryPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.FebruaryPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.MarchPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.AprilPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.MayPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.JunePerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.JulyPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.AugustPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.SeptemberPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.OctoberPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.NovemberPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.DecemberPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.SumPerformance = jiNaPerformanceLastYear.Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.AveragePerformance = Math.Round(jiNaPerformanceLastYear.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        break;
+                    case 3:
+
+                        totalPerformanceYearData.SortName = daoDaoPerformanceYearData.SortName = jiNaPerformanceYearData.SortName = "目标达成率";
+                        #region 整体
+                        var targetTotal = result.TotalPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年预算目标");
+                        var completeTotal = result.TotalPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        totalPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.JanuaryPerformance), Convert.ToDecimal(targetTotal.JanuaryPerformance)).ToString();
+                        totalPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.FebruaryPerformance), Convert.ToDecimal(targetTotal.FebruaryPerformance)).ToString();
+                        totalPerformanceYearData.MarchPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.MarchPerformance), Convert.ToDecimal(targetTotal.MarchPerformance)).ToString();
+                        totalPerformanceYearData.AprilPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.AprilPerformance), Convert.ToDecimal(targetTotal.AprilPerformance)).ToString();
+                        totalPerformanceYearData.MayPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.MayPerformance), Convert.ToDecimal(targetTotal.MayPerformance)).ToString();
+                        totalPerformanceYearData.JunePerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.JunePerformance), Convert.ToDecimal(targetTotal.JunePerformance)).ToString();
+                        totalPerformanceYearData.JulyPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.JulyPerformance), Convert.ToDecimal(targetTotal.JulyPerformance)).ToString();
+                        totalPerformanceYearData.AugustPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.AugustPerformance), Convert.ToDecimal(targetTotal.AugustPerformance)).ToString();
+                        totalPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.SeptemberPerformance), Convert.ToDecimal(targetTotal.SeptemberPerformance)).ToString();
+                        totalPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.OctoberPerformance), Convert.ToDecimal(targetTotal.OctoberPerformance)).ToString();
+                        totalPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.NovemberPerformance), Convert.ToDecimal(targetTotal.NovemberPerformance)).ToString();
+                        totalPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.DecemberPerformance), Convert.ToDecimal(targetTotal.DecemberPerformance)).ToString();
+                        totalPerformanceYearData.SumPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.SumPerformance), Convert.ToDecimal(targetTotal.SumPerformance)).ToString();
+                        totalPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+
+                        #region 刀刀
+                        var targetDaoDao = result.DaoDaoPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年预算目标");
+                        var completeDaoDao = result.DaoDaoPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        daoDaoPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.JanuaryPerformance), Convert.ToDecimal(targetDaoDao.JanuaryPerformance)).ToString();
+                        daoDaoPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.FebruaryPerformance), Convert.ToDecimal(targetDaoDao.FebruaryPerformance)).ToString();
+                        daoDaoPerformanceYearData.MarchPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.MarchPerformance), Convert.ToDecimal(targetDaoDao.MarchPerformance)).ToString();
+                        daoDaoPerformanceYearData.AprilPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.AprilPerformance), Convert.ToDecimal(targetDaoDao.AprilPerformance)).ToString();
+                        daoDaoPerformanceYearData.MayPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.MayPerformance), Convert.ToDecimal(targetDaoDao.MayPerformance)).ToString();
+                        daoDaoPerformanceYearData.JunePerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.JunePerformance), Convert.ToDecimal(targetDaoDao.JunePerformance)).ToString();
+                        daoDaoPerformanceYearData.JulyPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.JulyPerformance), Convert.ToDecimal(targetDaoDao.JulyPerformance)).ToString();
+                        daoDaoPerformanceYearData.AugustPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.AugustPerformance), Convert.ToDecimal(targetDaoDao.AugustPerformance)).ToString();
+                        daoDaoPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.SeptemberPerformance), Convert.ToDecimal(targetDaoDao.SeptemberPerformance)).ToString();
+                        daoDaoPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.OctoberPerformance), Convert.ToDecimal(targetDaoDao.OctoberPerformance)).ToString();
+                        daoDaoPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.NovemberPerformance), Convert.ToDecimal(targetDaoDao.NovemberPerformance)).ToString();
+                        daoDaoPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.DecemberPerformance), Convert.ToDecimal(targetDaoDao.DecemberPerformance)).ToString();
+                        daoDaoPerformanceYearData.SumPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.SumPerformance), Convert.ToDecimal(targetDaoDao.SumPerformance)).ToString();
+                        totalPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+
+                        #region 吉娜
+                        var targetJiNa = result.JiNaPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年预算目标");
+                        var completeJiNa = result.JiNaPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        jiNaPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.JanuaryPerformance), Convert.ToDecimal(targetJiNa.JanuaryPerformance)).ToString();
+                        jiNaPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.FebruaryPerformance), Convert.ToDecimal(targetJiNa.FebruaryPerformance)).ToString();
+                        jiNaPerformanceYearData.MarchPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.MarchPerformance), Convert.ToDecimal(targetJiNa.MarchPerformance)).ToString();
+                        jiNaPerformanceYearData.AprilPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.AprilPerformance), Convert.ToDecimal(targetJiNa.AprilPerformance)).ToString();
+                        jiNaPerformanceYearData.MayPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.MayPerformance), Convert.ToDecimal(targetJiNa.MayPerformance)).ToString();
+                        jiNaPerformanceYearData.JunePerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.JunePerformance), Convert.ToDecimal(targetJiNa.JunePerformance)).ToString();
+                        jiNaPerformanceYearData.JulyPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.JulyPerformance), Convert.ToDecimal(targetJiNa.JulyPerformance)).ToString();
+                        jiNaPerformanceYearData.AugustPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.AugustPerformance), Convert.ToDecimal(targetJiNa.AugustPerformance)).ToString();
+                        jiNaPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.SeptemberPerformance), Convert.ToDecimal(targetJiNa.SeptemberPerformance)).ToString();
+                        jiNaPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.OctoberPerformance), Convert.ToDecimal(targetJiNa.OctoberPerformance)).ToString();
+                        jiNaPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.NovemberPerformance), Convert.ToDecimal(targetJiNa.NovemberPerformance)).ToString();
+                        jiNaPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.DecemberPerformance), Convert.ToDecimal(targetJiNa.DecemberPerformance)).ToString();
+                        jiNaPerformanceYearData.SumPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.SumPerformance), Convert.ToDecimal(targetJiNa.SumPerformance)).ToString();
+                        totalPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+                        break;
+                    case 4:
+                        totalPerformanceYearData.SortName = daoDaoPerformanceYearData.SortName = jiNaPerformanceYearData.SortName = "环比";
+                        #region 整体
+                        var completeTotalLastMonth = result.TotalPerformanceData.SingleOrDefault(x => x.SortName == (query.Year - 1) + "年实际业绩");
+                        var completeTotalThisMonth = result.TotalPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        totalPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.JanuaryPerformance), Convert.ToDecimal(completeTotalLastMonth.DecemberPerformance)).ToString();
+                        totalPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.FebruaryPerformance), Convert.ToDecimal(completeTotalThisMonth.JanuaryPerformance)).ToString();
+                        totalPerformanceYearData.MarchPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.MarchPerformance), Convert.ToDecimal(completeTotalThisMonth.FebruaryPerformance)).ToString();
+                        totalPerformanceYearData.AprilPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.AprilPerformance), Convert.ToDecimal(completeTotalThisMonth.MarchPerformance)).ToString();
+                        totalPerformanceYearData.MayPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.MayPerformance), Convert.ToDecimal(completeTotalThisMonth.AprilPerformance)).ToString();
+                        totalPerformanceYearData.JunePerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.JunePerformance), Convert.ToDecimal(completeTotalThisMonth.MayPerformance)).ToString();
+                        totalPerformanceYearData.JulyPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.JulyPerformance), Convert.ToDecimal(completeTotalThisMonth.JunePerformance)).ToString();
+                        totalPerformanceYearData.AugustPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.AugustPerformance), Convert.ToDecimal(completeTotalThisMonth.JulyPerformance)).ToString();
+                        totalPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.SeptemberPerformance), Convert.ToDecimal(completeTotalThisMonth.AugustPerformance)).ToString();
+                        totalPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.OctoberPerformance), Convert.ToDecimal(completeTotalThisMonth.SeptemberPerformance)).ToString();
+                        totalPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.NovemberPerformance), Convert.ToDecimal(completeTotalThisMonth.OctoberPerformance)).ToString();
+                        totalPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.DecemberPerformance), Convert.ToDecimal(completeTotalThisMonth.DecemberPerformance)).ToString();
+                        totalPerformanceYearData.SumPerformance = "/";
+                        totalPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+
+                        #region 刀刀
+                        var completeDaoDaoLastMonth = result.DaoDaoPerformanceData.SingleOrDefault(x => x.SortName == (query.Year - 1) + "年实际业绩");
+                        var completeDaoDaoThisMonth = result.DaoDaoPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        daoDaoPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.JanuaryPerformance), Convert.ToDecimal(completeDaoDaoLastMonth.DecemberPerformance)).ToString();
+                        daoDaoPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.FebruaryPerformance), Convert.ToDecimal(completeDaoDaoThisMonth.JanuaryPerformance)).ToString();
+                        daoDaoPerformanceYearData.MarchPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.MarchPerformance), Convert.ToDecimal(completeDaoDaoThisMonth.FebruaryPerformance)).ToString();
+                        daoDaoPerformanceYearData.AprilPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.AprilPerformance), Convert.ToDecimal(completeDaoDaoThisMonth.MarchPerformance)).ToString();
+                        daoDaoPerformanceYearData.MayPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.MayPerformance), Convert.ToDecimal(completeDaoDaoThisMonth.AprilPerformance)).ToString();
+                        daoDaoPerformanceYearData.JunePerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.JunePerformance), Convert.ToDecimal(completeDaoDaoThisMonth.MayPerformance)).ToString();
+                        daoDaoPerformanceYearData.JulyPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.JulyPerformance), Convert.ToDecimal(completeDaoDaoThisMonth.JunePerformance)).ToString();
+                        daoDaoPerformanceYearData.AugustPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.AugustPerformance), Convert.ToDecimal(completeDaoDaoThisMonth.JulyPerformance)).ToString();
+                        daoDaoPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.SeptemberPerformance), Convert.ToDecimal(completeDaoDaoThisMonth.AugustPerformance)).ToString();
+                        daoDaoPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.OctoberPerformance), Convert.ToDecimal(completeDaoDaoThisMonth.SeptemberPerformance)).ToString();
+                        daoDaoPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.NovemberPerformance), Convert.ToDecimal(completeDaoDaoThisMonth.OctoberPerformance)).ToString();
+                        daoDaoPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisMonth.DecemberPerformance), Convert.ToDecimal(completeDaoDaoThisMonth.NovemberPerformance)).ToString();
+                        daoDaoPerformanceYearData.SumPerformance = "/";
+                        daoDaoPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+
+                        #region 吉娜
+                        var completeJiNaLastMonth = result.JiNaPerformanceData.SingleOrDefault(x => x.SortName == (query.Year - 1) + "年实际业绩");
+                        var completeJiNaThisMonth = result.JiNaPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        jiNaPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.JanuaryPerformance), Convert.ToDecimal(completeJiNaLastMonth.DecemberPerformance)).ToString();
+                        jiNaPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.FebruaryPerformance), Convert.ToDecimal(completeJiNaThisMonth.JanuaryPerformance)).ToString();
+                        jiNaPerformanceYearData.MarchPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.MarchPerformance), Convert.ToDecimal(completeJiNaThisMonth.FebruaryPerformance)).ToString();
+                        jiNaPerformanceYearData.AprilPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.AprilPerformance), Convert.ToDecimal(completeJiNaThisMonth.MarchPerformance)).ToString();
+                        jiNaPerformanceYearData.MayPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.MayPerformance), Convert.ToDecimal(completeJiNaThisMonth.AprilPerformance)).ToString();
+                        jiNaPerformanceYearData.JunePerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.JunePerformance), Convert.ToDecimal(completeJiNaThisMonth.MayPerformance)).ToString();
+                        jiNaPerformanceYearData.JulyPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.JulyPerformance), Convert.ToDecimal(completeJiNaThisMonth.JunePerformance)).ToString();
+                        jiNaPerformanceYearData.AugustPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.AugustPerformance), Convert.ToDecimal(completeJiNaThisMonth.JulyPerformance)).ToString();
+                        jiNaPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.SeptemberPerformance), Convert.ToDecimal(completeJiNaThisMonth.AugustPerformance)).ToString();
+                        jiNaPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.OctoberPerformance), Convert.ToDecimal(completeJiNaThisMonth.SeptemberPerformance)).ToString();
+                        jiNaPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.NovemberPerformance), Convert.ToDecimal(completeJiNaThisMonth.OctoberPerformance)).ToString();
+                        jiNaPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisMonth.DecemberPerformance), Convert.ToDecimal(completeJiNaThisMonth.NovemberPerformance)).ToString();
+                        jiNaPerformanceYearData.SumPerformance = "/";
+                        jiNaPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+
+                        break;
+                    case 5:
+                        totalPerformanceYearData.SortName = daoDaoPerformanceYearData.SortName = jiNaPerformanceYearData.SortName = "同比";
+                        #region 整体
+                        var completeTotalHistoryYear = result.TotalPerformanceData.SingleOrDefault(x => x.SortName == (query.Year - 1) + "年实际业绩");
+                        var completeTotalThisYear = result.TotalPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        totalPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.JanuaryPerformance), Convert.ToDecimal(completeTotalHistoryYear.JanuaryPerformance)).ToString();
+                        totalPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.FebruaryPerformance), Convert.ToDecimal(completeTotalHistoryYear.FebruaryPerformance)).ToString();
+                        totalPerformanceYearData.MarchPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.MarchPerformance), Convert.ToDecimal(completeTotalHistoryYear.MarchPerformance)).ToString();
+                        totalPerformanceYearData.AprilPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.AprilPerformance), Convert.ToDecimal(completeTotalHistoryYear.AprilPerformance)).ToString();
+                        totalPerformanceYearData.MayPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.MayPerformance), Convert.ToDecimal(completeTotalHistoryYear.MayPerformance)).ToString();
+                        totalPerformanceYearData.JunePerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.JunePerformance), Convert.ToDecimal(completeTotalHistoryYear.JunePerformance)).ToString();
+                        totalPerformanceYearData.JulyPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.JulyPerformance), Convert.ToDecimal(completeTotalHistoryYear.JulyPerformance)).ToString();
+                        totalPerformanceYearData.AugustPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.AugustPerformance), Convert.ToDecimal(completeTotalHistoryYear.AugustPerformance)).ToString();
+                        totalPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.SeptemberPerformance), Convert.ToDecimal(completeTotalHistoryYear.SeptemberPerformance)).ToString();
+                        totalPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.OctoberPerformance), Convert.ToDecimal(completeTotalHistoryYear.OctoberPerformance)).ToString();
+                        totalPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.NovemberPerformance), Convert.ToDecimal(completeTotalHistoryYear.NovemberPerformance)).ToString();
+                        totalPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisYear.DecemberPerformance), Convert.ToDecimal(completeTotalHistoryYear.DecemberPerformance)).ToString();
+                        totalPerformanceYearData.SumPerformance = "/";
+                        totalPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+
+                        #region 刀刀
+                        var completeDaoDaoHistoryYear = result.DaoDaoPerformanceData.SingleOrDefault(x => x.SortName == (query.Year - 1) + "年实际业绩");
+                        var completeDaoDaoThisYear = result.DaoDaoPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        daoDaoPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.JanuaryPerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.JanuaryPerformance)).ToString();
+                        daoDaoPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.FebruaryPerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.FebruaryPerformance)).ToString();
+                        daoDaoPerformanceYearData.MarchPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.MarchPerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.MarchPerformance)).ToString();
+                        daoDaoPerformanceYearData.AprilPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.AprilPerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.AprilPerformance)).ToString();
+                        daoDaoPerformanceYearData.MayPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.MayPerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.MayPerformance)).ToString();
+                        daoDaoPerformanceYearData.JunePerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.JunePerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.JunePerformance)).ToString();
+                        daoDaoPerformanceYearData.JulyPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.JulyPerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.JulyPerformance)).ToString();
+                        daoDaoPerformanceYearData.AugustPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.AugustPerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.AugustPerformance)).ToString();
+                        daoDaoPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.SeptemberPerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.SeptemberPerformance)).ToString();
+                        daoDaoPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.OctoberPerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.OctoberPerformance)).ToString();
+                        daoDaoPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.NovemberPerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.NovemberPerformance)).ToString();
+                        daoDaoPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeDaoDaoThisYear.DecemberPerformance), Convert.ToDecimal(completeDaoDaoHistoryYear.DecemberPerformance)).ToString();
+                        daoDaoPerformanceYearData.SumPerformance = "/";
+                        daoDaoPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+
+                        #region 吉娜
+                        var completeJiNaHistoryYear = result.JiNaPerformanceData.SingleOrDefault(x => x.SortName == (query.Year - 1) + "年实际业绩");
+                        var completeJiNaThisYear = result.JiNaPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        jiNaPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.JanuaryPerformance), Convert.ToDecimal(completeJiNaHistoryYear.JanuaryPerformance)).ToString();
+                        jiNaPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.FebruaryPerformance), Convert.ToDecimal(completeJiNaHistoryYear.FebruaryPerformance)).ToString();
+                        jiNaPerformanceYearData.MarchPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.MarchPerformance), Convert.ToDecimal(completeJiNaHistoryYear.MarchPerformance)).ToString();
+                        jiNaPerformanceYearData.AprilPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.AprilPerformance), Convert.ToDecimal(completeJiNaHistoryYear.AprilPerformance)).ToString();
+                        jiNaPerformanceYearData.MayPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.MayPerformance), Convert.ToDecimal(completeJiNaHistoryYear.MayPerformance)).ToString();
+                        jiNaPerformanceYearData.JunePerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.JunePerformance), Convert.ToDecimal(completeJiNaHistoryYear.JunePerformance)).ToString();
+                        jiNaPerformanceYearData.JulyPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.JulyPerformance), Convert.ToDecimal(completeJiNaHistoryYear.JulyPerformance)).ToString();
+                        jiNaPerformanceYearData.AugustPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.AugustPerformance), Convert.ToDecimal(completeJiNaHistoryYear.AugustPerformance)).ToString();
+                        jiNaPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.SeptemberPerformance), Convert.ToDecimal(completeJiNaHistoryYear.SeptemberPerformance)).ToString();
+                        jiNaPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.OctoberPerformance), Convert.ToDecimal(completeJiNaHistoryYear.OctoberPerformance)).ToString();
+                        jiNaPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.NovemberPerformance), Convert.ToDecimal(completeJiNaHistoryYear.NovemberPerformance)).ToString();
+                        jiNaPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeJiNaThisYear.DecemberPerformance), Convert.ToDecimal(completeJiNaHistoryYear.DecemberPerformance)).ToString();
+                        jiNaPerformanceYearData.SumPerformance = "/";
+                        jiNaPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+                        break;
+                    case 6:
+                        totalPerformanceYearData.SortName = daoDaoPerformanceYearData.SortName = jiNaPerformanceYearData.SortName = query.Year + "年新/老客占比";
+
+                        #region 整体
+                        var totalNewCustomer = totalPerformance.Where(x => x.IsOldCustomer == false).ToList();
+                        var totalOldCustomer = totalPerformance.Where(x => x.IsOldCustomer == true).ToList();
+                        totalPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 1).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 1).Count());
+                        totalPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 2).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 2).Count());
+                        totalPerformanceYearData.MarchPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 3).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 3).Count());
+                        totalPerformanceYearData.AprilPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 4).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 4).Count());
+                        totalPerformanceYearData.MayPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 5).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 5).Count());
+                        totalPerformanceYearData.JunePerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 6).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 6).Count());
+                        totalPerformanceYearData.JulyPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 7).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 7).Count());
+                        totalPerformanceYearData.AugustPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 8).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 8).Count());
+                        totalPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 9).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 9).Count());
+                        totalPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 10).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 10).Count());
+                        totalPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 11).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 11).Count());
+                        totalPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.CreateDate.Month == 12).Count(), totalOldCustomer.Where(x => x.CreateDate.Month == 12).Count());
+                        totalPerformanceYearData.SumPerformance = "/";
+                        totalPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+                        #region 刀刀
+                        var daoDaoNewCustomer = daoDaoPerformance.Where(x => x.IsOldCustomer == false).ToList();
+                        var daoDaoOldCustomer = daoDaoPerformance.Where(x => x.IsOldCustomer == true).ToList();
+                        daoDaoPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 1).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 1).Count());
+                        daoDaoPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 2).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 2).Count());
+                        daoDaoPerformanceYearData.MarchPerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 3).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 3).Count());
+                        daoDaoPerformanceYearData.AprilPerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 4).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 4).Count());
+                        daoDaoPerformanceYearData.MayPerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 5).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 5).Count());
+                        daoDaoPerformanceYearData.JunePerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 6).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 6).Count());
+                        daoDaoPerformanceYearData.JulyPerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 7).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 7).Count());
+                        daoDaoPerformanceYearData.AugustPerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 8).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 8).Count());
+                        daoDaoPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 9).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 9).Count());
+                        daoDaoPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 10).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 10).Count());
+                        daoDaoPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 11).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 11).Count());
+                        daoDaoPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateAccounted(daoDaoNewCustomer.Where(x => x.CreateDate.Month == 12).Count(), daoDaoOldCustomer.Where(x => x.CreateDate.Month == 12).Count());
+                        daoDaoPerformanceYearData.SumPerformance = "/";
+                        daoDaoPerformanceYearData.AveragePerformance = "/";
+
+                        #endregion
+                        #region 吉娜
+                        var jiNaNewCustomer = jiNaPerformance.Where(x => x.IsOldCustomer == false).ToList();
+                        var jiNaOldCustomer = jiNaPerformance.Where(x => x.IsOldCustomer == true).ToList();
+                        jiNaPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 1).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 1).Count());
+                        jiNaPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 2).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 2).Count());
+                        jiNaPerformanceYearData.MarchPerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 3).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 3).Count());
+                        jiNaPerformanceYearData.AprilPerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 4).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 4).Count());
+                        jiNaPerformanceYearData.MayPerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 5).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 5).Count());
+                        jiNaPerformanceYearData.JunePerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 6).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 6).Count());
+                        jiNaPerformanceYearData.JulyPerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 7).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 7).Count());
+                        jiNaPerformanceYearData.AugustPerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 8).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 8).Count());
+                        jiNaPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 9).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 9).Count());
+                        jiNaPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 10).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 10).Count());
+                        jiNaPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 11).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 11).Count());
+                        jiNaPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateAccounted(jiNaNewCustomer.Where(x => x.CreateDate.Month == 12).Count(), jiNaOldCustomer.Where(x => x.CreateDate.Month == 12).Count());
+                        jiNaPerformanceYearData.SumPerformance = "/";
+                        jiNaPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+
+                        break;
+                }
+
+                result.TotalPerformanceData.Add(totalPerformanceYearData);
+                result.DaoDaoPerformanceData.Add(daoDaoPerformanceYearData);
+                result.JiNaPerformanceData.Add(jiNaPerformanceYearData);
+            }
+
+            return result;
+        }
+
         #endregion
 
         #endregion
@@ -2982,7 +3459,7 @@ namespace Fx.Amiya.Service
         {
             AssiatantTargetCompleteAndPerformanceRateDto result = new AssiatantTargetCompleteAndPerformanceRateDto();
             var selectDate = DateTimeExtension.GetSequentialDateByStartAndEndDate(query.EndDate.Year, query.EndDate.Month);
-            var assistantIdAndNameList = (await amiyaEmployeeService.GetAllAssistantAsync()).ToList(); 
+            var assistantIdAndNameList = (await amiyaEmployeeService.GetAllAssistantAsync()).ToList();
             var assistantTarget = await dalEmployeePerformanceTarget.GetAll()
                 .Where(e => e.Valid == true)
                 .Where(e => e.BelongYear == selectDate.EndDate.Year && e.BelongMonth == selectDate.EndDate.Month)

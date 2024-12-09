@@ -128,5 +128,9 @@ namespace Fx.Amiya.Dto.ContentPlateFormOrder
         /// </summary>
         public int SendOrderId { get; set; }
         public List<AddContentPlatFormOrderDealDetailsDto> AddContentPlatFormOrderDealDetailsDtoList { get; set; }
+        /// <summary>
+        /// 上一条成交情况id
+        /// </summary>
+        public string LastDealInfoId { get; set; }
     }
 }

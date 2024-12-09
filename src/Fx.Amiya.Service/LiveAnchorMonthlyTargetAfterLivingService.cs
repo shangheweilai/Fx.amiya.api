@@ -736,6 +736,57 @@ namespace Fx.Amiya.Service
             };
             return performanceInfoDto;
         }
+        /// <summary>
+        /// 根据年份获取业绩目标
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="liveAnchorIds">各个平台的主播ID集合</param>
+        /// <returns></returns>
+        public async Task<List<LiveAnchorMonthTargetPerformanceDto>> GetPerformanceByYearAsync(int year, List<int> liveAnchorIds, bool? isOldCustomer)
+        {
+            if (isOldCustomer == true)
+            {
+                var performance = dalLiveAnchorMonthlyTargetAfterLiving.GetAll().Where(t => t.Year == year)
+                .Where(o => liveAnchorIds.Count == 0 || liveAnchorIds.Contains(o.LiveAnchorId))
+                .Select(e => new LiveAnchorMonthTargetPerformanceDto
+                {
+                    Month = e.Month,
+                    TotalPerformanceTarget = e.OldCustomerPerformanceTarget,
+                    LiveAnchorId = e.LiveAnchorId,
+
+                })
+                .ToList();
+                return performance;
+            }
+            else if (isOldCustomer == false)
+            {
+                var performance = dalLiveAnchorMonthlyTargetAfterLiving.GetAll().Where(t => t.Year == year)
+                .Where(o => liveAnchorIds.Count == 0 || liveAnchorIds.Contains(o.LiveAnchorId))
+                .Select(e => new LiveAnchorMonthTargetPerformanceDto
+                {
+                    Month = e.Month,
+                    TotalPerformanceTarget = e.NewCustomerPerformanceTarget,
+                    LiveAnchorId = e.LiveAnchorId,
+
+                })
+                .ToList();
+                return performance;
+            }
+            else
+            {
+                var performance = dalLiveAnchorMonthlyTargetAfterLiving.GetAll().Where(t => t.Year == year)
+                .Where(o => liveAnchorIds.Count == 0 || liveAnchorIds.Contains(o.LiveAnchorId))
+                .Select(e => new LiveAnchorMonthTargetPerformanceDto
+                {
+                    Month = e.Month,
+                    TotalPerformanceTarget = e.PerformanceTarget,
+                    LiveAnchorId = e.LiveAnchorId,
+
+                })
+                .ToList();
+                return performance;
+            }
+        }
         public async Task<LiveAnchorMonthTargetPerformanceDto> GetPerformanceTargetAsync(int year, int month, List<int> liveAnchorIds)
         {
             var performance = dalLiveAnchorMonthlyTargetAfterLiving.GetAll().Where(t => t.Year == year && t.Month == month)

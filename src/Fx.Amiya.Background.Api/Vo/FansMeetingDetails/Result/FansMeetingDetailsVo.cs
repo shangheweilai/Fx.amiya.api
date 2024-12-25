@@ -132,6 +132,11 @@ namespace Fx.Amiya.Background.Api.Vo.FansMeetingDetails.Result
         /// 是否需要机构协助邀约
         /// </summary>
         public bool IsNeedHospitalHelp { get; set; }
+
+        /// <summary>
+        /// 是否需要助理协助
+        /// </summary>
+        public bool IsNeedCustomerServiceHelp { get; set; }
         /// <summary>
         /// 医院会员卡号
         /// </summary>
@@ -260,5 +265,10 @@ namespace Fx.Amiya.Background.Api.Vo.FansMeetingDetails.Result
         /// </summary>
         [Description("是否需要机构协助邀约")]
         public string IsNeedHospitalHelp { get; set; }
+        /// <summary>
+        /// 是否需要机构协助邀约
+        /// </summary>
+        [Description("是否需要助理协助邀约")]
+        public string IsNeedCustomerServiceHelp { get; set; }
     }
 }

@@ -348,7 +348,10 @@ namespace Fx.Amiya.Background.Api.Controllers
                 BelongEmpName = e.BelongEmpName,
                 SupportEmpId = e.SupportEmpId,
                 SupportEmpName = e.SupportEmpName,
-                IsCheckPerformance = e.IsCheckPerformance
+                IsCheckPerformance = e.IsCheckPerformance,
+                BeforeReplenishmentPrice = e.BeforeReplenishmentPrice,
+                BeforeReplenishmentIsCreateBill = e.BeforeReplenishmentIsCreateBill,
+                ConfirmDealPrice = e.ConfirmDealPrice,
             }).ToList();
             return ResultData<FxPageInfo<DealInfoListVo>>.Success().AddData("data", page);
         }

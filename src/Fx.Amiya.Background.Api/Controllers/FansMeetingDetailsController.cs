@@ -109,6 +109,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                                              FollowUpContent = d.FollowUpContent,
                                              NextAppointmentDate = d.NextAppointmentDate,
                                              IsNeedHospitalHelp = d.IsNeedHospitalHelp,
+                                             IsNeedCustomerServiceHelp = d.IsNeedCustomerServiceHelp,
                                              HospitalMemberCardId = d.HospitalMemberCardId,
                                          };
 
@@ -169,6 +170,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                                              FollowUpContent = d.FollowUpContent,
                                              NextAppointmentDate = d.NextAppointmentDate,
                                              IsNeedHospitalHelp = d.IsNeedHospitalHelp == true ? "是" : "否",
+                                             IsNeedCustomerServiceHelp = d.IsNeedCustomerServiceHelp == true ? "是" : "否",
                                              HospitalMemberCardId = d.HospitalMemberCardId,
 
                                          };
@@ -261,6 +263,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                                              FollowUpContent = d.FollowUpContent,
                                              NextAppointmentDate = d.NextAppointmentDate,
                                              IsNeedHospitalHelp = d.IsNeedHospitalHelp,
+                                             IsNeedCustomerServiceHelp = d.IsNeedCustomerServiceHelp,
                                              HospitalMemberCardId = d.HospitalMemberCardId,
                                          };
 
@@ -438,6 +441,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 fansMeetingDetailsVo.FollowUpContent = fansMeetingDetails.FollowUpContent;
                 fansMeetingDetailsVo.NextAppointmentDate = fansMeetingDetails.NextAppointmentDate;
                 fansMeetingDetailsVo.IsNeedHospitalHelp = fansMeetingDetails.IsNeedHospitalHelp;
+                fansMeetingDetailsVo.IsNeedCustomerServiceHelp = fansMeetingDetails.IsNeedCustomerServiceHelp;
                 fansMeetingDetailsVo.HospitalMemberCardId = fansMeetingDetails.HospitalMemberCardId;
                 return ResultData<FansMeetingDetailsVo>.Success().AddData("fansMeetingDetails", fansMeetingDetailsVo);
             }
@@ -502,6 +506,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 updateDto.FollowUpContent = updateVo.FollowUpContent;
                 updateDto.NextAppointmentDate = updateVo.NextAppointmentDate;
                 updateDto.IsNeedHospitalHelp = updateVo.IsNeedHospitalHelp;
+                updateDto.IsNeedCustomerServiceHelp = updateVo.IsNeedCustomerServiceHelp;
                 updateDto.HospitalMemberCardId = updateVo.HospitalMemberCardId;
                 await fansMeetingDetailsService.UpdateAsync(updateDto);
                 return ResultData.Success();

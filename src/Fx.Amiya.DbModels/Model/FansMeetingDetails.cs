@@ -119,6 +119,11 @@ namespace Fx.Amiya.DbModels.Model
         public bool IsNeedHospitalHelp { get; set; }
 
         /// <summary>
+        /// 是否需要助理协助
+        /// </summary>
+        public bool IsNeedCustomerServiceHelp { get; set; }
+
+        /// <summary>
         /// 医院会员卡号
         /// </summary>
         public string HospitalMemberCardId { get; set; }

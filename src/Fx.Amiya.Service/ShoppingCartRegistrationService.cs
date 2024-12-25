@@ -2354,7 +2354,7 @@ namespace Fx.Amiya.Service
             var liveanchorIds = new List<string>();
             if (string.IsNullOrEmpty(baseLiveAnchorId))
             {
-                liveanchorIds = nameList.Where(e => e.LiveAnchorName.Contains("刀刀") || e.LiveAnchorName.Contains("吉娜") || e.LiveAnchorName.Contains("璐璐")).Select(e => e.Id).ToList();
+                liveanchorIds = nameList.Where(e => e.LiveAnchorName.Contains("刀刀") || e.LiveAnchorName.Contains("吉娜")).Select(e => e.Id).ToList();
             }
             else
             {
@@ -2456,6 +2456,37 @@ namespace Fx.Amiya.Service
 
         }
 
+        /// <summary>
+        /// 根据年份获取小黄车登记数据记录（已指派的有效数据）
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="baseLiveAnchorId"></param>
+        /// <returns></returns>
+        public async Task<List<ShoppingCartRegistrationDto>> GetShoppingCartRegistrationDataByYearAsync(int year, int belongChannel, string baseLiveAnchorId)
+        {
+            DateTime startDate = Convert.ToDateTime(year + "-01-01");
+            DateTime endDate = Convert.ToDateTime(year + "-12-31");
+            var nameList = await liveAnchorBaseInfoService.GetValidAsync(true);
+            var liveanchorIds = new List<string>();
+            if (string.IsNullOrEmpty(baseLiveAnchorId))
+            {
+                liveanchorIds = nameList.Where(e => e.LiveAnchorName.Contains("刀刀") || e.LiveAnchorName.Contains("吉娜")).Select(e => e.Id).ToList();
+            }
+            else
+            {
+                liveanchorIds = new List<string>() { baseLiveAnchorId };
+            }
+            var baseData = dalShoppingCartRegistration.GetAll()
+               .Where(e => e.AssignEmpId != null && e.RecordDate >= startDate && e.RecordDate < endDate && liveanchorIds.Contains(e.BaseLiveAnchorId) && e.BelongChannel == belongChannel)
+               .Select(e => new ShoppingCartRegistrationDto
+               {
+                   Phone = e.Phone,
+                   RecordDate = e.RecordDate,
+                   LiveAnchorId = e.LiveAnchorId,
+                   IsAddWeChat = e.IsAddWeChat
+               }).ToList();
+            return baseData;
+        }
         #endregion
 
         private async Task<CallCenterConfigDto> GetCallCenterConfig()

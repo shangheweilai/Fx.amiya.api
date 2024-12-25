@@ -144,6 +144,11 @@ namespace Fx.Amiya.Dto.ContentPlatFormOrderSend
         public string OtherAppOrderId { get; set; }
 
         /// <summary>
+        /// 上一条成交编号
+        /// </summary>
+        public string LastDealInfoId { get; set; }
+
+        /// <summary>
         /// 新客/老客
         /// </summary>
         public bool IsOldCustomer { get; set; }

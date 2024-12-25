@@ -972,7 +972,62 @@ namespace Fx.Amiya.Background.Api.Controllers
             return ResultData<PerformanceYearDataListVo>.Success().AddData("data", resultData);
         }
 
+        /// <summary>
+        /// 医美流量趋势
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        [HttpGet("getTotalCluesByYear")]
+        public async Task<ResultData<PerformanceYearDataListVo>> GetTotalCluesByYearAsync([FromQuery] QueryPerfomanceYearDataVo query)
+        {
+            QueryPerfomanceYearDataDto queryDto = new QueryPerfomanceYearDataDto();
+            queryDto.Year = query.Year;
+            queryDto.BelongChannel = query.BelongChannel;
+            var result = await amiyaOperationsBoardService.GetTotalCluesByYearAsync(queryDto);
+            PerformanceYearDataListVo resultData = new PerformanceYearDataListVo();
+            var res2 = result.DaoDaoPerformanceData.Select(e => new PerformanceYearDataVo
+            {
+                GroupName = e.GroupName,
+                SortName = e.SortName,
+                JanuaryPerformance = e.JanuaryPerformance,
+                FebruaryPerformance = e.FebruaryPerformance,
+                MarchPerformance = e.MarchPerformance,
+                AprilPerformance = e.AprilPerformance,
+                MayPerformance = e.MayPerformance,
+                JunePerformance = e.JunePerformance,
+                JulyPerformance = e.JulyPerformance,
+                AugustPerformance = e.AugustPerformance,
+                SeptemberPerformance = e.SeptemberPerformance,
+                OctoberPerformance = e.OctoberPerformance,
+                NovemberPerformance = e.NovemberPerformance,
+                DecemberPerformance = e.DecemberPerformance,
+                SumPerformance = e.SumPerformance,
+                AveragePerformance = e.AveragePerformance,
+            }).ToList();
+            resultData.DaoDaoPerformanceData = res2;
 
+            var res3 = result.JiNaPerformanceData.Select(e => new PerformanceYearDataVo
+            {
+                GroupName = e.GroupName,
+                SortName = e.SortName,
+                JanuaryPerformance = e.JanuaryPerformance,
+                FebruaryPerformance = e.FebruaryPerformance,
+                MarchPerformance = e.MarchPerformance,
+                AprilPerformance = e.AprilPerformance,
+                MayPerformance = e.MayPerformance,
+                JunePerformance = e.JunePerformance,
+                JulyPerformance = e.JulyPerformance,
+                AugustPerformance = e.AugustPerformance,
+                SeptemberPerformance = e.SeptemberPerformance,
+                OctoberPerformance = e.OctoberPerformance,
+                NovemberPerformance = e.NovemberPerformance,
+                DecemberPerformance = e.DecemberPerformance,
+                SumPerformance = e.SumPerformance,
+                AveragePerformance = e.AveragePerformance,
+            }).ToList();
+            resultData.JiNaPerformanceData = res3;
+            return ResultData<PerformanceYearDataListVo>.Success().AddData("data", resultData);
+        }
 
 
 

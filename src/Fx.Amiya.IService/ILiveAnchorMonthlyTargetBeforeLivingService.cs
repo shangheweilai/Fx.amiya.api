@@ -1,4 +1,5 @@
-﻿using Fx.Amiya.Dto.LiveAnchorMonthlyTarget;
+﻿using Fx.Amiya.Dto.AmiyaOperationsBoardService.Result;
+using Fx.Amiya.Dto.LiveAnchorMonthlyTarget;
 using Fx.Amiya.Dto.NewBusinessDashboard;
 using Fx.Amiya.Dto.Performance;
 using Fx.Common;
@@ -43,7 +44,7 @@ namespace Fx.Amiya.IService
         /// <param name="year"></param>
         /// <param name="liveAnchorIds"></param>
         /// <returns></returns>
-        Task<List<LiveAnchorBaseBusinessMonthTargetBeforeLivingDto>> GetCluePerformanceTargetByYearAsync(int year, List<int> liveAnchorIds);
+        Task<List<AmiyaOperationBoardCluesChannelTargetDto>> GetCluePerformanceTargetByYearAsync(int year, List<int> liveAnchorIds);
 
     }
 }

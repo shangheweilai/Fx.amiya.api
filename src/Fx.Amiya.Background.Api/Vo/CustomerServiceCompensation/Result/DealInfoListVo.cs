@@ -19,6 +19,21 @@ namespace Fx.Amiya.Background.Api.Vo.CustomerServiceCompensation.Result
         /// 成交金额
         /// </summary>
         public decimal DealPrice { get; set; }
+
+        /// <summary>
+        /// 补单前金额
+        /// </summary>
+        public decimal BeforeReplenishmentPrice { get; set; }
+
+        /// <summary>
+        /// 补单前是否生成薪资
+        /// </summary>
+        public bool BeforeReplenishmentIsCreateBill { get; set; }
+        /// <summary>
+        /// 确认成交金额
+        /// </summary>
+
+        public decimal ConfirmDealPrice { get; set; }
         /// <summary>
         /// 业绩类型
         /// </summary>

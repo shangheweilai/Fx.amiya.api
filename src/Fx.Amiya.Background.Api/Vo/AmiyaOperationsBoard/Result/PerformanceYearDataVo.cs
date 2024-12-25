@@ -91,4 +91,6 @@ namespace Fx.Amiya.Background.Api.Vo.AmiyaOperationsBoard.Result
         /// </summary>
         public List<PerformanceYearDataVo> JiNaPerformanceData { get; set; }
     }
+
+
 }

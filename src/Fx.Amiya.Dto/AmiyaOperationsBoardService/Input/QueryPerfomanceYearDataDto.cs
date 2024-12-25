@@ -16,5 +16,9 @@ namespace Fx.Amiya.Dto.AmiyaOperationsBoardService.Input
         /// 新/老客（可传空）
         /// </summary>
         public bool? IsOldCustomer { get; set; }
+        /// <summary>
+        /// 部门
+        /// </summary>
+        public int BelongChannel { get; set; }
     }
 }

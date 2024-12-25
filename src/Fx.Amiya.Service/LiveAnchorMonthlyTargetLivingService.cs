@@ -1,4 +1,5 @@
 ﻿using Fx.Amiya.DbModels.Model;
+using Fx.Amiya.Dto.AmiyaOperationsBoardService.Result;
 using Fx.Amiya.Dto.LiveAnchorMonthlyTarget;
 using Fx.Amiya.Dto.NewBusinessDashboard;
 using Fx.Amiya.Dto.Performance;
@@ -99,14 +100,14 @@ namespace Fx.Amiya.Service
                                                         CumulativeEliminateCardGMV = d.CumulativeEliminateCardGMV,
                                                         EliminateCardGMVTargetCompleteRate = d.EliminateCardGMVTargetCompleteRate,
 
-                                                        RefundGMVTarget=d.RefundGMVTarget,
-                                                        CumulativeRefundGMV=d.CumulativeRefundGMV,
-                                                        RefundGMVTargetCompleteRate=d.RefundGMVTargetCompleteRate,
+                                                        RefundGMVTarget = d.RefundGMVTarget,
+                                                        CumulativeRefundGMV = d.CumulativeRefundGMV,
+                                                        RefundGMVTargetCompleteRate = d.RefundGMVTargetCompleteRate,
 
-                                                        CluesTarget =d.CluesTarget,
-                                                        CumulativeClues=d.CumulativeClues,
-                                                        CluesTargetCompleteRate=d.CluesTargetCompleteRate
-                                                        
+                                                        CluesTarget = d.CluesTarget,
+                                                        CumulativeClues = d.CumulativeClues,
+                                                        CluesTargetCompleteRate = d.CluesTargetCompleteRate
+
                                                     };
 
                 FxPageInfo<LiveAnchorMonthlyTargetLivingDto> liveAnchorMonthlyTargetLivingPageInfo = new FxPageInfo<LiveAnchorMonthlyTargetLivingDto>();
@@ -244,7 +245,7 @@ namespace Fx.Amiya.Service
                 liveAnchorMonthlyTargetDto.CumulativeRefundGMV = liveAnchorMonthlyTarget.CumulativeRefundGMV;
                 liveAnchorMonthlyTargetDto.RefundGMVTargetCompleteRate = liveAnchorMonthlyTarget.RefundGMVTargetCompleteRate;
 
-                liveAnchorMonthlyTargetDto.CluesTarget=liveAnchorMonthlyTarget.CluesTarget;
+                liveAnchorMonthlyTargetDto.CluesTarget = liveAnchorMonthlyTarget.CluesTarget;
                 liveAnchorMonthlyTargetDto.CumulativeClues = liveAnchorMonthlyTarget.CumulativeClues;
                 liveAnchorMonthlyTargetDto.CluesTargetCompleteRate = liveAnchorMonthlyTarget.CluesTargetCompleteRate;
 
@@ -281,7 +282,7 @@ namespace Fx.Amiya.Service
                 liveAnchorMonthlyTarget.GMVTarget = updateDto.GMVTarget;
                 liveAnchorMonthlyTarget.EliminateCardGMVTarget = updateDto.EliminateCardGMVTarget;
                 liveAnchorMonthlyTarget.RefundGMVTarget = updateDto.RefundGMVTarget;
-                liveAnchorMonthlyTarget.CluesTarget=updateDto.CluesTarget;
+                liveAnchorMonthlyTarget.CluesTarget = updateDto.CluesTarget;
 
                 await dalLiveAnchorMonthlyTargetLiving.UpdateAsync(liveAnchorMonthlyTarget, true);
             }
@@ -507,9 +508,28 @@ namespace Fx.Amiya.Service
                 GMVTarget = await performance.SumAsync(e => e.GMVTarget),
                 LivingRoomFlowInvestmentTarget = await performance.SumAsync(e => e.LivingRoomFlowInvestmentTarget),
                 LivingRoomCumulativeFlowInvestment = await performance.SumAsync(e => e.LivingRoomCumulativeFlowInvestment),
-                RefundGMVTarget = await performance.SumAsync(e=>e.RefundGMVTarget)
+                RefundGMVTarget = await performance.SumAsync(e => e.RefundGMVTarget)
             };
             return performanceInfoDto;
+        }
+        /// <summary>
+        /// 根据年份和主播id获取设计卡下单目标
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="liveAnchorIds"></param>
+        /// <returns></returns>
+        public async Task<List<AmiyaOperationBoardCluesChannelTargetDto>> GetCluesTargetByYearAsync(int year, List<int> liveAnchorIds)
+        {
+            var performance = dalLiveAnchorMonthlyTargetLiving.GetAll().Where(t => t.Year == year)
+                .Where(o => liveAnchorIds.Count == 0 || liveAnchorIds.Contains(o.LiveAnchorId)).Where(o => liveAnchorIds.Count == 0 || liveAnchorIds.Contains(o.LiveAnchorId))
+                .Select(e => new AmiyaOperationBoardCluesChannelTargetDto
+                {
+                    CluesTarget = e.ConsultationTarget + e.ConsultationTarget2,
+                    Month = e.Month,
+                    LiveAnchorId = e.LiveAnchorId
+                })
+                .ToList();
+            return performance;
         }
 
         /// <summary>
@@ -536,15 +556,15 @@ namespace Fx.Amiya.Service
         /// <param name="month"></param>
         /// <param name="liveAnchorIds">各个平台的主播ID集合</param>
         /// <returns></returns>
-        public async Task<List<LiveAnchorBaseBusinessMonthTargetPerformanceDto>> GetConsulationCardAddTargetByDateAsync(int year, int month,List<string> baseLiveAnchorIds)
+        public async Task<List<LiveAnchorBaseBusinessMonthTargetPerformanceDto>> GetConsulationCardAddTargetByDateAsync(int year, int month, List<string> baseLiveAnchorIds)
         {
-            var performance = dalLiveAnchorMonthlyTargetLiving.GetAll().Include(x => x.LiveAnchor).Where(t => t.Year == year && t.Month == month).Where(e=>baseLiveAnchorIds.Contains(e.LiveAnchor.LiveAnchorBaseId));
+            var performance = dalLiveAnchorMonthlyTargetLiving.GetAll().Include(x => x.LiveAnchor).Where(t => t.Year == year && t.Month == month).Where(e => baseLiveAnchorIds.Contains(e.LiveAnchor.LiveAnchorBaseId));
             var dataList = performance.GroupBy(e => e.LiveAnchor.LiveAnchorBaseId).Select(e => new LiveAnchorBaseBusinessMonthTargetPerformanceDto
             {
                 ConsulationCardTarget = e.Sum(t => t.ConsultationTarget + t.ConsultationTarget2),
                 LivingRefundCardTarget = e.Sum(t => t.LivingRefundCardTarget),
                 BaseLiveAnchorId = e.Key
-            }).ToList();            
+            }).ToList();
             return dataList;
         }
         /// <summary>
@@ -574,13 +594,13 @@ namespace Fx.Amiya.Service
             LivingTargetDto livingTargetDto = new LivingTargetDto();
             if (queryDto.ShowTikokData)
             {
-                var tiktok= res.Where(e => e.LiveAnchor.ContentPlateFormId == "4e4e9564-f6c3-47b6-a7da-e4518bab66a1");
+                var tiktok = res.Where(e => e.LiveAnchor.ContentPlateFormId == "4e4e9564-f6c3-47b6-a7da-e4518bab66a1");
                 livingTargetDto.OrderGMVTarget += tiktok.Sum(e => e.EliminateCardGMVTarget);
                 livingTargetDto.RefundGMVTarget += tiktok.Sum(e => e.RefundGMVTarget);
                 livingTargetDto.ActualReturnBackMoneyTarget += tiktok.Sum(e => e.CumulativeCargoSettlementCommission);
                 livingTargetDto.InvestFlowTarget += tiktok.Sum(e => e.LivingRoomFlowInvestmentTarget);
                 livingTargetDto.DesignCardOrderTarget += tiktok.Sum(e => e.ConsultationTarget) + res.Sum(e => e.ConsultationTarget2);
-                livingTargetDto.DesignCardRefundTarget += tiktok.Sum(e=>e.LivingRefundCardTarget);
+                livingTargetDto.DesignCardRefundTarget += tiktok.Sum(e => e.LivingRefundCardTarget);
             }
             if (queryDto.ShowWechatVideoData)
             {
@@ -592,7 +612,7 @@ namespace Fx.Amiya.Service
                 livingTargetDto.DesignCardOrderTarget += wechat.Sum(e => e.ConsultationTarget) + wechat.Sum(e => e.ConsultationTarget2);
                 livingTargetDto.DesignCardRefundTarget += wechat.Sum(e => e.LivingRefundCardTarget);
             }
-            
+
             return livingTargetDto;
         }
     }

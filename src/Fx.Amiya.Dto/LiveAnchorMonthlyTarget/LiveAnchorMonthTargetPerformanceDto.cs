@@ -201,6 +201,10 @@ namespace Fx.Amiya.Dto.LiveAnchorMonthlyTarget
     public class LiveAnchorBaseBusinessMonthTargetBeforeLivingDto { 
     
         /// <summary>
+        /// 月份
+        /// </summary>
+        public int Month { get; set; }
+        /// <summary>
         /// 线索目标
         /// </summary>
         public int CluesTarget { get; set; }
@@ -217,5 +221,7 @@ namespace Fx.Amiya.Dto.LiveAnchorMonthlyTarget
         /// 加v目标
         /// </summary>
         public int AddWechatTarget { get; set; }
+
+        public int LiveAnchorId { get; set; }
     }
 }

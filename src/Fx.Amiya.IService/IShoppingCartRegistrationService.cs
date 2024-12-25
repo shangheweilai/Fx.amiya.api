@@ -290,6 +290,14 @@ namespace Fx.Amiya.IService
         /// <param name="baseLiveAnchorId"></param>
         /// <returns></returns>
         Task<List<ShoppingCartRegistrationIndicatorBaseDataDto>> GetAssitantFlowAndCustomerTransformDataAsync(DateTime startDate, DateTime endDate, bool? isCurrentMonth, string baseLiveAnchorId, List<string> contentPlatformIds);
+
+        /// <summary>
+        /// 根据年份获取小黄车登记数据记录（已指派的有效数据）
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="baseLiveAnchorId"></param>
+        /// <returns></returns>
+        Task<List<ShoppingCartRegistrationDto>> GetShoppingCartRegistrationDataByYearAsync(int year, int belongChannel, string baseLiveAnchorId);
         #endregion
         #region 助理看板
         /// <summary>

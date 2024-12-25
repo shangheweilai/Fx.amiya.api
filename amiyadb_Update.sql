@@ -43,8 +43,19 @@ update  amiyadb.tbl_customer_service_compensation set verison="1.0";
 --小黄车列表新增是否重复下单（针对直播中面诊卡）
 ALTER TABLE `amiyadb`.`tbl_shopping_cart_registration` 
 ADD COLUMN `is_repeate_create_order` BIT(1) NOT NULL DEFAULT b'0' AFTER `from_title`;
---------------------------------------------------------------------------------------------------------以上部分已更新到线上--------------------------------------
 
 --成交情况表加入上一条成交单id
 ALTER TABLE `amiyadb`.`tbl_content_platform_order_deal_info` 
 ADD COLUMN `last_deal_info_id` VARCHAR(50) NULL AFTER `consumption_type`;
+
+--成交情况列表加入是否有效数据列
+ALTER TABLE `amiyadb`.`tbl_content_platform_order_deal_info` 
+ADD COLUMN `valid` BIT(1) NOT NULL AFTER `last_deal_info_id`;
+
+update tbl_content_platform_order_deal_info set valid=true;
+
+
+--粉丝见面会详情新增是否需助理跟进
+ALTER TABLE `amiyadb`.`tbl_fans_meeting_details` 
+ADD COLUMN `is_need_customerservice_help` BIT(1) NOT NULL AFTER `is_need_hospital_help`;
+--------------------------------------------------------------------------------------------------------以上部分已更新到线上--------------------------------------

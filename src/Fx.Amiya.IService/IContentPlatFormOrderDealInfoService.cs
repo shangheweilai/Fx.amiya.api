@@ -37,6 +37,13 @@ namespace Fx.Amiya.IService
         Task<ContentPlatFormOrderDealInfoDto> GetByIdAsync(string id);
 
         /// <summary>
+        /// 拆单
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        Task SplitOrderDealInfo(SplitContentPlatFormOrderDealInfoDto input);
+
+        /// <summary>
         /// 根据三方标识获取成交情况
         /// </summary>
         /// <param name="otherAppOrder"></param>
@@ -52,6 +59,8 @@ namespace Fx.Amiya.IService
         /// <param name="isOldCustomer"></param>
         /// <returns></returns>
         Task UpdateIsOldCustomerAsync(string orderDealId, bool isOldCustomer);
+
+        Task UpdateDealPictureAsync(string dealId, string picture, int empId);
 
         Task DeleteAsync(string id);
         Task<List<ContentPlatFormOrderDealInfoDto>> GetByOrderIdAsync(string orderId);

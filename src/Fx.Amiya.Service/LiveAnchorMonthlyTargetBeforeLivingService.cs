@@ -1,4 +1,5 @@
 ﻿using Fx.Amiya.DbModels.Model;
+using Fx.Amiya.Dto.AmiyaOperationsBoardService.Result;
 using Fx.Amiya.Dto.LiveAnchorMonthlyTarget;
 using Fx.Amiya.Dto.NewBusinessDashboard;
 using Fx.Amiya.Dto.Performance;
@@ -918,13 +919,15 @@ namespace Fx.Amiya.Service
         /// <param name="month"></param>
         /// <param name="liveAnchorIds"></param>
         /// <returns></returns>
-        public async Task<List<LiveAnchorBaseBusinessMonthTargetBeforeLivingDto>> GetCluePerformanceTargetByYearAsync(int year, List<int> liveAnchorIds)
+        public async Task<List<AmiyaOperationBoardCluesChannelTargetDto>> GetCluePerformanceTargetByYearAsync(int year, List<int> liveAnchorIds)
         {
             var performance = dalLiveAnchorMonthlyTargetBeforeLiving.GetAll().Where(t => t.Year == year)
                 .Where(o => liveAnchorIds.Count == 0 || liveAnchorIds.Contains(o.LiveAnchorId))
-                .Select(e => new LiveAnchorBaseBusinessMonthTargetBeforeLivingDto
+                .Select(e => new AmiyaOperationBoardCluesChannelTargetDto
                 {
                     CluesTarget = e.TikTokCluesTarget + e.XiaoHongShuCluesTarget + e.VideoCluesTarget,
+                    Month=e.Month,
+                    LiveAnchorId=e.LiveAnchorId
                 })
                 .ToList();
             return performance;

@@ -84,6 +84,7 @@ namespace Fx.Amiya.Service
                                           FollowUpContent = d.FollowUpContent,
                                           NextAppointmentDate = d.NextAppointmentDate,
                                           IsNeedHospitalHelp = d.IsNeedHospitalHelp,
+                                          IsNeedCustomerServiceHelp = d.IsNeedCustomerServiceHelp,
                                           HospitalMemberCardId = d.HospitalMemberCardId,
                                       };
             FxPageInfo<FansMeetingDetailsDto> fansMeetingDetailsPageInfo = new FxPageInfo<FansMeetingDetailsDto>();
@@ -148,6 +149,7 @@ namespace Fx.Amiya.Service
                                           FollowUpContent = d.FollowUpContent,
                                           NextAppointmentDate = d.NextAppointmentDate,
                                           IsNeedHospitalHelp = d.IsNeedHospitalHelp,
+                                          IsNeedCustomerServiceHelp = d.IsNeedCustomerServiceHelp,
                                           HospitalMemberCardId = d.HospitalMemberCardId,
                                       };
             List<FansMeetingDetailsDto> fansMeetingDetailsPageInfo = new List<FansMeetingDetailsDto>();
@@ -246,6 +248,7 @@ namespace Fx.Amiya.Service
             returnResult.FollowUpContent = result.FollowUpContent;
             returnResult.NextAppointmentDate = result.NextAppointmentDate;
             returnResult.IsNeedHospitalHelp = result.IsNeedHospitalHelp;
+            returnResult.IsNeedCustomerServiceHelp = result.IsNeedCustomerServiceHelp;
             returnResult.HospitalMemberCardId = result.HospitalMemberCardId;
             return returnResult;
         }
@@ -302,6 +305,7 @@ namespace Fx.Amiya.Service
             result.FollowUpContent = updateDto.FollowUpContent;
             result.NextAppointmentDate = updateDto.NextAppointmentDate;
             result.IsNeedHospitalHelp = updateDto.IsNeedHospitalHelp;
+            result.IsNeedCustomerServiceHelp = updateDto.IsNeedCustomerServiceHelp;
             result.HospitalMemberCardId = updateDto.HospitalMemberCardId;
             await dalFansMeetingDetails.UpdateAsync(result, true);
         }

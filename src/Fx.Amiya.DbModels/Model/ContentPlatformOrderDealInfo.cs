@@ -149,5 +149,10 @@ namespace Fx.Amiya.DbModels.Model
         /// 上一条成交情况id（当业绩类型为“助理补单时有值）
         /// </summary>
         public string LastDealInfoId { get; set; }
+
+        /// <summary>
+        /// 是否有效
+        /// </summary>
+        public bool Valid { get; set; }
     }
 }

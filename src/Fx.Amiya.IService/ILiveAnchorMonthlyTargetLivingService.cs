@@ -1,4 +1,5 @@
-﻿using Fx.Amiya.Dto.LiveAnchorMonthlyTarget;
+﻿using Fx.Amiya.Dto.AmiyaOperationsBoardService.Result;
+using Fx.Amiya.Dto.LiveAnchorMonthlyTarget;
 using Fx.Amiya.Dto.NewBusinessDashboard;
 using Fx.Amiya.Dto.Performance;
 using Fx.Common;
@@ -29,6 +30,13 @@ namespace Fx.Amiya.IService
         Task<List<PerformanceInfoByDateDto>> GetLiveAnchorCommercePerformance(int year, int month, List<int> liveAnchorIds);
 
         Task<LiveAnchorBaseBusinessMonthTargetPerformanceDto> GetBasePerformanceTargetAsync(int year, int month, List<int> liveAnchorIds);
+        /// <summary>
+        /// 根据年份和主播id获取设计卡下单目标
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="liveAnchorIds"></param>
+        /// <returns></returns>
+        Task<List<AmiyaOperationBoardCluesChannelTargetDto>> GetCluesTargetByYearAsync(int year, List<int> liveAnchorIds);
 
         Task<LiveAnchorBaseBusinessMonthTargetPerformanceDto> GetConsulationCardAddTargetByDateAsync(int year, int month);
 

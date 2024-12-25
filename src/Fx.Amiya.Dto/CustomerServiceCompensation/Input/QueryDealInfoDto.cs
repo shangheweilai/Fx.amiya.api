@@ -20,7 +20,7 @@ namespace Fx.Amiya.Dto.CustomerServiceCompensation.Input
         /// <summary>
         /// 业绩类型（1-成交；2-退款；3-稽查）
         /// </summary>
-        public int? PerformanceType { get; set; }
+        public string PerformanceType { get; set; }
 
         /// <summary>
         /// 关键词

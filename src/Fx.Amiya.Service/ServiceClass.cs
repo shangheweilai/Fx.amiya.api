@@ -416,7 +416,7 @@ namespace Fx.Amiya.Service
                     typeText = "VIP管家稽查";
                     break;
                 case 7:
-                    typeText = "机构报单-API";
+                    typeText = "机构报单-API（勿选）";
                     break;
                 case 8:
                     typeText = "助理补单";

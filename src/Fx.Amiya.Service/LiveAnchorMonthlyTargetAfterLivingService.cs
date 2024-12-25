@@ -1,4 +1,5 @@
 ﻿using Fx.Amiya.DbModels.Model;
+using Fx.Amiya.Dto.AmiyaOperationsBoardService.Result;
 using Fx.Amiya.Dto.LiveAnchorMonthlyTarget;
 using Fx.Amiya.Dto.Performance;
 using Fx.Amiya.IDal;
@@ -742,18 +743,17 @@ namespace Fx.Amiya.Service
         /// <param name="year"></param>
         /// <param name="liveAnchorIds">各个平台的主播ID集合</param>
         /// <returns></returns>
-        public async Task<List<LiveAnchorMonthTargetPerformanceDto>> GetPerformanceByYearAsync(int year, List<int> liveAnchorIds, bool? isOldCustomer)
+        public async Task<List<AmiyaOperationBoardCluesChannelTargetDto>> GetPerformanceByYearAsync(int year, List<int> liveAnchorIds, bool? isOldCustomer)
         {
             if (isOldCustomer == true)
             {
                 var performance = dalLiveAnchorMonthlyTargetAfterLiving.GetAll().Where(t => t.Year == year)
                 .Where(o => liveAnchorIds.Count == 0 || liveAnchorIds.Contains(o.LiveAnchorId))
-                .Select(e => new LiveAnchorMonthTargetPerformanceDto
+                .Select(e => new AmiyaOperationBoardCluesChannelTargetDto
                 {
                     Month = e.Month,
                     TotalPerformanceTarget = e.OldCustomerPerformanceTarget,
                     LiveAnchorId = e.LiveAnchorId,
-
                 })
                 .ToList();
                 return performance;
@@ -762,7 +762,7 @@ namespace Fx.Amiya.Service
             {
                 var performance = dalLiveAnchorMonthlyTargetAfterLiving.GetAll().Where(t => t.Year == year)
                 .Where(o => liveAnchorIds.Count == 0 || liveAnchorIds.Contains(o.LiveAnchorId))
-                .Select(e => new LiveAnchorMonthTargetPerformanceDto
+                .Select(e => new AmiyaOperationBoardCluesChannelTargetDto
                 {
                     Month = e.Month,
                     TotalPerformanceTarget = e.NewCustomerPerformanceTarget,
@@ -776,11 +776,12 @@ namespace Fx.Amiya.Service
             {
                 var performance = dalLiveAnchorMonthlyTargetAfterLiving.GetAll().Where(t => t.Year == year)
                 .Where(o => liveAnchorIds.Count == 0 || liveAnchorIds.Contains(o.LiveAnchorId))
-                .Select(e => new LiveAnchorMonthTargetPerformanceDto
+                .Select(e => new AmiyaOperationBoardCluesChannelTargetDto
                 {
                     Month = e.Month,
                     TotalPerformanceTarget = e.PerformanceTarget,
                     LiveAnchorId = e.LiveAnchorId,
+                    CluesTarget = e.CluesTarget,
 
                 })
                 .ToList();

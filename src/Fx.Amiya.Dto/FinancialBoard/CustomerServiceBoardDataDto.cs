@@ -43,6 +43,8 @@ namespace Fx.Amiya.Dto.FinancialBoard
         public decimal NewCustomerServicePrice { get; set; }
         public decimal OldCustomerPrice { get; set; }
         public decimal OldCustomerServicePrice { get; set; }
+
+        public int DealPerformanceType { get; set; }
         /// <summary>
         /// 视频业绩
         /// </summary>
@@ -96,7 +98,7 @@ namespace Fx.Amiya.Dto.FinancialBoard
         /// <summary>
         /// 历史/当月派单当月成交业绩占比
         /// </summary>
-        public string HistoryAndThisMonthCompare { get; set; }
+        public string HistoryAndThisMonthCompare { get; set; } 
     }
 
 

@@ -1,5 +1,7 @@
 ﻿using Fx.Amiya.Background.Api.Vo;
 using Fx.Amiya.Background.Api.Vo.ContentPlateFormOrder;
+using Fx.Amiya.Background.Api.Vo.ContentPlateFormOrder.Input;
+using Fx.Amiya.Dto.ContentPlateFormOrder;
 using Fx.Amiya.Dto.ContentPlatFormOrderSend;
 using Fx.Amiya.Dto.WareHouse.WareHouseInfo;
 using Fx.Amiya.IService;
@@ -132,7 +134,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                                             CreatBillCompany = d.BelongCompany,
                                             ConsumptionType = d.ConsumptionType,
                                             ConsumptionTypeText = d.ConsumptionTypeText,
-                                            CustomerServiceSettlePrice=d.CustomerServiceSettlePrice
+                                            CustomerServiceSettlePrice = d.CustomerServiceSettlePrice
                                         };
             FxPageInfo<ContentPlatFormOrderDealInfoVo> pageInfo = new FxPageInfo<ContentPlatFormOrderDealInfoVo>();
             pageInfo.TotalCount = result.TotalCount;
@@ -235,6 +237,56 @@ namespace Fx.Amiya.Background.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// 拆单
+        /// </summary>
+        /// <param name="inputVo"></param>
+        /// <returns></returns>
+        [FxInternalAuthorize]
+        [HttpPut("splitDealInfo")]
+        public async Task<ResultData> SplitOrderDealInfo(SplitContentPlatformOrderDealInfoVo inputVo)
+        {
+            try
+            {
+                SplitContentPlatFormOrderDealInfoDto input = new SplitContentPlatFormOrderDealInfoDto();
+                input.DealId = inputVo.DealId;
+                input.DealPrice = inputVo.Price;
+                input.LocalDealPirce = inputVo.LocalDealPirce;
+                await _contentPlatFormOrderDealInfoService.SplitOrderDealInfo(input);
+            }
+            catch (Exception ex)
+            {
+                return ResultData.Fail(ex.Message);
+            }
+            return ResultData.Success();
+        }
+
+
+
+        /// <summary>
+        /// 修改成交情况截图
+        /// </summary>
+        /// <param name="updateVo"></param>
+        /// <returns></returns>
+        [FxInternalAuthorize]
+        [HttpPut("updateDealPicture")]
+
+        public async Task<ResultData> UpdateDealPictureAsync(UpdateContentPlatFormOrderDealInfoVo updateVo)
+        {
+            try
+            {
+                UpdateContentPlatFormOrderDealInfoDto updateDto = new UpdateContentPlatFormOrderDealInfoDto();
+
+                var employee = httpContextAccessor.HttpContext.User as FxAmiyaEmployeeIdentity;
+                int employeeId = Convert.ToInt32(employee.Id);
+                await _contentPlatFormOrderDealInfoService.UpdateDealPictureAsync(updateVo.Id, updateVo.DealPicture,employeeId);
+                return ResultData.Success();
+            }
+            catch (Exception ex)
+            {
+                return ResultData.Fail(ex.Message);
+            }
+        }
 
         /// <summary>
         /// 修改成交情况信息(暂停使用)

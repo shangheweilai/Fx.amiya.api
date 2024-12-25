@@ -323,6 +323,7 @@ namespace Fx.Amiya.Service
             var selectDate = DateTimeExtension.GetStartDateEndDate(queryDto.StartDate.Value, queryDto.EndDate.Value);
             var query = dalContentPlatFormOrderDealInfo.GetAll()
                 .Include(e => e.ContentPlatFormOrder)
+                .Where(x => x.Valid == true)
                 .Where(e => e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate);
             if (queryDto.CreateBy.HasValue)
             {
@@ -332,17 +333,37 @@ namespace Fx.Amiya.Service
             {
                 query = query.Where(e => e.ContentPlatFormOrder.IsSupportOrder ? e.ContentPlatFormOrder.SupportEmpId == queryDto.BelongEmpId : e.ContentPlatFormOrder.BelongEmpId == queryDto.BelongEmpId);
             }
-            if (queryDto.PerformanceType == (int)PerformanceType.Deal)
+            List<int> performanceTypeQueryList = new List<int>();
+            if (!string.IsNullOrEmpty(queryDto.PerformanceType))
             {
-                query = query.Where(e => e.DealPerformanceType != (int)ContentPlateFormOrderDealPerformanceType.AssistantCheck && e.DealPerformanceType != (int)ContentPlateFormOrderDealPerformanceType.FinanceCheck);
+                var data = queryDto.PerformanceType.Split(',');
+                foreach (var x in data)
+                {
+                    performanceTypeQueryList.Add(Convert.ToInt32(x));
+                }
             }
-            //if (queryDto.PerformanceType == (int)PerformanceType.Refund)
-            //{
-            //    query = query.Where(e => e.Price < 0);
-            //}
-            if (queryDto.PerformanceType == (int)PerformanceType.Check)
+            List<int> generalPerformanceList = new List<int>();
+            generalPerformanceList.Add((int)ContentPlateFormOrderDealPerformanceType.Others);
+            generalPerformanceList.Add((int)ContentPlateFormOrderDealPerformanceType.AssistantActivate);
+            generalPerformanceList.Add((int)ContentPlateFormOrderDealPerformanceType.VIPHousekeeperActivate);
+            generalPerformanceList.Add((int)ContentPlateFormOrderDealPerformanceType.HospitalDeclaration);
+            generalPerformanceList.Add((int)ContentPlateFormOrderDealPerformanceType.CustomerServiceReplenishmentOrder);
+
+            List<int> checkPerformanceList = new List<int>();
+            checkPerformanceList.Add((int)ContentPlateFormOrderDealPerformanceType.AssistantCheck);
+            checkPerformanceList.Add((int)ContentPlateFormOrderDealPerformanceType.FinanceCheck);
+            checkPerformanceList.Add((int)ContentPlateFormOrderDealPerformanceType.VIPHousekeeperCheck);
+            if (performanceTypeQueryList.Count < 2)
             {
-                query = query.Where(e => e.DealPerformanceType == (int)ContentPlateFormOrderDealPerformanceType.AssistantCheck || e.DealPerformanceType == (int)ContentPlateFormOrderDealPerformanceType.FinanceCheck);
+
+                if (performanceTypeQueryList.Contains((int)PerformanceType.Deal))
+                {
+                    query = query.Where(e => generalPerformanceList.Contains(e.DealPerformanceType));
+                }
+                if (performanceTypeQueryList.Contains((int)PerformanceType.Check))
+                {
+                    query = query.Where(e => checkPerformanceList.Contains(e.DealPerformanceType));
+                }
             }
             if (!string.IsNullOrEmpty(queryDto.Keyword))
             {
@@ -361,7 +382,8 @@ namespace Fx.Amiya.Service
                 IsDeal = e.IsDeal,
                 IsSupportOrder = e.ContentPlatFormOrder.IsSupportOrder,
                 BelongEmpId = e.ContentPlatFormOrder.BelongEmpId.Value,
-                SupportEmpId = e.ContentPlatFormOrder.SupportEmpId
+                SupportEmpId = e.ContentPlatFormOrder.SupportEmpId,
+                LastDealInfoId = e.LastDealInfoId
             }).OrderByDescending(x => x.CreateDate).Skip((queryDto.PageNum.Value - 1) * queryDto.PageSize.Value).Take(queryDto.PageSize.Value).ToListAsync();
             var employeeIdNameList = await dalAmiyaEmployee.GetAll().Select(e => new { e.Id, e.Name }).ToListAsync();
             foreach (var item in pageData.List)
@@ -377,6 +399,22 @@ namespace Fx.Amiya.Service
                 else
                 {
                     item.IsCheckPerformance = "未提取";
+                }
+                if (!string.IsNullOrEmpty(item.LastDealInfoId))
+                {
+                    var dealInfo = await dalContentPlatFormOrderDealInfo.GetAll().Where(x => x.Id == item.LastDealInfoId).FirstOrDefaultAsync();
+                    item.BeforeReplenishmentPrice = dealInfo.Price;
+                    var IscheckPerformance = await customerServiceCheckPerformanceService.GetByDealIdAsync(item.LastDealInfoId);
+                    if (IscheckPerformance.Point > 0)
+                    {
+                        item.BeforeReplenishmentIsCreateBill = true;
+                        item.ConfirmDealPrice = item.DealPrice - item.BeforeReplenishmentPrice;
+                    }
+                    else
+                    {
+                        item.BeforeReplenishmentIsCreateBill = false;
+                        item.ConfirmDealPrice = item.DealPrice;
+                    }
                 }
             }
             return pageData;

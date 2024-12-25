@@ -1,5 +1,6 @@
 ﻿using Fx.Amiya.DbModels.Model;
 using Fx.Amiya.Dto.AmiyaOperationsBoardService;
+using Fx.Amiya.Dto.AmiyaOperationsBoardService.Result;
 using Fx.Amiya.Dto.AssistantHomePage.Input;
 using Fx.Amiya.Dto.AssistantHomePage.Result;
 using Fx.Amiya.Dto.ContentPlateFormOrder;
@@ -1908,10 +1909,18 @@ namespace Fx.Amiya.Service
                     result.SendBy = sendHospital.Sender;
                     var hospitalInfo = await _hospitalInfoService.GetBaseByIdAsync(sendHospital.HospitalId);
                     result.SendHospitalName = hospitalInfo.Name;
-                    result.SendHospitaPicture = hospitalInfo.ThumbPicUrl;
                     var empInfo = await _amiyaEmployeeService.GetByIdAsync(result.SendBy.Value);
                     result.SendByName = empInfo.Name;
                     result.SendDate = sendHospital.SendDate;
+                }
+            }
+            if (order.ContentPlatformOrderDealInfoList != null)
+            {
+                var dealHospital = order.ContentPlatformOrderDealInfoList.OrderByDescending(x => x.CreateDate).FirstOrDefault();
+                if (dealHospital != null)
+                {
+                    var hospitalInfo = await _hospitalInfoService.GetBaseByIdAsync(dealHospital.LastDealHospitalId.Value);
+                    result.SendHospitaPicture = hospitalInfo.ThumbPicUrl;
                 }
             }
             if (result.OrderSource.HasValue)
@@ -2757,6 +2766,10 @@ namespace Fx.Amiya.Service
                     if (input.DealPerformanceType == (int)ContentPlateFormOrderDealPerformanceType.CustomerServiceReplenishmentOrder)
                     {
                         var lastOrderDealInfo = dalContentPlatFormOrderDealInfo.GetAll().Where(e => e.Id == input.LastDealInfoId).FirstOrDefault();
+                        if (lastOrderDealInfo.DealPerformanceType == (int)ContentPlateFormOrderDealPerformanceType.CustomerServiceReplenishmentOrder)
+                        {
+                            throw new Exception("不能对补单数据进行重复补单！");
+                        }
                         order.IsOldCustomer = lastOrderDealInfo.IsOldCustomer;
                         order.DealAmount -= input.DealAmount;
                         order.DealAmount = order.DealAmount - lastOrderDealInfo.Price + input.DealAmount;
@@ -2819,6 +2832,8 @@ namespace Fx.Amiya.Service
                 {
                     var lastOrderDealInfo = dalContentPlatFormOrderDealInfo.GetAll().Where(e => e.Id == input.LastDealInfoId).FirstOrDefault();
                     orderDealDto.IsOldCustomer = lastOrderDealInfo.IsOldCustomer;
+                    lastOrderDealInfo.Valid = false;
+                    await dalContentPlatFormOrderDealInfo.UpdateAsync(lastOrderDealInfo, true);
                 }
                 orderDealDto.LastDealInfoId = input.LastDealInfoId;
                 var dealId = await _contentPlatFormOrderDalService.AddAsync(orderDealDto);
@@ -2913,6 +2928,7 @@ namespace Fx.Amiya.Service
                 throw new Exception(err.Message.ToString());
             }
         }
+
 
         /// <summary>
         /// 修改完成订单
@@ -3787,73 +3803,160 @@ namespace Fx.Amiya.Service
         /// <returns></returns>
         public async Task<List<CustomerServiceDetailsPerformanceDto>> GetCustomerServiceBelongBoardDataByCustomerServiceIdAsync(DateTime? startDate, DateTime? endDate, List<int> belongCustomerServiceIds)
         {
-            var dealData = _dalContentPlatformOrder.GetAll().Include(e => e.ContentPlatformOrderDealInfoList)
-                 .Where(e => e.IsSupportOrder == false)
-                .Where(e => belongCustomerServiceIds.Count == 0 || belongCustomerServiceIds.Contains(e.BelongEmpId.Value));
-            var dealResult = dealData
-                .SelectMany(e => e.ContentPlatformOrderDealInfoList)
-                .Where(e => e.CreateDate >= startDate && e.CreateDate < endDate && e.IsDeal == true)
-                .GroupBy(e => e.ContentPlatFormOrder.BelongEmpId)
+            //业绩构成：正常业绩，补单业绩，辅助业绩
+
+            //获取“非补单业绩，非辅助业绩”的总数据
+            var totalPerformanceData = await dalContentPlatFormOrderDealInfo.GetAll().Include(x => x.ContentPlatFormOrder)
+                .Where(e => e.ContentPlatFormOrder.IsSupportOrder == false)
+                .Where(e => belongCustomerServiceIds.Count == 0 || belongCustomerServiceIds.Contains(e.ContentPlatFormOrder.BelongEmpId.Value))
+                .Where(e => e.CreateDate >= startDate && e.CreateDate < endDate && e.DealPerformanceType != (int)ContentPlateFormOrderDealPerformanceType.CustomerServiceReplenishmentOrder && e.Valid == true).ToListAsync();
+            var totalPerformance = totalPerformanceData.Where(e => e.IsDeal == true).ToList();
+            var totalEmployeePerforamnceGroup = totalPerformance.GroupBy(e => e.ContentPlatFormOrder.BelongEmpId)
                 .Select(e => new CustomerServiceDetailsPerformanceDto
                 {
                     CustomerServiceId = e.Key.Value,
-                    DealPrice = e.Sum(e => e.CheckPrice ?? 0m),
                     TotalServicePrice = e.Sum(e => e.Price),
                     NewCustomerPrice = e.Sum(e => e.IsOldCustomer ? 0m : e.Price),
-                    NewCustomerServicePrice = e.Sum(e => e.IsOldCustomer ? 0m : e.SettlePrice ?? 0m),
+                    NewCustomerServicePrice = e.Sum(e => e.IsOldCustomer ? 0m : e.Price),
                     OldCustomerPrice = e.Sum(e => e.IsOldCustomer ? e.Price : 0m),
-                    OldCustomerServicePrice = e.Sum(e => e.IsOldCustomer ? e.SettlePrice ?? 0m : 0m),
+                    OldCustomerServicePrice = e.Sum(e => e.IsOldCustomer ? e.Price : 0m),
                     AcompanyingPerformance = e.Sum(x => x.IsAcompanying ? x.Price : 0m),
                     NotAcompanyingPerformance = e.Sum(x => x.IsAcompanying ? 0m : x.Price),
 
                 }).ToList();
-
-            foreach (var z in dealResult)
+            //循环每个助理的信息
+            foreach (var z in totalEmployeePerforamnceGroup)
             {
-                var supportData = _dalContentPlatformOrder.GetAll().Include(e => e.ContentPlatformOrderDealInfoList)
-                .Where(e => e.IsSupportOrder == true && e.SupportEmpId == z.CustomerServiceId && e.SupportEmpId != e.BelongEmpId)
-                .SelectMany(k => k.ContentPlatformOrderDealInfoList)
-                .Where(u => u.CreateDate >= startDate && u.CreateDate < endDate && u.IsDeal == true);
-                var supp = await supportData.ToListAsync();
-                z.SupportPrice = supportData.Sum(x => x.Price);
-                z.TotalServicePrice += z.SupportPrice;
-                z.DealPrice += supportData.Sum(e => e.CheckPrice ?? 0m);
+                //常规业绩分类
+                z.VideoPerformance = totalPerformance.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.ConsulationType == (int)ContentPlateFormOrderConsultationType.Collaboration).Sum(k => k.Price);
+                z.PicturePerformance = totalPerformance.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.ConsulationType == (int)ContentPlateFormOrderConsultationType.IndependentFollowUp).Sum(k => k.Price);
+
+                z.ZeroPerformance = totalPerformance.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.AddOrderPrice == 0).Sum(k => k.Price);
+                z.HavingPricePerformance = totalPerformance.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.AddOrderPrice > 0).Sum(k => k.Price);
+                z.HavingPricePerformance += totalPerformance.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.AddOrderPrice < 0).Sum(k => k.Price);
+
+                z.HistorySendThisMonthDealPerformance = totalPerformance.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(c => c.ContentPlatFormOrder.SendDate.HasValue && c.ContentPlatFormOrder.SendDate < startDate).Sum(x => x.Price);
+                z.ThisMonthSendThisMonthDealPerformance = totalPerformance.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(c => c.ContentPlatFormOrder.SendDate.HasValue && c.ContentPlatFormOrder.SendDate >= startDate && c.ContentPlatFormOrder.SendDate < endDate).Sum(x => x.Price);
+                z.CustomerServiceName = await _dalAmiyaEmployee.GetAll().Where(e => e.Id == Convert.ToInt32(z.CustomerServiceId)).Select(e => e.Name).FirstOrDefaultAsync();
+                //辅助业绩
+                #region  辅助业绩
+                var supportDataInfo = await dalContentPlatFormOrderDealInfo.GetAll().Include(e => e.ContentPlatFormOrder)
+                .Where(u => u.CreateDate >= startDate && u.CreateDate < endDate && u.DealPerformanceType != (int)ContentPlateFormOrderDealPerformanceType.CustomerServiceReplenishmentOrder && u.Valid == true)
+                .Where(e => e.ContentPlatFormOrder.IsSupportOrder == true && e.ContentPlatFormOrder.SupportEmpId == z.CustomerServiceId && e.ContentPlatFormOrder.SupportEmpId != e.ContentPlatFormOrder.BelongEmpId).ToListAsync();
+                var supportData = supportDataInfo.Where(x => x.IsDeal == true).ToList();
+                z.TotalServicePrice += supportData.Sum(x => x.Price);
                 z.NewCustomerPrice += supportData.Sum(e => e.IsOldCustomer ? 0m : e.Price);
-                z.NewCustomerServicePrice += supportData.Sum(e => e.IsOldCustomer ? 0m : e.SettlePrice ?? 0m);
+                z.NewCustomerServicePrice += supportData.Sum(e => e.IsOldCustomer ? 0m : e.Price);
                 z.OldCustomerPrice += supportData.Sum(e => e.IsOldCustomer ? e.Price : 0m);
-                z.OldCustomerServicePrice += supportData.Sum(e => e.IsOldCustomer ? e.SettlePrice ?? 0m : 0m);
+                z.OldCustomerServicePrice += supportData.Sum(e => e.IsOldCustomer ? e.Price : 0m);
                 z.AcompanyingPerformance += supportData.Sum(x => x.IsAcompanying ? x.Price : 0m);
                 z.NotAcompanyingPerformance += supportData.Sum(x => x.IsAcompanying ? 0m : x.Price);
 
-                z.CustomerServiceName = await _dalAmiyaEmployee.GetAll().Where(e => e.Id == Convert.ToInt32(z.CustomerServiceId)).Select(e => e.Name).FirstOrDefaultAsync();
-                var sendInfo = dealData.Where(x => x.OrderStatus != (int)ContentPlateFormOrderStatus.HaveOrder && x.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder && x.BelongEmpId == z.CustomerServiceId && x.SendDate >= startDate && x.SendDate < endDate).ToList();
-                var thisMonthVisitInfo = sendInfo.Where(x => x.IsToHospital == true).ToList();
-                //根据手机号去重派单数据
-                var distinctSendInfo = dealData.Where(x => x.OrderStatus != (int)ContentPlateFormOrderStatus.HaveOrder && x.BelongEmpId == z.CustomerServiceId && x.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder && x.SendDate >= startDate && x.SendDate < endDate).GroupBy(x => x.Phone).Select(k => k.Key.First()).ToList();
-                var visitInfo = dealData.Where(x => x.IsToHospital == true && x.ContentPlatformOrderDealInfoList.OrderByDescending(k => k.CreateDate).FirstOrDefault().CreateDate >= startDate && x.ContentPlatformOrderDealInfoList.OrderByDescending(k => k.CreateDate).FirstOrDefault().CreateDate < endDate && x.IsOldCustomer == false && x.BelongEmpId == z.CustomerServiceId).ToList();
+                //业绩分类加值
+                z.VideoPerformance += supportData.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.ConsulationType == (int)ContentPlateFormOrderConsultationType.Collaboration).Sum(k => k.Price);
+                z.PicturePerformance += supportData.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.ConsulationType == (int)ContentPlateFormOrderConsultationType.IndependentFollowUp).Sum(k => k.Price);
 
-                var dealInfo = dealData.Where(x => x.OrderStatus != (int)ContentPlateFormOrderStatus.HaveOrder && x.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder)
-                    .SelectMany(x => x.ContentPlatformOrderDealInfoList).Include(x => x.ContentPlatFormOrder)
-                    .Where(e => e.CreateDate >= startDate && e.CreateDate < endDate && e.IsDeal == true)
-                    .ToList();
+                z.ZeroPerformance += supportData.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.AddOrderPrice == 0).Sum(k => k.Price);
+                z.HavingPricePerformance += supportData.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.AddOrderPrice > 0).Sum(k => k.Price);
+                z.HavingPricePerformance += supportData.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.AddOrderPrice < 0).Sum(k => k.Price);
 
-                z.VideoPerformance = dealInfo.Where(x => x.ContentPlatFormOrder.ConsulationType == (int)ContentPlateFormOrderConsultationType.Collaboration).Sum(k => k.Price);
-                z.PicturePerformance = dealInfo.Where(x => x.ContentPlatFormOrder.ConsulationType == (int)ContentPlateFormOrderConsultationType.IndependentFollowUp).Sum(k => k.Price);
+                z.HistorySendThisMonthDealPerformance += supportData.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(c => c.ContentPlatFormOrder.SendDate.HasValue && c.ContentPlatFormOrder.SendDate < startDate).Sum(x => x.Price);
+                z.ThisMonthSendThisMonthDealPerformance += supportData.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(c => c.ContentPlatFormOrder.SendDate.HasValue && c.ContentPlatFormOrder.SendDate >= startDate && c.ContentPlatFormOrder.SendDate < endDate).Sum(x => x.Price);
+                #endregion
+                //补单业绩
+                #region 加入助理补单业绩金额
+                List<DealInfoReplenishementPriceDto> dealInfoReplenishementPriceDtoList = new List<DealInfoReplenishementPriceDto>();
+                var dealResultReplenishemnt = await dalContentPlatFormOrderDealInfo.GetAll().Include(e => e.ContentPlatFormOrder)
+                .Where(e => e.CreateDate >= startDate && e.CreateDate < endDate
+                        && e.CreateBy == z.CustomerServiceId && e.IsDeal == true
+                        && e.DealPerformanceType == (int)ContentPlateFormOrderDealPerformanceType.CustomerServiceReplenishmentOrder
+                        && e.Valid == true)
+                .ToListAsync();
+                //判断是否取差价或者正常价
+                foreach (var k in dealResultReplenishemnt)
+                {
+                    DealInfoReplenishementPriceDto dealInfoReplenishementPriceDto = new DealInfoReplenishementPriceDto();
+                    //取上一条的成交信息
+                    var lastDealInfo = await _contentPlatFormOrderDalService.GetByIdAsync(k.LastDealInfoId);
+                    //用上一条的成交信息的“创建时间”与当前查询开始时间进行比对，若小于当前查询开始时间，成交金额=当前成交金额-上一条成交单的成交金额，若大于等于则跳过
+                    if (lastDealInfo.CreateDate < startDate.Value)
+                    {
+                        k.Price -= lastDealInfo.Price;
+                    }
+                    dealInfoReplenishementPriceDto.Phone = k.ContentPlatFormOrder.Phone;
+                    dealInfoReplenishementPriceDto.NewPrice = k.Price;
+                    dealInfoReplenishementPriceDto.OldPrice = lastDealInfo.Price;
+                    dealInfoReplenishementPriceDto.LastDealIdCraeteDate = lastDealInfo.CreateDate;
+                    dealInfoReplenishementPriceDto.IsOldCustomer = k.IsOldCustomer;
+                    dealInfoReplenishementPriceDto.IsToHospital = k.IsToHospital;
+                    dealInfoReplenishementPriceDtoList.Add(dealInfoReplenishementPriceDto);
+                }
 
-                z.ZeroPerformance = dealInfo.Where(x => x.ContentPlatFormOrder.AddOrderPrice == 0).Sum(k => k.Price);
-                z.HavingPricePerformance = dealInfo.Where(x => x.ContentPlatFormOrder.AddOrderPrice > 0).Sum(k => k.Price);
-                z.HavingPricePerformance += dealInfo.Where(x => x.ContentPlatFormOrder.AddOrderPrice < 0).Sum(k => k.Price);
+                z.TotalServicePrice += dealResultReplenishemnt.Sum(x => x.Price);
+                z.NewCustomerPrice += dealResultReplenishemnt.Sum(e => e.IsOldCustomer ? 0m : e.Price);
+                z.NewCustomerServicePrice += dealResultReplenishemnt.Sum(e => e.IsOldCustomer ? 0m : e.Price);
+                z.OldCustomerPrice += dealResultReplenishemnt.Sum(e => e.IsOldCustomer ? e.Price : 0m);
+                z.OldCustomerServicePrice += dealResultReplenishemnt.Sum(e => e.IsOldCustomer ? e.Price : 0m);
+                z.AcompanyingPerformance += dealResultReplenishemnt.Sum(x => x.IsAcompanying ? x.Price : 0m);
+                z.NotAcompanyingPerformance += dealResultReplenishemnt.Sum(x => x.IsAcompanying ? 0m : x.Price);
 
-                z.HistorySendThisMonthDealPerformance = dealInfo.Where(c => c.ContentPlatFormOrder.SendDate.HasValue && c.ContentPlatFormOrder.SendDate < startDate).Sum(x => x.Price);
-                z.ThisMonthSendThisMonthDealPerformance = dealInfo.Where(c => c.ContentPlatFormOrder.SendDate.HasValue && c.ContentPlatFormOrder.SendDate >= startDate && c.ContentPlatFormOrder.SendDate < endDate).Sum(x => x.Price);
-                z.ThisMonthSendThisMonthVisitNumRatio = DecimalExtension.CalculateTargetComplete(thisMonthVisitInfo.Count(), distinctSendInfo.Count());
-                z.VisitNumRatio = DecimalExtension.CalculateTargetComplete(visitInfo.Count(), distinctSendInfo.Count());
+
+                //业绩分类加值
+                z.VideoPerformance += dealResultReplenishemnt.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.ConsulationType == (int)ContentPlateFormOrderConsultationType.Collaboration).Sum(k => k.Price);
+                z.PicturePerformance += dealResultReplenishemnt.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.ConsulationType == (int)ContentPlateFormOrderConsultationType.IndependentFollowUp).Sum(k => k.Price);
+
+                z.ZeroPerformance += dealResultReplenishemnt.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.AddOrderPrice == 0).Sum(k => k.Price);
+                z.HavingPricePerformance += dealResultReplenishemnt.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.AddOrderPrice > 0).Sum(k => k.Price);
+                z.HavingPricePerformance += dealResultReplenishemnt.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(x => x.ContentPlatFormOrder.AddOrderPrice < 0).Sum(k => k.Price);
+
+                z.HistorySendThisMonthDealPerformance += dealResultReplenishemnt.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(c => c.ContentPlatFormOrder.SendDate.HasValue && c.ContentPlatFormOrder.SendDate < startDate).Sum(x => x.Price);
+                z.ThisMonthSendThisMonthDealPerformance += dealResultReplenishemnt.Where(x => x.ContentPlatFormOrder.BelongEmpId.Value == z.CustomerServiceId).Where(c => c.ContentPlatFormOrder.SendDate.HasValue && c.ContentPlatFormOrder.SendDate >= startDate && c.ContentPlatFormOrder.SendDate < endDate).Sum(x => x.Price);
+                #endregion
+
+                //计算占比
                 z.VideoAndPictureCompare = DecimalExtension.CalculateAccounted(z.VideoPerformance, z.PicturePerformance);
                 z.IsAcompanyingCompare = DecimalExtension.CalculateAccounted(z.AcompanyingPerformance, z.NotAcompanyingPerformance);
                 z.ZeroAndHavingPriceCompare = DecimalExtension.CalculateAccounted(z.ZeroPerformance, z.HavingPricePerformance);
                 z.HistoryAndThisMonthCompare = DecimalExtension.CalculateAccounted(z.ThisMonthSendThisMonthDealPerformance, z.HistorySendThisMonthDealPerformance);
+
+
+                //计算派单上门率（分当月派单当月上门，和当月+历史派单，当月上门）
+                var sendInfo = await dalContentPlatformOrderSend.GetAll().Include(x => x.ContentPlatformOrder).Where(x => x.SendDate >= startDate && x.SendDate < endDate && x.Sender == z.CustomerServiceId && x.ContentPlatformOrder.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder && x.ContentPlatformOrder.OrderStatus != (int)ContentPlateFormOrderStatus.HaveOrder && x.IsMainHospital == true).ToListAsync();
+                //正常到院
+                var visitInfo = totalPerformanceData.Where(x => x.ContentPlatFormOrder.IsToHospital == true && x.ContentPlatFormOrder.BelongEmpId == z.CustomerServiceId && x.IsOldCustomer == false).GroupBy(x => x.ContentPlatFormOrder.Phone).Select(x => x.Key).ToList();
+                //辅助客服到院
+                var visitInfo2 = supportDataInfo.Where(x => x.ContentPlatFormOrder.IsToHospital == true && x.IsOldCustomer == false).GroupBy(x => x.ContentPlatFormOrder.Phone).Select(x => x.Key).ToList();
+                foreach (var k in visitInfo2)
+                {
+                    visitInfo.Add(k);
+                }
+                var visitInfo3 = dealInfoReplenishementPriceDtoList.Where(x => x.IsToHospital == true && x.IsOldCustomer == false).ToList();
+                foreach (var a in visitInfo3)
+                {
+                    if (a.LastDealIdCraeteDate > startDate)
+                        visitInfo.Add(a.Phone);
+                }
+                var visitCount = visitInfo.Distinct();
+                var distinctSendInfo = sendInfo.GroupBy(x => x.ContentPlatformOrder.Phone).Select(k => k.Key).ToList();
+                List<string> ThisMonthCreatePhones = new List<string>();
+                foreach (var t in distinctSendInfo)
+                {
+                    var shoppingCartInfo = await _shoppingCartRegistration.GetByPhoneAsync(t);
+                    if (shoppingCartInfo.Count > 0)
+                    {
+                        var shoppingcartData = shoppingCartInfo.OrderByDescending(x => x.RecordDate).FirstOrDefault();
+                        if (shoppingcartData.RecordDate >= startDate)
+                        {
+                            ThisMonthCreatePhones.Add(t);
+                        }
+                    }
+                }
+                var thisMonthVisitInfo = sendInfo.Where(x => x.ContentPlatformOrder.IsToHospital == true && ThisMonthCreatePhones.Contains(x.ContentPlatformOrder.Phone)).GroupBy(x => x.ContentPlatformOrder.Phone).Select(k => k.Key).ToList();
+                z.ThisMonthSendThisMonthVisitNumRatio = DecimalExtension.CalculateTargetComplete(thisMonthVisitInfo.Count(), ThisMonthCreatePhones.Count());
+                z.VisitNumRatio = DecimalExtension.CalculateTargetComplete(visitCount.Count(), distinctSendInfo.Count());
             }
-            return dealResult.OrderByDescending(x => x.TotalServicePrice).ToList();
+
+            return totalEmployeePerforamnceGroup.OrderByDescending(x => x.TotalServicePrice).ToList();
         }
 
         /// <summary>
@@ -3888,6 +3991,36 @@ namespace Fx.Amiya.Service
                 z.SupportPrice = supportData.Sum(x => x.Price);
                 z.TotalServicePrice += z.SupportPrice;
                 z.CustomerServiceName = await _dalAmiyaEmployee.GetAll().Where(e => e.Id == Convert.ToInt32(z.CustomerServiceId)).Select(e => e.Name).FirstOrDefaultAsync();
+
+
+
+                //补单业绩
+                #region 加入助理补单业绩金额
+                var dealResultReplenishemnt = dealData
+              .Where(e => e.IsSupportOrder == false && e.BelongEmpId == z.CustomerServiceId)
+             .SelectMany(e => e.ContentPlatformOrderDealInfoList)
+             .Where(e => e.CreateDate >= startDate && e.CreateDate < endDate && e.IsDeal == true && e.DealPerformanceType == (int)ContentPlateFormOrderDealPerformanceType.CustomerServiceReplenishmentOrder && e.Valid == true)
+                .ToList();
+                foreach (var k in dealResultReplenishemnt)
+                {
+                    //取上一条的成交信息
+                    var lastDealInfo = await _contentPlatFormOrderDalService.GetByIdAsync(k.LastDealInfoId);
+                    //用上一条的成交信息的“创建时间”与当前查询开始时间进行比对，若小于当前查询开始时间，成交金额=当前成交金额-上一条成交单的成交金额，若大于等于则跳过
+                    if (lastDealInfo.CreateDate < startDate.Value)
+                    {
+                        k.Price -= lastDealInfo.Price;
+                    }
+
+                }
+                var replenishmentPrice = dealResultReplenishemnt.Sum(m => m.Price);
+                z.TotalServicePrice += replenishmentPrice;
+                z.NewCustomerPrice += dealResultReplenishemnt.Sum(e => e.IsOldCustomer ? 0m : e.Price);
+                z.NewCustomerServicePrice += dealResultReplenishemnt.Sum(e => e.IsOldCustomer ? 0m : e.Price);
+                z.OldCustomerPrice += dealResultReplenishemnt.Sum(e => e.IsOldCustomer ? e.Price : 0m);
+                z.OldCustomerServicePrice += dealResultReplenishemnt.Sum(e => e.IsOldCustomer ? e.Price : 0m);
+                z.AcompanyingPerformance += dealResultReplenishemnt.Sum(x => x.IsAcompanying ? x.Price : 0m);
+                z.NotAcompanyingPerformance += dealResultReplenishemnt.Sum(x => x.IsAcompanying ? 0m : x.Price);
+                #endregion
             }
             return dealResult.OrderByDescending(x => x.TotalServicePrice).ToList();
         }

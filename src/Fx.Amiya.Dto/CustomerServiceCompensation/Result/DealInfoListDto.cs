@@ -69,5 +69,21 @@ namespace Fx.Amiya.Dto.CustomerServiceCompensation.Result
         /// 是否提取
         /// </summary>
         public string IsCheckPerformance { get; set; }
+
+        /// <summary>
+        /// 补单前金额
+        /// </summary>
+        public decimal BeforeReplenishmentPrice { get; set; }
+
+        /// <summary>
+        /// 补单前是否生成薪资
+        /// </summary>
+        public bool BeforeReplenishmentIsCreateBill { get; set; }
+        /// <summary>
+        /// 确认成交金额
+        /// </summary>
+
+        public decimal ConfirmDealPrice { get; set; }
+        public string LastDealInfoId { get; set; }
     }
 }

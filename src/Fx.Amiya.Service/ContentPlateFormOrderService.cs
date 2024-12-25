@@ -3930,6 +3930,7 @@ namespace Fx.Amiya.Service
                 {
                     visitInfo.Add(k);
                 }
+                //补单到院
                 var visitInfo3 = dealInfoReplenishementPriceDtoList.Where(x => x.IsToHospital == true && x.IsOldCustomer == false).ToList();
                 foreach (var a in visitInfo3)
                 {

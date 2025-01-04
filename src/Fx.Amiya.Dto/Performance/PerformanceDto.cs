@@ -8,6 +8,7 @@ namespace Fx.Amiya.Dto.Performance
 {
     public class PerformanceDto
     {
+        public string Id { get; set; }
         public int? LiveAnchorId { get; set; }
         public decimal Price { get; set; }
         public int ToHospitalType  { get; set; }
@@ -21,5 +22,9 @@ namespace Fx.Amiya.Dto.Performance
 
         public string ContentPlatFormId { get; set; }
         public int ConsulationType { get; set; }
+        /// <summary>
+        /// 上一条成交情况id（当业绩类型为“助理补单时有值）
+        /// </summary>
+        public string LastDealInfoId { get; set; }
     }
 }

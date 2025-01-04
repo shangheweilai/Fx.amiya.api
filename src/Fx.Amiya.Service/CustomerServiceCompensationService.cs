@@ -322,7 +322,7 @@ namespace Fx.Amiya.Service
             FxPageInfo<DealInfoListDto> pageData = new FxPageInfo<DealInfoListDto>();
             var selectDate = DateTimeExtension.GetStartDateEndDate(queryDto.StartDate.Value, queryDto.EndDate.Value);
             var query = dalContentPlatFormOrderDealInfo.GetAll()
-                .Include(e => e.ContentPlatFormOrder)
+                .Include(e => e.ContentPlatFormOrder).ThenInclude(x => x.LiveAnchor)
                 .Where(x => x.Valid == true)
                 .Where(e => e.CreateDate >= selectDate.StartDate && e.CreateDate < selectDate.EndDate);
             if (queryDto.CreateBy.HasValue)
@@ -383,7 +383,8 @@ namespace Fx.Amiya.Service
                 IsSupportOrder = e.ContentPlatFormOrder.IsSupportOrder,
                 BelongEmpId = e.ContentPlatFormOrder.BelongEmpId.Value,
                 SupportEmpId = e.ContentPlatFormOrder.SupportEmpId,
-                LastDealInfoId = e.LastDealInfoId
+                LastDealInfoId = e.LastDealInfoId,
+                LiveAnchorName = e.ContentPlatFormOrder.LiveAnchor.Name,
             }).OrderByDescending(x => x.CreateDate).Skip((queryDto.PageNum.Value - 1) * queryDto.PageSize.Value).Take(queryDto.PageSize.Value).ToListAsync();
             var employeeIdNameList = await dalAmiyaEmployee.GetAll().Select(e => new { e.Id, e.Name }).ToListAsync();
             foreach (var item in pageData.List)
@@ -415,6 +416,11 @@ namespace Fx.Amiya.Service
                         item.BeforeReplenishmentIsCreateBill = false;
                         item.ConfirmDealPrice = item.DealPrice;
                     }
+                }
+                else
+                {
+                    item.BeforeReplenishmentIsCreateBill = false;
+                    item.ConfirmDealPrice = item.DealPrice;
                 }
             }
             return pageData;

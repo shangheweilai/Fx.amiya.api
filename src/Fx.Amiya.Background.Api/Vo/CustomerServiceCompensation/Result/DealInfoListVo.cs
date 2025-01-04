@@ -83,5 +83,10 @@ namespace Fx.Amiya.Background.Api.Vo.CustomerServiceCompensation.Result
         /// 提取状态
         /// </summary>
         public string IsCheckPerformance { get; set; }
+
+        /// <summary>
+        /// 主播名称
+        /// </summary>
+        public string LiveAnchorName { get; set; }
     }
 }

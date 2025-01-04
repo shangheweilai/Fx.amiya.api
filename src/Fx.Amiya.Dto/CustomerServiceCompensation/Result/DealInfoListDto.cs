@@ -85,5 +85,10 @@ namespace Fx.Amiya.Dto.CustomerServiceCompensation.Result
 
         public decimal ConfirmDealPrice { get; set; }
         public string LastDealInfoId { get; set; }
+
+        /// <summary>
+        /// 归属主播
+        /// </summary>
+        public string LiveAnchorName { get; set; }
     }
 }

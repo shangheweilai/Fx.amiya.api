@@ -126,7 +126,7 @@ namespace Fx.Amiya.DbModels.Model
         public decimal? ReturnBackPrice { get; set; }
         public DateTime? ReturnBackDate { get; set; }
 
-        public  string ReconciliationDocumentsId { get; set; }
+        public string ReconciliationDocumentsId { get; set; }
         /// <summary>
         /// 是否重单可深度
         /// </summary>
@@ -149,6 +149,16 @@ namespace Fx.Amiya.DbModels.Model
         /// 上一条成交情况id（当业绩类型为“助理补单时有值）
         /// </summary>
         public string LastDealInfoId { get; set; }
+
+        /// <summary>
+        /// 上一条成交单创建时间
+        /// </summary>
+        public DateTime? LastDealInfoCreateDate { get; set; }
+
+        /// <summary>
+        /// 补单时间
+        /// </summary>
+        public DateTime? ReplenishmentCreateDate { get; set; }
 
         /// <summary>
         /// 是否有效

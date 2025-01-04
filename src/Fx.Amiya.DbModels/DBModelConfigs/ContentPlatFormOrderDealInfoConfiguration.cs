@@ -49,6 +49,8 @@ namespace Fx.Amiya.DbModels.DBModelConfigs
             builder.Property(e => e.BelongCompany).HasColumnName("belong_company").HasColumnType("varchar(50)").IsRequired(false);
             builder.Property(e => e.ConsumptionType).HasColumnName("consumption_type").HasColumnType("int").IsRequired(false);
             builder.Property(e => e.LastDealInfoId).HasColumnName("last_deal_info_id").HasColumnType("varchar(50)").IsRequired(false);
+            builder.Property(e => e.LastDealInfoCreateDate).HasColumnName("last_deal_info_create_date").HasColumnType("DATETIME").IsRequired(false);
+            builder.Property(e => e.ReplenishmentCreateDate).HasColumnName("replenishment_create_date").HasColumnType("DATETIME").IsRequired(false);
             builder.Property(e => e.Valid).HasColumnName("valid").HasColumnType("bit").IsRequired();
 
             builder.HasOne(t => t.ContentPlatFormOrder).WithMany(t => t.ContentPlatformOrderDealInfoList).HasForeignKey(t => t.ContentPlatFormOrderId);

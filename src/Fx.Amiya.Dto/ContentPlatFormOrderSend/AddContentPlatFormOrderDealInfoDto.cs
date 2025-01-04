@@ -111,5 +111,15 @@ namespace Fx.Amiya.Dto.ContentPlatFormOrderSend
         /// 上一条成交情况id（当业绩类型为“助理补单时有值）
         /// </summary>
         public string LastDealInfoId { get; set; }
+
+        /// <summary>
+        /// 上一条成交单创建时间
+        /// </summary>
+        public DateTime? LastDealInfoCreateDate { get; set; }
+
+        /// <summary>
+        /// 补单时间
+        /// </summary>
+        public DateTime? ReplenishmentCreateDate { get; set; }
     }
 }

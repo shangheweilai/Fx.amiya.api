@@ -2659,7 +2659,7 @@ namespace Fx.Amiya.Service
             try
             {
                 if (input.LastDealHospitalId == null)
-                    throw new Exception("到院医院不能未空");
+                    throw new Exception("到院医院不能为空");
                 //验证唯一标识
                 if (!string.IsNullOrEmpty(input.OtherContentPlatFormOrderId))
                 {
@@ -2770,6 +2770,10 @@ namespace Fx.Amiya.Service
                         {
                             throw new Exception("不能对补单数据进行重复补单！");
                         }
+                        if (lastOrderDealInfo.CheckState == (int)CheckType.Checking || lastOrderDealInfo.CheckState == (int)CheckType.CheckedSuccess)
+                        {
+                            throw new Exception("不能对财务正在审核中或者已审核通过的成交单进行补单,若需要补单，请联系财务进行审核撤回！当前成交单审核状态：" + (lastOrderDealInfo.CheckState == (int)CheckType.Checking ? "审核中" : "审核通过"));
+                        }
                         order.IsOldCustomer = lastOrderDealInfo.IsOldCustomer;
                         order.DealAmount -= input.DealAmount;
                         order.DealAmount = order.DealAmount - lastOrderDealInfo.Price + input.DealAmount;
@@ -2833,9 +2837,11 @@ namespace Fx.Amiya.Service
                     var lastOrderDealInfo = dalContentPlatFormOrderDealInfo.GetAll().Where(e => e.Id == input.LastDealInfoId).FirstOrDefault();
                     orderDealDto.IsOldCustomer = lastOrderDealInfo.IsOldCustomer;
                     lastOrderDealInfo.Valid = false;
+                    lastOrderDealInfo.ReplenishmentCreateDate = DateTime.Now;
                     await dalContentPlatFormOrderDealInfo.UpdateAsync(lastOrderDealInfo, true);
+                    orderDealDto.LastDealInfoId = input.LastDealInfoId;
+                    orderDealDto.LastDealInfoCreateDate = lastOrderDealInfo.CreateDate;
                 }
-                orderDealDto.LastDealInfoId = input.LastDealInfoId;
                 var dealId = await _contentPlatFormOrderDalService.AddAsync(orderDealDto);
 
                 //更新粉丝见面会数据

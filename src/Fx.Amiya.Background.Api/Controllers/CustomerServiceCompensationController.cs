@@ -352,6 +352,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 BeforeReplenishmentPrice = e.BeforeReplenishmentPrice,
                 BeforeReplenishmentIsCreateBill = e.BeforeReplenishmentIsCreateBill,
                 ConfirmDealPrice = e.ConfirmDealPrice,
+                LiveAnchorName = e.LiveAnchorName
             }).ToList();
             return ResultData<FxPageInfo<DealInfoListVo>>.Success().AddData("data", page);
         }

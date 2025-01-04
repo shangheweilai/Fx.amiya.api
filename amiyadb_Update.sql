@@ -57,5 +57,11 @@ update tbl_content_platform_order_deal_info set valid=true;
 
 --粉丝见面会详情新增是否需助理跟进
 ALTER TABLE `amiyadb`.`tbl_fans_meeting_details` 
+
+
+--内容平台成交情况表新增补单时间，上一条成交创建时间
+ALTER TABLE `amiyadb`.`tbl_content_platform_order_deal_info` 
+ADD COLUMN `last_deal_info_create_date` DATETIME NULL AFTER `last_deal_info_id`,
+ADD COLUMN `replenishment_create_date` DATETIME NULL AFTER `last_deal_info_create_date`;
 ADD COLUMN `is_need_customerservice_help` BIT(1) NOT NULL AFTER `is_need_hospital_help`;
 --------------------------------------------------------------------------------------------------------以上部分已更新到线上--------------------------------------

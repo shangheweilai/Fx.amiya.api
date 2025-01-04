@@ -1677,7 +1677,7 @@ namespace Fx.Amiya.Service
             var daoDaoPerformanceLastYear = totalPerformanceLastYear.Where(x => LiveAnchorInfoDaoDao.Contains(x.LiveAnchorId)).ToList();
             var jiNaPerformanceLastYear = totalPerformanceLastYear.Where(x => LiveAnchorInfoJiNa.Contains(x.LiveAnchorId)).ToList();
             #endregion
-            for (int x = 0; x <= totalCount; x++)
+            for (int y = 0; y <= totalCount; y++)
             {
                 PerformanceYearDataDto totalPerformanceYearData = new PerformanceYearDataDto();
                 PerformanceYearDataDto daoDaoPerformanceYearData = new PerformanceYearDataDto();
@@ -1685,7 +1685,7 @@ namespace Fx.Amiya.Service
                 totalPerformanceYearData.GroupName = totalPerformanceName;
                 daoDaoPerformanceYearData.GroupName = daoDaoPerformanceName;
                 jiNaPerformanceYearData.GroupName = jiNaPerformanceName;
-                switch (x)
+                switch (y)
                 {
                     case 0:
                         totalPerformanceYearData.SortName = daoDaoPerformanceYearData.SortName = jiNaPerformanceYearData.SortName = query.Year + "年预算目标";
@@ -1742,50 +1742,88 @@ namespace Fx.Amiya.Service
 
                         totalPerformanceYearData.SortName = daoDaoPerformanceYearData.SortName = jiNaPerformanceYearData.SortName = query.Year + "年实际业绩";
                         #region 整体
-                        totalPerformanceYearData.JanuaryPerformance = totalPerformance.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.FebruaryPerformance = totalPerformance.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.MarchPerformance = totalPerformance.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.AprilPerformance = totalPerformance.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.MayPerformance = totalPerformance.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.JunePerformance = totalPerformance.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.JulyPerformance = totalPerformance.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.AugustPerformance = totalPerformance.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.SeptemberPerformance = totalPerformance.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.OctoberPerformance = totalPerformance.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.NovemberPerformance = totalPerformance.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.DecemberPerformance = totalPerformance.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
+                        var JanTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 1, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.JanuaryPerformance = (totalPerformance.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price) + JanTotalLossPerformance.Sum(x => x.Price)).ToString();
+                        var FebTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 2, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.FebruaryPerformance = (totalPerformance.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price) + FebTotalLossPerformance.Sum(x => x.Price)).ToString();
+                        var MarTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 3, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.MarchPerformance = (totalPerformance.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price) + MarTotalLossPerformance.Sum(x => x.Price)).ToString();
+                        var AprTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 4, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.AprilPerformance = (totalPerformance.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price) + AprTotalLossPerformance.Sum(x => x.Price)).ToString();
+                        var MayTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 5, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.MayPerformance = (totalPerformance.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price) + MayTotalLossPerformance.Sum(x => x.Price)).ToString();
+                        var JunTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 6, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.JunePerformance = (totalPerformance.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price) + JunTotalLossPerformance.Sum(x => x.Price)).ToString();
+                        var JulTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 7, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.JulyPerformance = (totalPerformance.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price) + JulTotalLossPerformance.Sum(x => x.Price)).ToString();
+                        var AugTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 8, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.AugustPerformance = (totalPerformance.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price) + AugTotalLossPerformance.Sum(x => x.Price)).ToString();
+                        var SepTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 9, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.SeptemberPerformance = (totalPerformance.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price) + SepTotalLossPerformance.Sum(x => x.Price)).ToString();
+                        var OctTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 10, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.OctoberPerformance = (totalPerformance.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price) + OctTotalLossPerformance.Sum(x => x.Price)).ToString();
+                        var NovTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 11, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.NovemberPerformance = (totalPerformance.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price) + NovTotalLossPerformance.Sum(x => x.Price)).ToString();
+                        var DecTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 12, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.DecemberPerformance = (totalPerformance.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price) + DecTotalLossPerformance.Sum(x => x.Price)).ToString();
                         totalPerformanceYearData.SumPerformance = totalPerformance.Sum(x => x.Price).ToString();
                         totalPerformanceYearData.AveragePerformance = Math.Round(totalPerformance.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
                         #endregion
                         #region 刀刀
-                        daoDaoPerformanceYearData.JanuaryPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.FebruaryPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.MarchPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.AprilPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.MayPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.JunePerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.JulyPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.AugustPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.SeptemberPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.OctoberPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.NovemberPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.DecemberPerformance = daoDaoPerformance.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
+                        var JanDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 1, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.JanuaryPerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price) + JanDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
+                        var FebDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 2, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.FebruaryPerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price) + FebDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
+                        var MarDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 3, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.MarchPerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price) + MarDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
+                        var AprDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 4, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.AprilPerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price) + AprDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
+                        var MayDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 5, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.MayPerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price) + MayDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
+                        var JunDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 6, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.JunePerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price) + JunDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
+                        var JulDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 7, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.JulyPerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price) + JulDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
+                        var AugDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 8, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.AugustPerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price) + AugDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
+                        var SepDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 9, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.SeptemberPerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price) + SepDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
+                        var OctDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 10, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.OctoberPerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price) + OctDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
+                        var NovDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 11, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.NovemberPerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price) + NovDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
+                        var DecDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 12, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.DecemberPerformance = (daoDaoPerformance.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price) + DecDaoDaoLossPerformance.Sum(x => x.Price)).ToString();
                         daoDaoPerformanceYearData.SumPerformance = daoDaoPerformance.Sum(x => x.Price).ToString();
                         daoDaoPerformanceYearData.AveragePerformance = Math.Round(daoDaoPerformance.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+
+
                         #endregion
                         #region 吉娜
-                        jiNaPerformanceYearData.JanuaryPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.FebruaryPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.MarchPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.AprilPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.MayPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.JunePerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.JulyPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.AugustPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.SeptemberPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.OctoberPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.NovemberPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.DecemberPerformance = jiNaPerformance.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
+                        var JanJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 1, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.JanuaryPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price) + JanJiNaLossPerformance.Sum(x => x.Price)).ToString();
+                        var FebJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 2, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.FebruaryPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price) + FebJiNaLossPerformance.Sum(x => x.Price)).ToString();
+                        var MarJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 3, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.MarchPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price) + MarJiNaLossPerformance.Sum(x => x.Price)).ToString();
+                        var AprJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 4, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.AprilPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price) + AprJiNaLossPerformance.Sum(x => x.Price)).ToString();
+                        var MayJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 5, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.MayPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price) + MayJiNaLossPerformance.Sum(x => x.Price)).ToString();
+                        var JunJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 6, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.JunePerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price) + JunJiNaLossPerformance.Sum(x => x.Price)).ToString();
+                        var JulJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 7, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.JulyPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price) + JulJiNaLossPerformance.Sum(x => x.Price)).ToString();
+                        var AugJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 8, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.AugustPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price) + AugJiNaLossPerformance.Sum(x => x.Price)).ToString();
+                        var SepJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 9, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.SeptemberPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price) + SepJiNaLossPerformance.Sum(x => x.Price)).ToString();
+                        var OctJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 10, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.OctoberPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price) + OctJiNaLossPerformance.Sum(x => x.Price)).ToString();
+                        var NovJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 11, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.NovemberPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price) + NovJiNaLossPerformance.Sum(x => x.Price)).ToString();
+                        var DecJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year, 12, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.DecemberPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price) + DecJiNaLossPerformance.Sum(x => x.Price)).ToString();
                         jiNaPerformanceYearData.SumPerformance = jiNaPerformance.Sum(x => x.Price).ToString();
                         jiNaPerformanceYearData.AveragePerformance = Math.Round(jiNaPerformance.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
                         #endregion
@@ -1794,52 +1832,90 @@ namespace Fx.Amiya.Service
 
                         totalPerformanceYearData.SortName = daoDaoPerformanceYearData.SortName = jiNaPerformanceYearData.SortName = (query.Year - 1) + "年实际业绩";
                         #region 整体
-                        totalPerformanceYearData.JanuaryPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.FebruaryPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.MarchPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.AprilPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.MayPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.JunePerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.JulyPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.AugustPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.SeptemberPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.OctoberPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.NovemberPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
-                        totalPerformanceYearData.DecemberPerformance = totalPerformanceLastYear.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
+                        var JanTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 1, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.JanuaryPerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price) + JanTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var FebTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 2, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.FebruaryPerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price) + FebTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var MarTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 3, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.MarchPerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price) + MarTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var AprTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 4, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.AprilPerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price) + AprTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var MayTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 5, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.MayPerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price) + MayTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var JunTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 6, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.JunePerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price) + JunTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var JulTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 7, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.JulyPerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price) + JulTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var AugTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 8, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.AugustPerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price) + AugTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var SepTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 9, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.SeptemberPerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price) + SepTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var OctTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 10, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.OctoberPerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price) + OctTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var NovTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 11, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.NovemberPerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price) + NovTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var DecTotalLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 12, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.DecemberPerformance = (totalPerformanceLastYear.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price) + DecTotalLossLastYearPerformance.Sum(x => x.Price)).ToString();
                         totalPerformanceYearData.SumPerformance = totalPerformanceLastYear.Sum(x => x.Price).ToString();
                         totalPerformanceYearData.AveragePerformance = Math.Round(totalPerformanceLastYear.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
                         #endregion
                         #region 刀刀
-                        daoDaoPerformanceYearData.JanuaryPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.FebruaryPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.MarchPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.AprilPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.MayPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.JunePerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.JulyPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.AugustPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.SeptemberPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.OctoberPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.NovemberPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
-                        daoDaoPerformanceYearData.DecemberPerformance = daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
+                        var JanDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 1, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.JanuaryPerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price) + JanDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var FebDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 2, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.FebruaryPerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price) + FebDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var MarDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 3, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.MarchPerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price) + MarDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var AprDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 4, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.AprilPerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price) + AprDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var MayDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 5, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.MayPerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price) + MayDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var JunDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 6, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.JunePerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price) + JunDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var JulDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 7, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.JulyPerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price) + JulDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var AugDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 8, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.AugustPerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price) + AugDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var SepDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 9, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.SeptemberPerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price) + SepDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var OctDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 10, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.OctoberPerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price) + OctDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var NovDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 11, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.NovemberPerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price) + NovDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var DecDaoDaoLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 12, LiveAnchorInfoDaoDao, query.IsOldCustomer);
+                        daoDaoPerformanceYearData.DecemberPerformance = (daoDaoPerformanceLastYear.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price) + DecDaoDaoLossLastYearPerformance.Sum(x => x.Price)).ToString();
                         daoDaoPerformanceYearData.SumPerformance = daoDaoPerformanceLastYear.Sum(x => x.Price).ToString();
                         daoDaoPerformanceYearData.AveragePerformance = Math.Round(daoDaoPerformanceLastYear.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+
+
                         #endregion
                         #region 吉娜
-                        jiNaPerformanceYearData.JanuaryPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.FebruaryPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.MarchPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.AprilPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.MayPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.JunePerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.JulyPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.AugustPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.SeptemberPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.OctoberPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.NovemberPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.DecemberPerformance = jiNaPerformanceLastYear.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.SumPerformance = jiNaPerformanceLastYear.Sum(x => x.Price).ToString();
-                        jiNaPerformanceYearData.AveragePerformance = Math.Round(jiNaPerformanceLastYear.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        var JanJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 1, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.JanuaryPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 1).Sum(x => x.Price) + JanJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var FebJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 2, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.FebruaryPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 2).Sum(x => x.Price) + FebJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var MarJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 3, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.MarchPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 3).Sum(x => x.Price) + MarJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var AprJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 4, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.AprilPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 4).Sum(x => x.Price) + AprJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var MayJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 5, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.MayPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 5).Sum(x => x.Price) + MayJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var JunJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 6, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.JunePerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 6).Sum(x => x.Price) + JunJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var JulJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 7, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.JulyPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 7).Sum(x => x.Price) + JulJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var AugJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 8, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.AugustPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 8).Sum(x => x.Price) + AugJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var SepJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 9, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.SeptemberPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 9).Sum(x => x.Price) + SepJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var OctJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 10, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.OctoberPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 10).Sum(x => x.Price) + OctJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var NovJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 11, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.NovemberPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 11).Sum(x => x.Price) + NovJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        var DecJiNaLossLastYearPerformance = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(query.Year - 1, 12, LiveAnchorInfoJiNa, query.IsOldCustomer);
+                        jiNaPerformanceYearData.DecemberPerformance = (jiNaPerformance.Where(x => x.CreateDate.Month == 12).Sum(x => x.Price) + DecJiNaLossLastYearPerformance.Sum(x => x.Price)).ToString();
+                        jiNaPerformanceYearData.SumPerformance = jiNaPerformance.Sum(x => x.Price).ToString();
+                        jiNaPerformanceYearData.AveragePerformance = Math.Round(jiNaPerformance.Sum(x => x.Price) / 12, 2, MidpointRounding.AwayFromZero).ToString();
                         #endregion
                         break;
                     case 3:
@@ -1918,7 +1994,7 @@ namespace Fx.Amiya.Service
                         totalPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.SeptemberPerformance), Convert.ToDecimal(completeTotalThisMonth.AugustPerformance)).ToString();
                         totalPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.OctoberPerformance), Convert.ToDecimal(completeTotalThisMonth.SeptemberPerformance)).ToString();
                         totalPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.NovemberPerformance), Convert.ToDecimal(completeTotalThisMonth.OctoberPerformance)).ToString();
-                        totalPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.DecemberPerformance), Convert.ToDecimal(completeTotalThisMonth.DecemberPerformance)).ToString();
+                        totalPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateChain(Convert.ToDecimal(completeTotalThisMonth.DecemberPerformance), Convert.ToDecimal(completeTotalThisMonth.NovemberPerformance)).ToString();
                         totalPerformanceYearData.SumPerformance = "/";
                         totalPerformanceYearData.AveragePerformance = "/";
                         #endregion
@@ -2106,7 +2182,7 @@ namespace Fx.Amiya.Service
             #region 获取主播信息
             string text = "（线索）";
             int totalCount = 4;
-            string daoDaoPerformanceName = "刀刀" + text; 
+            string daoDaoPerformanceName = "刀刀" + text;
             string jiNaPerformanceName = "吉娜" + text;  //获取主播信息(自播达人）
             var liveAnchorBaseInfo = await liveAnchorBaseInfoService.GetValidAsync(true);
             List<int> LiveAnchorInfo = new List<int>();

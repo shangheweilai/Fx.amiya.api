@@ -417,7 +417,15 @@ namespace Fx.Amiya.IService
         /// <param name="isOldCustomer"></param>
         /// <returns></returns>
         Task<List<ContentPlatFormOrderDealInfoDto>> GetSimplePerformanceDetailByDateAsync(int year, List<int> liveAnchorIds, bool? isOldCustomer);
-
+        /// <summary>
+        /// 根据年月获取漏单业绩
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="month"></param>
+        /// <param name="liveAnchorIds"></param>
+        /// <param name="isOldCustomer"></param>
+        /// <returns></returns>
+        Task<List<ContentPlatFormOrderDealInfoDto>> GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(int year, int month, List<int> liveAnchorIds, bool? isOldCustomer);
         /// <summary>
         /// 根据成交编号获取成交登记日期
         /// </summary>

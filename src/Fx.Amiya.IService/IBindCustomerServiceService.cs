@@ -60,6 +60,21 @@ namespace Fx.Amiya.IService
         /// <param name="phone"></param>
         /// <returns></returns>
         Task<string> GetBindCustomerServiceNameByPhone(string phone);
+        /// <summary>
+        /// 根据主播名称和消费金额获取名下总客户情况
+        /// </summary>
+        /// <param name="liveAnchorName"></param>
+        /// <param name="price"></param>
+        /// <returns></returns>
+        Task<int> GetBindCustomerServiceCountByLiveAnchorNameAndPricePhone(string liveAnchorName, decimal price);
+
+        /// <summary>
+        /// 根据绑定助理和消费金额获取名下总客户情况
+        /// </summary>
+        /// <param name="assistantId"></param>
+        /// <param name="price"></param>
+        /// <returns></returns>
+        Task<int> GetBindCustomerServiceCountByAssistantAndPricePhone(int assistantId, decimal price);
         Task<string?> UpdateAsync(UpdateBindCustomerServiceDto updateDto, int employeeId);
 
         /// <summary>

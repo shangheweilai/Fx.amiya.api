@@ -95,4 +95,16 @@ namespace Fx.Amiya.Dto.AmiyaOperationsBoardService.Result
         /// </summary>
         public List<PerformanceYearDataDto> JiNaPerformanceData { get; set; }
     }
+
+    public class AssistantPerformanceYearDataListDto
+    {
+                /// <summary>
+        /// 刀刀组业绩
+        /// </summary>
+        public List<PerformanceYearDataDto> DaoDaoPerformanceData { get; set; }
+        /// <summary>
+        /// 吉娜组业绩
+        /// </summary>
+        public List<PerformanceYearDataDto> JiNaPerformanceData { get; set; }
+    }
 }

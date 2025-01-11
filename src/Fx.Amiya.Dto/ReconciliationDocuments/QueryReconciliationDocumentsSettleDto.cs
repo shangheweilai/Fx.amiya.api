@@ -25,6 +25,10 @@ namespace Fx.Amiya.Dto.ReconciliationDocuments
         /// </summary>
         public List<int?> BelongEmpId { get; set; }
         /// <summary>
+        /// 归属主播
+        /// </summary>
+        public List<int> LiveAnchorIds { get; set; }
+        /// <summary>
         /// 稽查客服
         /// </summary>
         public int? InspectEmpId { get; set; }

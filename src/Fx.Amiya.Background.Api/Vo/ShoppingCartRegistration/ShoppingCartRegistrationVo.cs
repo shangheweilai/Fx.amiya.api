@@ -265,5 +265,14 @@ namespace Fx.Amiya.Background.Api.Vo.ShoppingCartRegistration
         /// </summary>
         public bool IsRepeateCreateOrder { get; set; }
 
+        /// <summary>
+        /// 归属公司
+        /// </summary>
+        public string BelongCompany { get; set; }
+        /// <summary>
+        /// 归属公司id
+        /// </summary>
+        public int BelongCompanyEnumId { get; set; }
+
     }
 }

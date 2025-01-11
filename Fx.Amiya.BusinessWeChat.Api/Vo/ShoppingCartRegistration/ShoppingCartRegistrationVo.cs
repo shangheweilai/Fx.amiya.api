@@ -242,5 +242,9 @@ namespace Fx.Amiya.BusinessWeChat.Api.Vo.ShoppingCartRegistration
         /// 词条来源
         /// </summary>
         public string FromTitle { get; set; }
+        /// <summary>
+        /// 归属公司
+        /// </summary>
+        public string BelongCompany { get; set; }
     }
 }

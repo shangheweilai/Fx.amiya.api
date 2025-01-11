@@ -12,6 +12,11 @@ namespace Fx.Amiya.Dto.AmiyaOperationsBoardService.Result
         /// 分组名
         /// </summary>
         public string GroupName { get; set; }
+
+        /// <summary>
+        /// 年度月份
+        /// </summary>
+        public string YearAndMonth { get; set; }
         /// <summary>
         /// 线索量
         /// </summary>
@@ -72,6 +77,11 @@ namespace Fx.Amiya.Dto.AmiyaOperationsBoardService.Result
         /// 老客业绩
         /// </summary>
         public decimal OldCustomerPerformance { get; set; }
+
+        /// <summary>
+        /// 总业绩
+        /// </summary>
+        public decimal TotalPerformance { get; set; }
         /// <summary>
         /// 新客客单价
         /// </summary>
@@ -93,5 +103,10 @@ namespace Fx.Amiya.Dto.AmiyaOperationsBoardService.Result
         /// 贡献
         /// </summary>
         public decimal Rate { get; set; }
+
+        /// <summary>
+        /// 当月老客复购率
+        /// </summary>
+        public decimal OldCustomerBuyRate { get; set; }
     }
 }

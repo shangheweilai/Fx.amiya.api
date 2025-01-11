@@ -72,15 +72,17 @@ namespace Fx.Amiya.BusinessWechat.Api.Controllers
         /// <param name="pageSize"></param>
         /// <param name="baseLiveAnchorId">主播基础id</param>
         /// <param name="source">客户来源</param>
+        /// <param name="belongCompany">归属公司</param>
+        /// <param name="isRibuluoLiving">是否为日不落直播</param>
         /// <returns></returns>
         [HttpGet("listWithPage")]
-        public async Task<ResultData<FxPageInfo<ShoppingCartRegistrationVo>>> GetListWithPageAsync(DateTime? startDate, DateTime? endDate, int? LiveAnchorId, bool? isCreateOrder, int? createBy, bool? isSendOrder, bool? isAddWechat, bool? isWriteOff, bool? isConsultation, bool? isReturnBackPrice, string keyword, string contentPlatFormId, int pageNum, int pageSize, decimal? minPrice, decimal? maxPrice, int? assignEmpId, DateTime? startRefundTime, DateTime? endRefundTime, DateTime? startBadReviewTime, DateTime? endBadReviewTime, int? ShoppingCartRegistrationCustomerType, int? emergencyLevel, bool? isBadReview, string baseLiveAnchorId, int? source, int? belongChannel)
+        public async Task<ResultData<FxPageInfo<ShoppingCartRegistrationVo>>> GetListWithPageAsync(DateTime? startDate, DateTime? endDate, int? LiveAnchorId, bool? isCreateOrder, int? createBy, bool? isSendOrder, bool? isAddWechat, bool? isWriteOff, bool? isConsultation, bool? isReturnBackPrice, string keyword, string contentPlatFormId, int pageNum, int pageSize, decimal? minPrice, decimal? maxPrice, int? assignEmpId, DateTime? startRefundTime, DateTime? endRefundTime, DateTime? startBadReviewTime, DateTime? endBadReviewTime, int? ShoppingCartRegistrationCustomerType, int? emergencyLevel, bool? isBadReview, string baseLiveAnchorId, int? source, int? belongChannel,int?belongCompany, bool? isRibuluoLiving)
         {
             try
             {
                 var employee = httpContextAccessor.HttpContext.User as FxAmiyaEmployeeIdentity;
                 int employeeId = Convert.ToInt32(employee.Id);
-                var q = await shoppingCartRegistrationService.GetListWithPageAsync(startDate, endDate, LiveAnchorId, isCreateOrder, createBy, isSendOrder, employeeId, isAddWechat, isWriteOff, isConsultation, isReturnBackPrice, keyword, contentPlatFormId, pageNum, pageSize, minPrice, maxPrice, assignEmpId, startRefundTime, endRefundTime, startBadReviewTime, endBadReviewTime, ShoppingCartRegistrationCustomerType, emergencyLevel, isBadReview, baseLiveAnchorId, source, belongChannel);
+                var q = await shoppingCartRegistrationService.GetListWithPageAsync(startDate, endDate, LiveAnchorId, isCreateOrder, createBy, isSendOrder, employeeId, isAddWechat, isWriteOff, isConsultation, isReturnBackPrice, keyword, contentPlatFormId, pageNum, pageSize, minPrice, maxPrice, assignEmpId, startRefundTime, endRefundTime, startBadReviewTime, endBadReviewTime, ShoppingCartRegistrationCustomerType, emergencyLevel, isBadReview, baseLiveAnchorId, source, belongChannel,belongCompany,isRibuluoLiving);
 
                 var shoppingCartRegistration = from d in q.List
                                                select new ShoppingCartRegistrationVo
@@ -101,6 +103,7 @@ namespace Fx.Amiya.BusinessWechat.Api.Controllers
                                                    GetCustomerTypeText = d.GetCustomerTypeText,
                                                    BelongChannelName = d.BelongChannelName,
                                                    CustomerWechatNo=d.CustomerWechatNo,
+                                                   BelongCompany = d.BelongCompany,
                                                    //LiveAnchorWechatNo = d.LiveAnchorWechatNo,
                                                    //Phone = d.Phone,
                                                    //EncryptPhone = d.EncryptPhone,
@@ -207,6 +210,7 @@ namespace Fx.Amiya.BusinessWechat.Api.Controllers
                 addDto.CustomerWechatNo = addVo.CustomerWechatNo;
                 addDto.FromTitle = addVo.FromTitle;
                 addDto.IsRepeateCreateOrder = addVo.IsRepeateCreateOrder;
+                addDto.BelongCompany = addVo.BelongCompany;
                 var contentPlatFormOrder = await contentPlateFormOrderService.GetOrderListByPhoneAsync(addVo.Phone);
                 var isSendOrder = contentPlatFormOrder.Where(x => x.OrderStatus != (int)ContentPlateFormOrderStatus.HaveOrder).Count();
                 if (contentPlatFormOrder.Count > 0)
@@ -308,6 +312,24 @@ namespace Fx.Amiya.BusinessWechat.Api.Controllers
         }
 
         #region 【枚举下拉框】
+
+
+
+        /// <summary>
+        /// 获取归属公司列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("getBelongCompanyList")]
+        public async Task<ResultData<List<BaseIdAndNameVo<int>>>> GetBelongCompanyListAsync()
+        {
+            var nameList = shoppingCartRegistrationService.GetBelonCompanyList();
+            var result = nameList.Select(e => new BaseIdAndNameVo<int>
+            {
+                Id = e.Id,
+                Name = e.Name
+            }).ToList();
+            return ResultData<List<BaseIdAndNameVo<int>>>.Success().AddData("belongCompanyList", result);
+        }
         /// <summary>
         /// 客户来源列表（短视频，直播间等）
         /// </summary>

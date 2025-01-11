@@ -152,10 +152,22 @@ namespace Fx.Amiya.IService
         /// <returns></returns>
         Task<List<FlowTransFormDataDto>> GetFlowTransFormDataAsync(QueryTransformDataDto query);
         /// <summary>
+        /// 获取流量转化和客户转化情况数据(新版本)
+        /// </summary>
+        /// <returns></returns>
+        Task<List<FlowTransFormDataDto>> GetFlowTransFormNewDataAsync(QueryTransformDataDto query);
+        /// <summary>
         /// 获取助理流量转化和客户转化情况数据
         /// </summary>
         /// <returns></returns>
         Task<List<FlowTransFormDataDto>> GetAssistantFlowTransFormDataAsync(QueryTransformDataDto query);
+
+        /// <summary>
+        /// 获取助理月度业绩转化分析
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        Task<List<FlowTransFormDataDto>> GetAssistantFlowTransFormNewDataAsync(QueryTransformDataDto query);
         /// <summary>
         /// 根据时间获取全国机构运营数据概况
         /// </summary>
@@ -168,6 +180,8 @@ namespace Fx.Amiya.IService
         Task<PerformanceYearDataListDto> GetTotalAchievementByYearAsync(QueryPerfomanceYearDataDto query);
 
         Task<PerformanceYearDataListDto> GetTotalCluesByYearAsync(QueryPerfomanceYearDataDto query);
+
+        Task<AssistantPerformanceYearDataListDto> GetTotalAssistantAchievementByYearAsync(QueryPerfomanceYearDataDto query);
         #endregion
 
         #region 助理看板

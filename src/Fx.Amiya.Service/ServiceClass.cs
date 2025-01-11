@@ -553,9 +553,9 @@ namespace Fx.Amiya.Service
                 case 3:
                     emergencyLevelText = "一级线索";
                     break;
-                /*case 4:
-                    emergencyLevelText = "非常重要";
-                    break;*/
+                case 4:
+                    emergencyLevelText = "无效线索";
+                    break;
                 default:
                     emergencyLevelText = "三级线索";
                     break;
@@ -908,6 +908,36 @@ namespace Fx.Amiya.Service
                     break;
                 case 2:
                     sourceText = "组内分诊";
+                    break;
+            }
+            return sourceText;
+
+        }
+        /// <summary>
+        /// 获取归属公司
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetBelongCompanyTypeText(int type)
+        {
+            string sourceText = "";
+            switch (type)
+            {
+                case 0:
+                    sourceText = "其他";
+                    break;
+                case 1:
+                    sourceText = "啊美雅";
+                    break;
+                case 2:
+                    sourceText = "赛达";
+                    break;
+                case 3:
+                    sourceText = "商学苑";
+                    break;
+
+                case 4:
+                    sourceText = "名索";
                     break;
             }
             return sourceText;
@@ -2579,5 +2609,6 @@ namespace Fx.Amiya.Service
             }
             return text;
         }
+
     }
 }

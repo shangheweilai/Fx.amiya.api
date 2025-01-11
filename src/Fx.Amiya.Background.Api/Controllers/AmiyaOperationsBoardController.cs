@@ -815,12 +815,12 @@ namespace Fx.Amiya.Background.Api.Controllers
         }
 
         /// <summary>
-        /// 助理流量和客户转化情况
+        /// 流量和客户转化情况（新版本）
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        [HttpGet("assistantTransformData")]
-        public async Task<ResultData<List<FlowTransFormDataVo>>> GetAssistantFlowTransformDataAsync([FromQuery] QueryTransformDataVo query)
+        [HttpGet("companyTransformNewData")]
+        public async Task<ResultData<List<FlowTransFormDataVo>>> GetFlowTransformNewDataAsync([FromQuery] QueryTransformDataVo query)
         {
             QueryTransformDataDto queryDto = new QueryTransformDataDto();
             queryDto.StartDate = query.StartDate;
@@ -829,9 +829,8 @@ namespace Fx.Amiya.Background.Api.Controllers
             queryDto.ShowWechatVideo = query.ShowWechatVideo;
             queryDto.ShowXiaoHongShu = query.ShowXiaoHongShu;
             queryDto.ShowPrivateDomain = query.ShowPrivateDomain;
-            queryDto.IsCurrentMonth = query.IsCurrentMonth;
             queryDto.BaseLiveAnchorId = query.BaseLiveAnchorId;
-            var result = await amiyaOperationsBoardService.GetAssistantFlowTransFormDataAsync(queryDto);
+            var result = await amiyaOperationsBoardService.GetFlowTransFormNewDataAsync(queryDto);
             var res = result.Select(e => new FlowTransFormDataVo
             {
                 GroupName = e.GroupName,
@@ -854,7 +853,106 @@ namespace Fx.Amiya.Background.Api.Controllers
                 NewCustomerUnitPrice = e.NewCustomerUnitPrice,
                 OldCustomerUnitPrice = e.OldCustomerUnitPrice,
                 CustomerUnitPrice = e.CustomerUnitPrice,
-                Rate = e.Rate
+                Rate = e.Rate,
+                TotalPerformance = e.TotalPerformance,
+                OldCustomerBuyRate = e.OldCustomerBuyRate,
+                YearAndMonth = e.YearAndMonth
+            }).ToList();
+            return ResultData<List<FlowTransFormDataVo>>.Success().AddData("data", res);
+        }
+
+        /// <summary>
+        /// 助理流量和客户转化情况
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        [HttpGet("assistantTransformData")]
+        public async Task<ResultData<List<FlowTransFormDataVo>>> GetAssistantFlowTransformDataAsync([FromQuery] QueryTransformDataVo query)
+        {
+            QueryTransformDataDto queryDto = new QueryTransformDataDto();
+            queryDto.StartDate = query.StartDate;
+            queryDto.EndDate = query.EndDate;
+            queryDto.ShowTikTok = query.ShowTikTok;
+            queryDto.ShowWechatVideo = query.ShowWechatVideo;
+            queryDto.ShowXiaoHongShu = query.ShowXiaoHongShu;
+            queryDto.ShowPrivateDomain = query.ShowPrivateDomain;
+            queryDto.IsCurrentMonth = query.IsCurrentMonth;
+            queryDto.BaseLiveAnchorId = query.BaseLiveAnchorId;
+            var resultData = await amiyaOperationsBoardService.GetAssistantFlowTransFormNewDataAsync(queryDto);
+
+            var res = resultData.Select(e => new FlowTransFormDataVo
+            {
+                GroupName = e.GroupName,
+                YearAndMonth = e.YearAndMonth,
+                ClueCount = e.ClueCount,
+                ClueEffectiveRate = e.ClueEffectiveRate,
+                SendOrderCount = e.SendOrderCount,
+                DistributeConsulationNum = e.DistributeConsulationNum,
+                AddWechatCount = e.AddWechatCount,
+                AddWechatRate = e.AddWechatRate,
+                SendOrderRate = e.SendOrderRate,
+                ToHospitalCount = e.ToHospitalCount,
+                ToHospitalRate = e.ToHospitalRate,
+                DealCount = e.DealCount,
+                NewCustomerDealCount = e.NewCustomerDealCount,
+                OldCustomerDealCount = e.OldCustomerDealCount,
+                DealRate = e.DealRate,
+                NewCustomerPerformance = e.NewCustomerPerformance,
+                NewAndOldCustomerRate = e.NewAndOldCustomerRate,
+                OldCustomerPerformance = e.OldCustomerPerformance,
+                NewCustomerUnitPrice = e.NewCustomerUnitPrice,
+                OldCustomerUnitPrice = e.OldCustomerUnitPrice,
+                CustomerUnitPrice = e.CustomerUnitPrice,
+                Rate = e.Rate,
+                TotalPerformance = e.TotalPerformance
+            }).ToList();
+
+            return ResultData<List<FlowTransFormDataVo>>.Success().AddData("data", res.OrderByDescending(z => z.TotalPerformance).ToList());
+        }
+
+        /// <summary>
+        /// 助理月度业绩转化情况（新版本）
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        [HttpGet("assistantTransformNewData")]
+        public async Task<ResultData<List<FlowTransFormDataVo>>> GetAssistantFlowTransformNewDataAsync([FromQuery] QueryTransformDataVo query)
+        {
+            QueryTransformDataDto queryDto = new QueryTransformDataDto();
+            queryDto.StartDate = query.StartDate;
+            queryDto.EndDate = query.EndDate;
+            queryDto.ShowTikTok = query.ShowTikTok;
+            queryDto.ShowWechatVideo = query.ShowWechatVideo;
+            queryDto.ShowXiaoHongShu = query.ShowXiaoHongShu;
+            queryDto.ShowPrivateDomain = query.ShowPrivateDomain;
+            queryDto.BaseLiveAnchorId = query.BaseLiveAnchorId;
+            var result = await amiyaOperationsBoardService.GetFlowTransFormNewDataAsync(queryDto);
+            var res = result.Select(e => new FlowTransFormDataVo
+            {
+                GroupName = e.GroupName,
+                ClueCount = e.ClueCount,
+                ClueEffectiveRate = e.ClueEffectiveRate,
+                SendOrderCount = e.SendOrderCount,
+                DistributeConsulationNum = e.DistributeConsulationNum,
+                AddWechatCount = e.AddWechatCount,
+                AddWechatRate = e.AddWechatRate,
+                SendOrderRate = e.SendOrderRate,
+                ToHospitalCount = e.ToHospitalCount,
+                ToHospitalRate = e.ToHospitalRate,
+                DealCount = e.DealCount,
+                NewCustomerDealCount = e.NewCustomerDealCount,
+                OldCustomerDealCount = e.OldCustomerDealCount,
+                DealRate = e.DealRate,
+                NewCustomerPerformance = e.NewCustomerPerformance,
+                NewAndOldCustomerRate = e.NewAndOldCustomerRate,
+                OldCustomerPerformance = e.OldCustomerPerformance,
+                NewCustomerUnitPrice = e.NewCustomerUnitPrice,
+                OldCustomerUnitPrice = e.OldCustomerUnitPrice,
+                CustomerUnitPrice = e.CustomerUnitPrice,
+                Rate = e.Rate,
+                TotalPerformance = e.TotalPerformance,
+                OldCustomerBuyRate = e.OldCustomerBuyRate,
+                YearAndMonth = e.YearAndMonth
             }).ToList();
             return ResultData<List<FlowTransFormDataVo>>.Success().AddData("data", res);
         }
@@ -1029,6 +1127,63 @@ namespace Fx.Amiya.Background.Api.Controllers
             return ResultData<PerformanceYearDataListVo>.Success().AddData("data", resultData);
         }
 
+
+        /// <summary>
+        /// 分组助理（年度）总业绩趋势
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        [HttpGet("getTotalAssistantAchievementByYear")]
+        public async Task<ResultData<AssistantPerformanceYearDataListVo>> GetTotalAssistantAchievementByYearAsync([FromQuery] QueryPerfomanceYearDataVo query)
+        {
+            QueryPerfomanceYearDataDto queryDto = new QueryPerfomanceYearDataDto();
+            queryDto.Year = query.Year;
+            queryDto.IsOldCustomer = query.IsOldCustomer;
+            var result = await amiyaOperationsBoardService.GetTotalAssistantAchievementByYearAsync(queryDto);
+            AssistantPerformanceYearDataListVo resultData = new AssistantPerformanceYearDataListVo();
+            var res2 = result.DaoDaoPerformanceData.Select(e => new PerformanceYearDataVo
+            {
+                GroupName = e.GroupName,
+                SortName = e.SortName,
+                JanuaryPerformance = e.JanuaryPerformance,
+                FebruaryPerformance = e.FebruaryPerformance,
+                MarchPerformance = e.MarchPerformance,
+                AprilPerformance = e.AprilPerformance,
+                MayPerformance = e.MayPerformance,
+                JunePerformance = e.JunePerformance,
+                JulyPerformance = e.JulyPerformance,
+                AugustPerformance = e.AugustPerformance,
+                SeptemberPerformance = e.SeptemberPerformance,
+                OctoberPerformance = e.OctoberPerformance,
+                NovemberPerformance = e.NovemberPerformance,
+                DecemberPerformance = e.DecemberPerformance,
+                SumPerformance = e.SumPerformance,
+                AveragePerformance = e.AveragePerformance,
+            }).ToList();
+            resultData.DaoDaoPerformanceData = res2;
+
+            var res3 = result.JiNaPerformanceData.Select(e => new PerformanceYearDataVo
+            {
+                GroupName = e.GroupName,
+                SortName = e.SortName,
+                JanuaryPerformance = e.JanuaryPerformance,
+                FebruaryPerformance = e.FebruaryPerformance,
+                MarchPerformance = e.MarchPerformance,
+                AprilPerformance = e.AprilPerformance,
+                MayPerformance = e.MayPerformance,
+                JunePerformance = e.JunePerformance,
+                JulyPerformance = e.JulyPerformance,
+                AugustPerformance = e.AugustPerformance,
+                SeptemberPerformance = e.SeptemberPerformance,
+                OctoberPerformance = e.OctoberPerformance,
+                NovemberPerformance = e.NovemberPerformance,
+                DecemberPerformance = e.DecemberPerformance,
+                SumPerformance = e.SumPerformance,
+                AveragePerformance = e.AveragePerformance,
+            }).ToList();
+            resultData.JiNaPerformanceData = res3;
+            return ResultData<AssistantPerformanceYearDataListVo>.Success().AddData("data", resultData);
+        }
 
 
         #endregion

@@ -260,6 +260,7 @@ namespace Fx.Amiya.Service
                 order.IsRepeatProfundityOrder = false;
                 order.BelongChannel = input.BelongChannel;
                 order.IsRiBuLuoLiving = input.IsRiBuLuoLiving;
+                order.OrderBelongCompany = input.BelongCompanyEnumId;
                 await _dalContentPlatformOrder.AddAsync(order, true);
 
                 foreach (var z in input.CustomerPictures)
@@ -308,10 +309,11 @@ namespace Fx.Amiya.Service
         /// <param name="appType"></param>
         /// <param name="consultationType">面诊状态</param>
         /// <param name="employeeId"></param>
+        /// <param name="belongCompany">归属公司</param>
         /// <param name="pageNum"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
-        public async Task<FxPageInfo<ContentPlatFormOrderInfoDto>> GetOrderListWithPageAsync(List<int> liveAnchorId, int? getCustomerType, string liveAnchorWechatId, DateTime? startDate, DateTime? endDate, DateTime? appointmentStartDate, DateTime? appointmentEndDate, int? belongMonth, decimal? minAddOrderPrice, decimal? maxAddOrderPrice, int? appointmentHospital, int? consultationType, string hospitalDepartmentId, string keyword, int? orderStatus, string contentPlateFormId, int? belongEmpId, int employeeId, int orderSource, int pageNum, int pageSize)
+        public async Task<FxPageInfo<ContentPlatFormOrderInfoDto>> GetOrderListWithPageAsync(List<int> liveAnchorId, int? getCustomerType, string liveAnchorWechatId, DateTime? startDate, DateTime? endDate, DateTime? appointmentStartDate, DateTime? appointmentEndDate, int? belongMonth, decimal? minAddOrderPrice, decimal? maxAddOrderPrice, int? appointmentHospital, int? consultationType, string hospitalDepartmentId, string keyword, int? orderStatus, string contentPlateFormId, int? belongEmpId, int employeeId, int? belongCompany,int orderSource, int pageNum, int pageSize)
         {
             try
             {
@@ -341,6 +343,7 @@ namespace Fx.Amiya.Service
                              && (orderStatus == null || d.OrderStatus == orderStatus)
                              && (!appointmentHospital.HasValue || d.AppointmentHospitalId == appointmentHospital)
                              && (!belongMonth.HasValue || d.BelongMonth == belongMonth)
+                             && (!belongCompany.HasValue || d.OrderBelongCompany == belongCompany.Value)
                              && (!minAddOrderPrice.HasValue || d.AddOrderPrice >= minAddOrderPrice)
                              && (!maxAddOrderPrice.HasValue || d.AddOrderPrice <= maxAddOrderPrice)
                              && (!consultationType.HasValue || d.ConsulationType == consultationType)
@@ -441,7 +444,8 @@ namespace Fx.Amiya.Service
                                 BelongChannel = d.BelongChannel,
                                 BelongChannelText = ServiceClass.BelongChannelText(d.BelongChannel),
                                 ConsultingContent2 = d.ConsultingContent2,
-                                IsRiBuLuoLiving = d.IsRiBuLuoLiving
+                                IsRiBuLuoLiving = d.IsRiBuLuoLiving,
+                                OrderBelongCompany=ServiceClass.GetBelongCompanyTypeText(d.OrderBelongCompany),
                             };
 
 
@@ -752,6 +756,11 @@ namespace Fx.Amiya.Service
             return pageInfo;
         }
 
+        /// <summary>
+        /// 派单（主派与次派）
+        /// </summary>
+        /// <param name="addDto"></param>
+        /// <returns></returns>
         public async Task AddAsync(AddContentPlatFormSendOrderInfoDto addDto)
         {
             try
@@ -1960,6 +1969,8 @@ namespace Fx.Amiya.Service
             result.CustomerPictures = pictures.Select(x => x.CustomerPicture).ToList();
             result.HasDealInfo = order.ContentPlatformOrderDealInfoList.Count() > 0;
             result.IsRiBuLuoLiving = order.IsRiBuLuoLiving;
+            result.BelongCompanyEnumId = order.OrderBelongCompany;
+            result.BelongCompanyName = ServiceClass.GetBelongCompanyTypeText(order.OrderBelongCompany);
             return result;
         }
 
@@ -2204,6 +2215,7 @@ namespace Fx.Amiya.Service
                 order.CustomerType = input.CustomerType;
                 order.BelongChannel = input.BelongChannel;
                 order.IsRiBuLuoLiving = input.IsRiBuLuoLiving;
+                order.OrderBelongCompany = input.BelongCompanyEnumId;
                 await _contentPlatFormCustomerPictureService.DeleteByContentPlatFormOrderIdAsync(order.Id);
                 foreach (var z in input.CustomerPictures)
                 {

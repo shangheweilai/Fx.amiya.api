@@ -88,6 +88,7 @@ namespace Fx.Amiya.Service
               .Where(e => !query.CreateEmpId.HasValue || e.CreateEmpId == query.CreateEmpId)
               .Where(e => !query.IsInspectOrder.HasValue || e.IsInspectPerformance == query.IsInspectOrder.Value)
               .Where(e => !query.InspectEmpId.HasValue || e.InspectEmpId == query.InspectEmpId.Value).OrderByDescending(x => x.CreateDate)
+              .Where(e => query.LiveAnchorIds.Count == 0 || query.LiveAnchorIds.Contains(e.BelongLiveAnchorAccount.Value))
               .Select(e => new RecommandDocumentSettleDto
               {
                   Id = e.Id,
@@ -124,7 +125,6 @@ namespace Fx.Amiya.Service
                   InspectCustomerServiceCompensationId = e.InspectCustomerServiceCompensationId,
                   CustomerServicePerformance = e.CustomerServicePerformance,
                   PerformancePercent = e.PerformancePercent,
-
               });
             if (query.CheckState != (int)CheckType.CheckedSuccess)
             {
@@ -142,9 +142,82 @@ namespace Fx.Amiya.Service
             {
                 record = record.Where(e => query.IsGenerateInspectSalry == 1 ? string.IsNullOrEmpty(e.InspectCustomerServiceCompensationId) : !string.IsNullOrEmpty(e.InspectCustomerServiceCompensationId));
             }
+
+            //合作达人部分
+            var liveAnchorBaseInfo = await liveAnchorService.GetNotSelfLiveAnchor();
+            var record2 = _dalRecommandDocumentSettle.GetAll().Include(x => x.AmiyaEmployee)
+             .Where(e => liveAnchorBaseInfo.Select(x => x.Id).Contains(e.BelongLiveAnchorAccount.Value))
+             .Where(e => (string.IsNullOrEmpty(query.KeyWord) || e.RecommandDocumentId.Contains(query.KeyWord) || e.OrderId.Contains(query.KeyWord) || e.DealInfoId.Contains(query.KeyWord) || e.CustomerServiceCompensationId == query.KeyWord || e.InspectCustomerServiceCompensationId == query.KeyWord || e.CheckRemark.Contains(query.KeyWord)))
+             .Where(e => !query.StartDate.HasValue || e.CreateDate >= query.StartDate)
+             .Where(e => !query.EndDate.HasValue || e.CreateDate <= query.EndDate.Value.AddDays(1).AddMilliseconds(-1))
+             .Where(e => !query.ChooseHospitalId.HasValue || e.HospitalId == query.ChooseHospitalId)
+             .Where(e => !query.IsOldCustoemr.HasValue || e.IsOldCustomer == query.IsOldCustoemr)
+             .Where(e => !query.CheckState.HasValue || e.CompensationCheckState == query.CheckState)
+             .Where(e => query.OrderFrom == 0 || e.OrderFrom == query.OrderFrom)
+             .Where(e => query.AddOrderPrice == -1 || (query.AddOrderPrice == 0 ? e.ContentPlatFormOrderAddOrderPrice == query.AddOrderPrice : e.ContentPlatFormOrderAddOrderPrice > 0))
+             .Where(e => !query.CreateEmpId.HasValue || e.CreateEmpId == query.CreateEmpId)
+             .Where(e => !query.IsInspectOrder.HasValue || e.IsInspectPerformance == query.IsInspectOrder.Value)
+             .Where(e => !query.InspectEmpId.HasValue || e.InspectEmpId == query.InspectEmpId.Value).OrderByDescending(x => x.CreateDate)
+              .Where(e => query.LiveAnchorIds.Count == 0 || query.LiveAnchorIds.Contains(e.BelongLiveAnchorAccount.Value))
+             .Select(e => new RecommandDocumentSettleDto
+             {
+                 Id = e.Id,
+                 RecommandDocumentId = e.RecommandDocumentId,
+                 HospitalId = e.HospitalId,
+                 OrderId = e.OrderId,
+                 DealInfoId = e.DealInfoId,
+                 OrderFrom = e.OrderFrom,
+                 OrderFromText = ServiceClass.GetOrderFromText(e.OrderFrom),
+                 IsOldCustomer = e.IsOldCustomer,
+                 ContentPlatFormOrderAddOrderPrice = e.ContentPlatFormOrderAddOrderPrice,
+                 IsOldCustomerText = e.IsOldCustomer == true ? "老客业绩" : "新客业绩",
+                 OrderPrice = e.OrderPrice,
+                 CreateDate = e.CreateDate,
+                 RecolicationPrice = e.RecolicationPrice,
+                 CreateEmpId = e.CreateEmpId,
+                 BelongLiveAnchorAccount = e.BelongLiveAnchorAccount,
+                 ReturnBackPrice = e.ReturnBackPrice,
+                 BelongEmpId = e.BelongEmpId,
+                 AccountTypeText = e.AccountType == true ? "出账" : "入账",
+                 CustomerServiceSettlePrice = e.CustomerServiceSettlePrice,
+                 CheckBelongEmpId = e.CheckBelongEmpId,
+                 CheckRemark = e.CheckRemark,
+                 CheckTypeText = ServiceClass.GetReconciliationDocumentSettleCheckType(e.CheckType),
+                 IsInspectPerformance = e.IsInspectPerformance,
+                 InspectPrice = e.InspectPrice,
+                 InspectPercent = e.InspectPercent,
+                 InspectBy = e.InspectEmpId,
+                 CustomerServiceOrderPerformance = e.CustomerServiceOrderPerformance,
+                 CheckDate = e.CheckDate,
+                 CompensationCheckState = e.CompensationCheckState,
+                 CompensationCheckStateText = ServiceClass.GetCheckTypeText(e.CompensationCheckState),
+                 CustomerServiceCompensationId = e.CustomerServiceCompensationId,
+                 InspectCustomerServiceCompensationId = e.InspectCustomerServiceCompensationId,
+                 CustomerServicePerformance = e.CustomerServicePerformance,
+                 PerformancePercent = e.PerformancePercent,
+             });
+            if (query.CheckState != (int)CheckType.CheckedSuccess)
+            {
+                record2 = record2.Where(e => query.BelongEmpId.Count == 0 || query.BelongEmpId.Contains(e.BelongEmpId));
+            }
+            else
+            {
+                record2 = record2.Where(e => query.BelongEmpId.Count == 0 || query.BelongEmpId.Contains(e.CheckBelongEmpId));
+            }
+            if (query.IsGenerateSalry.HasValue)
+            {
+                record2 = record2.Where(e => query.IsGenerateSalry == 1 ? string.IsNullOrEmpty(e.CustomerServiceCompensationId) : !string.IsNullOrEmpty(e.CustomerServiceCompensationId));
+            }
+            if (query.IsGenerateInspectSalry.HasValue)
+            {
+                record2 = record2.Where(e => query.IsGenerateInspectSalry == 1 ? string.IsNullOrEmpty(e.InspectCustomerServiceCompensationId) : !string.IsNullOrEmpty(e.InspectCustomerServiceCompensationId));
+            }
             FxPageInfo<RecommandDocumentSettleDto> resultPageInfo = new FxPageInfo<RecommandDocumentSettleDto>();
-            resultPageInfo.TotalCount = await record.CountAsync();
-            resultPageInfo.List = await record.OrderByDescending(x => x.CreateDate).Skip((query.PageNum.Value - 1) * query.PageSize.Value).Take(query.PageSize.Value).ToListAsync();
+            var res1 = await record.ToListAsync();
+            var res2 = await record2.ToListAsync();
+            res1.AddRange(res2);
+            resultPageInfo.TotalCount = res1.Count();
+            resultPageInfo.List = res1.OrderByDescending(x => x.CreateDate).Skip((query.PageNum.Value - 1) * query.PageSize.Value).Take(query.PageSize.Value).ToList();
             return resultPageInfo;
         }
 

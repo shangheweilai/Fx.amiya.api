@@ -27,10 +27,12 @@ namespace Fx.Amiya.Service
         private IEmployeeBindLiveAnchorService employeeBindLiveAnchorService;
         private IDalLiveAnchorBaseInfo dalLiveAnchorBaseInfo;
 
-        public List<BaseIdAndNameDto<int>> GetEmployeeNameList() { 
-            return  dalAmiyaEmployee.GetAll().Where(e=>e.Valid==true).Select(e=>new BaseIdAndNameDto<int> {
-                Id=e.Id,
-                Name=e.Name
+        public List<BaseIdAndNameDto<int>> GetEmployeeNameList()
+        {
+            return dalAmiyaEmployee.GetAll().Where(e => e.Valid == true).Select(e => new BaseIdAndNameDto<int>
+            {
+                Id = e.Id,
+                Name = e.Name
             }).ToList();
         }
 
@@ -356,7 +358,7 @@ namespace Fx.Amiya.Service
                 List<AmiyaEmployeeDto> amiyaEmployeeDtos = new List<AmiyaEmployeeDto>();
                 var employeeInfo = dalAmiyaEmployee.GetAll()
                     .Include(e => e.AmiyaPositionInfo).ThenInclude(e => e.AmiyaDepartment)
-                    .Where(e => e.LiveAnchorBaseId == liveAnchorBaseId);
+                    .Where(e => e.LiveAnchorBaseId == liveAnchorBaseId && e.Id != 128);
 
                 if (employeeInfo == null)
                     return amiyaEmployeeDtos;
@@ -402,6 +404,58 @@ namespace Fx.Amiya.Service
             }
         }
 
+        public async Task<List<AmiyaEmployeeDto>> GetCustomerServiceByLiveAnchorBaseIdAsync(List<string> liveAnchorBaseId)
+        {
+            try
+            {
+                List<AmiyaEmployeeDto> amiyaEmployeeDtos = new List<AmiyaEmployeeDto>();
+                var employeeInfo = dalAmiyaEmployee.GetAll()
+                    .Include(e => e.AmiyaPositionInfo).ThenInclude(e => e.AmiyaDepartment)
+                    .Where(e => ((liveAnchorBaseId == null || liveAnchorBaseId.Count() == 0) || liveAnchorBaseId.Contains(e.LiveAnchorBaseId)) && e.Id != 128 && e.AmiyaPositionId == 4&&e.Valid==true);
+
+                if (employeeInfo == null)
+                    return amiyaEmployeeDtos;
+                var employee = await employeeInfo.ToListAsync();
+                foreach (var x in employee)
+                {
+                    AmiyaEmployeeDto employeeDto = new AmiyaEmployeeDto()
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Avatar = x.Avatar,
+                        UserName = x.UserName,
+                        Password = x.Password,
+                        Valid = x.Valid,
+                        Email = (x.Email == "0") ? "" : x.Email,
+                        PositionId = x.AmiyaPositionId,
+                        PositionName = x.AmiyaPositionInfo.Name,
+                        IsCustomerService = x.IsCustomerService,
+                        DepartmentId = x.AmiyaPositionInfo.DepartmentId,
+                        DepartmentName = x.AmiyaPositionInfo.AmiyaDepartment.Name,
+                        LiveAnchorBaseId = x.LiveAnchorBaseId
+                    };
+                    if (employeeDto.IsCustomerService == true || employeeDto.PositionId == 19)
+                    {
+                        employeeDto.LiveAnchorIds = new List<int>();
+                        var liveAnchorIdsResult = await employeeBindLiveAnchorService.GetByEmpIdAsync(employeeDto.Id);
+                        if (liveAnchorIdsResult.Count > 0)
+                        {
+                            foreach (var z in liveAnchorIdsResult)
+                            {
+                                employeeDto.LiveAnchorIds.Add(z.LiveAnchorId);
+                            }
+                        }
+                    }
+                    amiyaEmployeeDtos.Add(employeeDto);
+                }
+                return amiyaEmployeeDtos;
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message.ToString());
+            }
+        }
         public async Task<AmiyaEmployeeDto> GetByNameAsync(string name)
         {
             try
@@ -869,10 +923,11 @@ namespace Fx.Amiya.Service
         /// 获取直播前员工名称列表
         /// </summary>
         /// <returns></returns>
-        public async Task<List<AmiyaEmployeeNameDto>> GetLiveBeforeEmployeeNameListAsync() { 
-            var nameList=await dalAmiyaEmployee.GetAll()
-                .Where(e=>(e.AmiyaPositionId == 19 || e.AmiyaPositionId == 21) &&e.Valid==true)
-                .Select(e=>new AmiyaEmployeeNameDto { Id=e.Id,Name=e.Name}).ToListAsync();
+        public async Task<List<AmiyaEmployeeNameDto>> GetLiveBeforeEmployeeNameListAsync()
+        {
+            var nameList = await dalAmiyaEmployee.GetAll()
+                .Where(e => (e.AmiyaPositionId == 19 || e.AmiyaPositionId == 21) && e.Valid == true)
+                .Select(e => new AmiyaEmployeeNameDto { Id = e.Id, Name = e.Name }).ToListAsync();
             return nameList;
         }
         /// <summary>
@@ -891,7 +946,7 @@ namespace Fx.Amiya.Service
                            };
             return await employee.ToListAsync();
         }
-        
+
 
         /// <summary>
         /// 获取助理(不包含行政客服)

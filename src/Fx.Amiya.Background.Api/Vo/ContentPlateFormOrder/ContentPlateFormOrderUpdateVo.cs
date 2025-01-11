@@ -196,5 +196,10 @@ namespace Fx.Amiya.Background.Api.Vo.ContentPlateFormOrder
         /// </summary>
         public bool IsRiBuLuoLiving { get; set; }
 
+        /// <summary>
+        /// 归属公司
+        /// </summary>
+        public int BelongCompanyEnumId { get; set; }
+
     }
 }

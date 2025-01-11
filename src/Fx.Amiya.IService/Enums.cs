@@ -52,6 +52,35 @@ namespace Fx.Amiya.IService
         //优惠券抵扣
         VoucherDeduction = 1
     }
+
+    /// <summary>
+    /// 小黄车和订单的归属公司
+    /// </summary>
+    public enum CustomerBelongCompany
+    {
+        /// <summary>
+        /// 其他
+        /// </summary>
+        other = 0,
+        /// <summary>
+        /// 啊美雅
+        /// </summary>
+        Amiya = 1,
+        /// <summary>
+        /// 赛达
+        /// </summary>
+        SaiDa = 2,
+        /// <summary>
+        /// 商学院
+        /// </summary>
+        ShangXueYuan = 3,
+
+        /// <summary>
+        /// 名索
+        /// </summary>
+        MingSuo=4,
+    }
+
     /// <summary>
     /// 预约车型
     /// </summary>
@@ -938,8 +967,8 @@ namespace Fx.Amiya.IService
         Generally = 2,
         //一级线索
         Important = 3,
-        //非常重要
-        // VeryImportant=4
+        //无效线索
+        Invalid=4,
     }
     public enum RechargeStatus
     {

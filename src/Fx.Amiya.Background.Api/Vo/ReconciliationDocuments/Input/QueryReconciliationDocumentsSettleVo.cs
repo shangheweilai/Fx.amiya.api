@@ -20,6 +20,11 @@ namespace Fx.Amiya.Background.Api.Vo.ReconciliationDocuments.Input
         /// 归属客服
         /// </summary>
         public string BelongEmpId { get; set; }
+
+        /// <summary>
+        /// 归属基础主播
+        /// </summary>
+        public string BelongLiveAnchorIds { get; set; }
         /// <summary>
         /// 稽查客服
         /// </summary>

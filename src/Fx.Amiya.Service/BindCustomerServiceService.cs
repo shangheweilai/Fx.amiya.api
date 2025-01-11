@@ -269,7 +269,28 @@ namespace Fx.Amiya.Service
             }
 
         }
+        /// <summary>
+        /// 根据主播名称和消费金额获取名下总客户情况
+        /// </summary>
+        /// <param name="phone"></param>
+        /// <returns></returns>
+        public async Task<int> GetBindCustomerServiceCountByLiveAnchorNameAndPricePhone(string liveAnchorName, decimal price)
+        {
+            var bindCustomerServiceInfo = await dalBindCustomerService.GetAll().Where(e => e.NewLiveAnchor.Contains(liveAnchorName) && e.AllPrice > price).CountAsync();
+            return bindCustomerServiceInfo;
 
+        }
+        /// <summary>
+        /// 根据绑定助理和消费金额获取名下总客户情况
+        /// </summary>
+        /// <param name="phone"></param>
+        /// <returns></returns>
+        public async Task<int> GetBindCustomerServiceCountByAssistantAndPricePhone(int assistantId, decimal price)
+        {
+            var bindCustomerServiceInfo = await dalBindCustomerService.GetAll().Where(e => e.CustomerServiceId == assistantId && e.AllPrice > price).CountAsync();
+            return bindCustomerServiceInfo;
+
+        }
         /// <summary>
         /// 小程序绑定客户时修改绑定客服的userId
         /// </summary>
@@ -375,7 +396,7 @@ namespace Fx.Amiya.Service
             DateTime date = DateTime.Now;
             List<string> encryptPhoneList = updateDto.EncryptPhoneList.Distinct().ToList();
             var config = await GetCallCenterConfig();
-            List<int?> empIds=new List<int?>();
+            List<int?> empIds = new List<int?>();
             foreach (var encryptPhone in encryptPhoneList)
             {
                 string phone = ServiceClass.Decrypto(encryptPhone, config.PhoneEncryptKey);
@@ -390,7 +411,7 @@ namespace Fx.Amiya.Service
                     //bindCustomerServiceInfo.CreateDate = date;
                     //bindCustomerServiceInfo.CreateBy = employeeId;
                     await dalBindCustomerService.UpdateAsync(bindCustomerServiceInfo, true);
-                    
+
                 }
                 else
                 {
@@ -580,7 +601,7 @@ namespace Fx.Amiya.Service
         /// <returns></returns>
         private int? CalConsumerCycle(DateTime? firstConsumerDate, DateTime? lastConsumerDate, int? consumerTimes)
         {
-            if (!consumerTimes.HasValue||consumerTimes <= 1) return 0;
+            if (!consumerTimes.HasValue || consumerTimes <= 1) return 0;
             if (!firstConsumerDate.HasValue) return null;
             if (!lastConsumerDate.HasValue) return null;
             var totalCycle = (lastConsumerDate.Value.Date - firstConsumerDate.Value.Date).TotalDays;

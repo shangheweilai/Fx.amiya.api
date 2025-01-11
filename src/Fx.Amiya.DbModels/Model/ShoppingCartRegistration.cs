@@ -114,6 +114,11 @@ namespace Fx.Amiya.DbModels.Model
         /// 词条来源
         /// </summary>
         public string FromTitle { get; set; }
+
+        /// <summary>
+        /// 归属公司
+        /// </summary>
+        public int BelongCompany { get; set; }
         public Contentplatform Contentplatform { get; set; }
         public LiveAnchor LiveAnchor { get; set; }
         public AmiyaEmployee AmiyaEmployee { get; set; }

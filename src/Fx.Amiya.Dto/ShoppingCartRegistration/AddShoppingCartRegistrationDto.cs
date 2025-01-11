@@ -124,6 +124,10 @@ namespace Fx.Amiya.Dto.ShoppingCartRegistration
         /// 是否重复下单
         /// </summary>
         public bool IsRepeateCreateOrder { get; set; }
+        /// <summary>
+        /// 归属公司
+        /// </summary>
+        public int BelongCompany { get; set; }
 
     }
 }

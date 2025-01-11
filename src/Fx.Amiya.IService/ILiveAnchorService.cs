@@ -66,6 +66,19 @@ namespace Fx.Amiya.IService
         /// <param name="baseInfoId"></param>
         /// <returns></returns>
         Task<List<LiveAnchorDto>> GetAllLiveAnchorListByBaseInfoId(string baseInfoId);
+
+        /// <summary>
+        ///  根据基础主播id集合获取主播ip(不区分有效无效)
+        /// </summary>
+        /// <param name="baseInfoIds"></param>
+        /// <returns></returns>
+        Task<List<LiveAnchorDto>> GetAllLiveAnchorListByBaseInfoIds(List<string> baseInfoIds);
+
+        /// <summary>
+        /// 获取非自播达人的主播IP
+        /// </summary>
+        /// <returns></returns>
+        Task<List<LiveAnchorDto>> GetNotSelfLiveAnchor();
         /// <summary>
         /// 根据主播基础信息id集合获取所有主播id
         /// </summary>

@@ -183,6 +183,11 @@ namespace Fx.Amiya.DbModels.Model
         /// </summary>
         public bool IsRiBuLuoLiving { get; set; }
 
+        /// <summary>
+        /// 订单业绩归属公司
+        /// </summary>
+        public int OrderBelongCompany { get; set; }
+
         public Contentplatform Contentplatform { get; set; }
         public LiveAnchor LiveAnchor { get; set; }
         public AmiyaGoodsDemand AmiyaGoodsDemand { get; set; }

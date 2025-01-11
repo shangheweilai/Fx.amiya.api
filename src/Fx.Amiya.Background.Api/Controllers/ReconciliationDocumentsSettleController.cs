@@ -34,11 +34,12 @@ namespace Fx.Amiya.Background.Api.Controllers
         private IHttpContextAccessor httpContextAccessor;
         private IRecommandDocumentSettleService reconciliationDocumentsSettleService;
         private IAmiyaOperationsBoardService amiyaOperationsBoardService;
+        private ILiveAnchorService liveAnchorService;
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="billService"></param>
-        public ReconciliationDocumentsSettleController(IBillService billService, IOperationLogService operationLogService, IHttpContextAccessor httpContextAccessor, IRecommandDocumentSettleService reconciliationDocumentsSettleService, IAmiyaOperationsBoardService amiyaOperationsBoardService)
+        public ReconciliationDocumentsSettleController(IBillService billService, IOperationLogService operationLogService, IHttpContextAccessor httpContextAccessor, IRecommandDocumentSettleService reconciliationDocumentsSettleService, IAmiyaOperationsBoardService amiyaOperationsBoardService,ILiveAnchorService liveAnchorService)
         {
 
             this.billService = billService;
@@ -46,6 +47,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             this.httpContextAccessor = httpContextAccessor;
             this.reconciliationDocumentsSettleService = reconciliationDocumentsSettleService;
             this.amiyaOperationsBoardService = amiyaOperationsBoardService;
+            this.liveAnchorService = liveAnchorService;
         }
 
 
@@ -269,6 +271,20 @@ namespace Fx.Amiya.Background.Api.Controllers
                     }
                 }
                 queryReconciliationDocumentsSettleDto.BelongEmpId = ids;
+
+
+                List<string?> liveAnchorBaseIds = new List<string?> { };
+                if (!string.IsNullOrEmpty(query.BelongLiveAnchorIds))
+                {
+                    var deviceVarID2 = query.BelongLiveAnchorIds;
+                    var liveAnchorBaseIdsDev = deviceVarID2.Split(',');
+                    foreach (var item in liveAnchorBaseIdsDev)
+                    {
+                        liveAnchorBaseIds.Add(item);
+                    }
+                }
+                var liveAnchorIds = await liveAnchorService.GetAllLiveAnchorListByBaseInfoIds(liveAnchorBaseIds);
+                queryReconciliationDocumentsSettleDto.LiveAnchorIds = liveAnchorIds.Select(x=>x.Id).ToList();
                 queryReconciliationDocumentsSettleDto.KeyWord = query.KeyWord;
                 queryReconciliationDocumentsSettleDto.StartDate = query.StartDate;
                 queryReconciliationDocumentsSettleDto.EndDate = query.EndDate;

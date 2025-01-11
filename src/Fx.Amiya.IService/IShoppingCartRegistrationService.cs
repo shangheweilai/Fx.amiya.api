@@ -15,7 +15,7 @@ namespace Fx.Amiya.IService
 {
     public interface IShoppingCartRegistrationService
     {
-        Task<FxPageInfo<ShoppingCartRegistrationDto>> GetListWithPageAsync(DateTime? startDate, DateTime? endDate, int? LiveAnchorId, bool? isCreateOrder, int? createBy, bool? isSendOrder, int? employeeId, bool? isAddWechat, bool? isWriteOff, bool? isConsultation, bool? isReturnBackPrice, string keyword, string contentPlatFormId, int pageNum, int pageSize, decimal? minPrice, decimal? maxPrice, int? AdmissionId, DateTime? startRefundTime, DateTime? endRefundTime, DateTime? startBadReviewTime, DateTime? endBadReviewTime, int? ShoppingCartRegistrationCustomerType, int? emergencyLevel, bool? isBadReview, string baseLiveAnchorId, int? source, int? belongDepartment);
+        Task<FxPageInfo<ShoppingCartRegistrationDto>> GetListWithPageAsync(DateTime? startDate, DateTime? endDate, int? LiveAnchorId, bool? isCreateOrder, int? createBy, bool? isSendOrder, int? employeeId, bool? isAddWechat, bool? isWriteOff, bool? isConsultation, bool? isReturnBackPrice, string keyword, string contentPlatFormId, int pageNum, int pageSize, decimal? minPrice, decimal? maxPrice, int? AdmissionId, DateTime? startRefundTime, DateTime? endRefundTime, DateTime? startBadReviewTime, DateTime? endBadReviewTime, int? ShoppingCartRegistrationCustomerType, int? emergencyLevel, bool? isBadReview, string baseLiveAnchorId, int? source, int? belongDepartment,int?belongCompany, bool? isRibuluoLiving);
         Task AddAsync(AddShoppingCartRegistrationDto addDto);
 
         Task AddListAsync(List<AddShoppingCartRegistrationDto> addDtoList);
@@ -76,6 +76,12 @@ namespace Fx.Amiya.IService
         /// </summary>
         /// <returns></returns>
         List<BaseIdAndNameDto<int>> GetBelongDepartmentList();
+
+        /// <summary>
+        /// 获取归属公司
+        /// </summary>
+        /// <returns></returns>
+        List<BaseIdAndNameDto<int>> GetBelonCompanyList();
         /// <summary>
         /// 根据创建人与时间线获取医美/带货客资加v量
         /// </summary>
@@ -282,6 +288,16 @@ namespace Fx.Amiya.IService
         /// <param name="baseLiveAnchorId"></param>
         /// <returns></returns>
         Task<ShoppingCartRegistrationIndicatorBaseDataDto> GetFlowAndCustomerTransformDataAsync(DateTime startDate, DateTime endDate, string baseLiveAnchorId, List<string> contentPlatformIds);
+
+        /// <summary>
+        /// 获取助理流量和客户转化基础数据
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <param name="assignEmpId"></param>
+        /// <param name="contentPlatformIds"></param>
+        /// <returns></returns>
+        Task<ShoppingCartRegistrationIndicatorBaseDataDto> GetAssistantFlowAndCustomerTransformDataAsync(DateTime startDate, DateTime endDate, int assignEmpId, List<string> contentPlatformIds);
         /// <summary>
         /// 获取助理流量和客户转化基础数据
         /// </summary>

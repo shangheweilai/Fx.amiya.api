@@ -74,7 +74,7 @@ namespace Fx.Amiya.Service
 
 
 
-        public async Task<FxPageInfo<ShoppingCartRegistrationDto>> GetListWithPageAsync(DateTime? startDate, DateTime? endDate, int? LiveAnchorId, bool? isCreateOrder, int? createBy, bool? isSendOrder, int? employeeId, bool? isAddWechat, bool? isWriteOff, bool? isConsultation, bool? isReturnBackPrice, string keyword, string contentPlatFormId, int pageNum, int pageSize, decimal? minPrice, decimal? maxPrice, int? assignEmpId, DateTime? startRefundTime, DateTime? endRefundTime, DateTime? startBadReviewTime, DateTime? endBadReviewTime, int? ShoppingCartRegistrationCustomerType, int? emergencyLevel, bool? isBadReview, string baseLiveAnchorId, int? source, int? belongChannel)
+        public async Task<FxPageInfo<ShoppingCartRegistrationDto>> GetListWithPageAsync(DateTime? startDate, DateTime? endDate, int? LiveAnchorId, bool? isCreateOrder, int? createBy, bool? isSendOrder, int? employeeId, bool? isAddWechat, bool? isWriteOff, bool? isConsultation, bool? isReturnBackPrice, string keyword, string contentPlatFormId, int pageNum, int pageSize, decimal? minPrice, decimal? maxPrice, int? assignEmpId, DateTime? startRefundTime, DateTime? endRefundTime, DateTime? startBadReviewTime, DateTime? endBadReviewTime, int? ShoppingCartRegistrationCustomerType, int? emergencyLevel, bool? isBadReview, string baseLiveAnchorId, int? source, int? belongChannel,int?belongCompany, bool? isRibuluoLiving)
         {
             try
             {
@@ -105,6 +105,8 @@ namespace Fx.Amiya.Service
                                                && (string.IsNullOrEmpty(baseLiveAnchorId) || d.BaseLiveAnchorId == baseLiveAnchorId)
                                                && (!source.HasValue || d.Source == source.Value)
                                                && (!belongChannel.HasValue || d.BelongChannel == belongChannel.Value)
+                                               && (!belongCompany.HasValue || d.BelongCompany == belongCompany.Value)
+                                               && (!isRibuluoLiving.HasValue || d.IsRiBuLuoLiving == isRibuluoLiving.Value)
                                                select new ShoppingCartRegistrationDto
                                                {
                                                    Id = d.Id,
@@ -162,6 +164,7 @@ namespace Fx.Amiya.Service
                                                    CustomerWechatNo = d.CustomerWechatNo,
                                                    FromTitle = d.FromTitle,
                                                    IsRepeateCreateOrder = d.IsRepeateCreateOrder,
+                                                   BelongCompany = ServiceClass.GetBelongCompanyTypeText(d.BelongCompany)
                                                };
                 var employee = await dalAmiyaEmployee.GetAll().Include(e => e.AmiyaPositionInfo).SingleOrDefaultAsync(e => e.Id == employeeId);
                 if (!employee.AmiyaPositionInfo.IsDirector)
@@ -287,6 +290,7 @@ namespace Fx.Amiya.Service
                 shoppingCartRegistration.CustomerWechatNo = addDto.CustomerWechatNo;
                 shoppingCartRegistration.FromTitle = addDto.FromTitle;
                 shoppingCartRegistration.IsRepeateCreateOrder = addDto.IsRepeateCreateOrder;
+                shoppingCartRegistration.BelongCompany = addDto.BelongCompany;
                 var baseLiveAnchorId = await _liveAnchorService.GetByIdAsync(addDto.LiveAnchorId);
                 if (!string.IsNullOrEmpty(baseLiveAnchorId.LiveAnchorBaseId))
                 {
@@ -472,6 +476,8 @@ namespace Fx.Amiya.Service
                 shoppingCartRegistrationDto.CustomerWechatNo = shoppingCartRegistration.CustomerWechatNo;
                 shoppingCartRegistrationDto.FromTitle = shoppingCartRegistration.FromTitle;
                 shoppingCartRegistrationDto.IsRepeateCreateOrder = shoppingCartRegistration.IsRepeateCreateOrder;
+                shoppingCartRegistrationDto.BelongCompany = ServiceClass.GetBelongCompanyTypeText(shoppingCartRegistration.BelongCompany);
+                shoppingCartRegistrationDto.BelongCompanyEnumId = shoppingCartRegistration.BelongCompany;
 
                 return shoppingCartRegistrationDto;
             }
@@ -547,6 +553,9 @@ namespace Fx.Amiya.Service
                 shoppingCartRegistrationDto.ActiveEmployeeId = shoppingCartRegistration.ActiveEmployeeId;
                 shoppingCartRegistrationDto.CustomerWechatNo = shoppingCartRegistration.CustomerWechatNo;
                 shoppingCartRegistrationDto.FromTitle = shoppingCartRegistration.FromTitle;
+                shoppingCartRegistrationDto.BelongCompany = ServiceClass.GetBelongCompanyTypeText(shoppingCartRegistration.BelongCompany);
+                shoppingCartRegistrationDto.BelongCompanyEnumId = shoppingCartRegistration.BelongCompany;
+
                 return shoppingCartRegistrationDto;
             }
             catch (Exception ex)
@@ -637,6 +646,8 @@ namespace Fx.Amiya.Service
                     shoppingCartRegistrationDto.ActiveEmployeeId = shoppingCartRegistration.ActiveEmployeeId;
                     shoppingCartRegistrationDto.CustomerWechatNo = shoppingCartRegistration.CustomerWechatNo;
                     shoppingCartRegistrationDto.FromTitle = shoppingCartRegistration.FromTitle;
+                    shoppingCartRegistrationDto.BelongCompanyEnumId = shoppingCartRegistration.BelongCompany;
+                    shoppingCartRegistrationDto.BelongCompany = ServiceClass.GetBelongCompanyTypeText(shoppingCartRegistration.BelongCompany);
                     result.Add(shoppingCartRegistrationDto);
                 }
                 return result;
@@ -766,7 +777,7 @@ namespace Fx.Amiya.Service
                 shoppingCartRegistration.CustomerWechatNo = updateDto.CustomerWechatNo;
                 shoppingCartRegistration.FromTitle = updateDto.FromTitle;
                 shoppingCartRegistration.IsRepeateCreateOrder = updateDto.IsRepeateCreateOrder;
-
+                shoppingCartRegistration.BelongCompany = updateDto.BelongCompany;
                 await dalShoppingCartRegistration.UpdateAsync(shoppingCartRegistration, true);
             }
         }
@@ -1138,6 +1149,25 @@ namespace Fx.Amiya.Service
                 emergencyLevelList.Add(item);
             }
             return emergencyLevelList;
+        }
+
+
+        /// <summary>
+        /// 获取归属公司列表
+        /// </summary>
+        /// <returns></returns>
+        public List<BaseIdAndNameDto<int>> GetBelonCompanyList()
+        {
+            var belongCompanys = Enum.GetValues(typeof(CustomerBelongCompany));
+            List<BaseIdAndNameDto<int>> data = new List<BaseIdAndNameDto<int>>();
+            foreach (var belong in belongCompanys)
+            {
+                BaseIdAndNameDto<int> item = new BaseIdAndNameDto<int>();
+                item.Id = Convert.ToInt32(belong);
+                item.Name = ServiceClass.GetBelongCompanyTypeText(item.Id);
+                data.Add(item);
+            }
+            return data;
         }
         /// <sum
         /// <summary>
@@ -2251,7 +2281,7 @@ namespace Fx.Amiya.Service
             data.SendOrderCount = sendC;
             var contentOrderList = dalContentPlatFormOrderDealInfo.GetAll()
                 .Where(o => o.ContentPlatFormOrder.LiveAnchor.LiveAnchorBaseId == baseLiveAnchorId)
-                .Where(e => !phoneList.Contains(e.ContentPlatFormOrder.Phone) && e.CreateDate >= startDate && e.CreateDate < endDate && e.IsOldCustomer == isOldCustomer)
+                .Where(e => !phoneList.Contains(e.ContentPlatFormOrder.Phone) && e.CreateDate >= startDate && e.CreateDate < endDate && e.IsOldCustomer == isOldCustomer && e.Valid == true)
                 .Where(e => !isEffective.HasValue || (isEffective.Value ? e.ContentPlatFormOrder.AddOrderPrice > 0 : e.ContentPlatFormOrder.AddOrderPrice <= 0))
                 .Select(e => new
                 {
@@ -2341,6 +2371,70 @@ namespace Fx.Amiya.Service
             return data;
         }
 
+
+        /// <summary>
+        /// 获取助理流量和客户转化基础数据
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <param name="baseLiveAnchorId"></param>
+        /// <returns></returns>
+        public async Task<ShoppingCartRegistrationIndicatorBaseDataDto> GetAssistantFlowAndCustomerTransformDataAsync(DateTime startDate, DateTime endDate, int assignEmpId, List<string> contentPlatformIds)
+        {
+            ShoppingCartRegistrationIndicatorBaseDataDto data = new ShoppingCartRegistrationIndicatorBaseDataDto();
+            var baseData = dalShoppingCartRegistration.GetAll()
+                .Where(e => contentPlatformIds == null || contentPlatformIds.Contains(e.ContentPlatFormId))
+                .Where(e => e.RecordDate >= startDate && e.RecordDate < endDate && e.AssignEmpId == assignEmpId)
+                .Select(e => new
+                {
+                    AssignEmpId = e.AssignEmpId,
+                    IsSendOrder = e.IsSendOrder,
+                    Phone = e.Phone,
+                    RecordDate = e.RecordDate,
+                    IsAddWeChat = e.IsAddWeChat,
+                }).ToList();
+            var phoneList = baseData.Select(e => e.Phone).ToList();
+            //var sendC = dalContentPlatformOrder.GetAll()
+            //  .Where(o => contentPlatformIds == null || contentPlatformIds.Contains(o.ContentPlateformId))
+            //  .Where(o => o.SendDate >= startDate && o.SendDate < endDate)
+            //  .Where(o => o.LiveAnchor.LiveAnchorBaseId == baseLiveAnchorId)
+            //  .Where(e => e.OrderStatus != (int)ContentPlateFormOrderStatus.HaveOrder && e.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder)
+            //  .Select(o => o.Phone)
+            //  .Distinct()
+            //  .Count();
+            var sendC = dalContentPlatformOrderSend.GetAll()
+              .Where(o => contentPlatformIds == null || contentPlatformIds.Contains(o.ContentPlatformOrder.ContentPlateformId))
+              .Where(o => o.SendDate >= startDate && o.SendDate < endDate)
+              .Where(o => o.ContentPlatformOrder.IsSupportOrder == true ? o.ContentPlatformOrder.SupportEmpId == assignEmpId : o.ContentPlatformOrder.BelongEmpId == assignEmpId)
+              .Where(e => e.OrderStatus != (int)ContentPlateFormOrderStatus.HaveOrder && e.OrderStatus != (int)ContentPlateFormOrderStatus.RepeatOrder)
+              .Where(e => e.IsMainHospital == true)
+              .Select(o => o.ContentPlatformOrder.Phone)
+              .Distinct()
+              .Count();
+            data.ClueCount = baseData.Count();
+            data.TotalCount = baseData.Where(e => e.AssignEmpId != null).Count();
+            data.SendOrderCount = sendC;
+            var contentOrderList = dalContentPlatFormOrderDealInfo.GetAll()
+                .Where(e => contentPlatformIds == null || contentPlatformIds.Contains(e.ContentPlatFormOrder.ContentPlateformId))
+                .Where(e => e.CreateDate >= startDate && e.CreateDate < endDate)
+                .Where(o => o.ContentPlatFormOrder.IsSupportOrder == true ? o.ContentPlatFormOrder.SupportEmpId == assignEmpId : o.ContentPlatFormOrder.BelongEmpId == assignEmpId && o.Valid == true)
+                .Select(e => new
+                {
+                    Phone = e.ContentPlatFormOrder.Phone,
+                    IsToHospital = (e.IsOldCustomer == false && e.IsToHospital == true) ? true : false,
+                    RealToHospital = e.IsToHospital,
+                    DealPrice = e.Price,
+                    IsDeal = e.IsDeal,
+                    IsOldCustomer = e.IsOldCustomer
+                }).ToList();
+            data.AddWechatCount = baseData.Where(e => e.IsAddWeChat).Count();
+            data.ToHospitalCount = contentOrderList.Where(e => e.IsToHospital == true).Select(e => e.Phone).Distinct().Count();
+            data.OldCustomerDealCount = contentOrderList.Where(e => e.IsDeal == true && e.IsOldCustomer == true && e.RealToHospital == true).Select(e => e.Phone).Distinct().Count();
+            data.NewCustomerDealCount = contentOrderList.Where(e => e.IsDeal == true && e.IsOldCustomer == false && e.RealToHospital == true).Select(e => e.Phone).Distinct().Count();
+            //data.NewCustomerTotalPerformance = contentOrderList.Where(e => e.IsOldCustomer == false).Sum(e => e.DealPrice);
+            //data.OldCustomerTotalPerformance = contentOrderList.Where(e => e.IsOldCustomer == true).Sum(e => e.DealPrice);
+            return data;
+        }
         /// <summary>
         /// 获取助理流量和客户转化基础数据
         /// </summary>

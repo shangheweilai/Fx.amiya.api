@@ -46,6 +46,22 @@ namespace Fx.Amiya.Background.Api.Controllers
         }
 
         /// <summary>
+        ///  获取有效的主播基础信息列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("total")]
+        public async Task<ResultData<List<LiveAnchorBaseInfoIdAndNameVo>>> GetTotalListAsync(bool? isSelfLiveAnchor)
+        {
+            var liveAnchorBaseInfos = from d in await liveAnchorBaseInfoService.GetAllLiveAnchorAsync(isSelfLiveAnchor)
+                                      select new LiveAnchorBaseInfoIdAndNameVo
+                                      {
+                                          Id = d.Id,
+                                          Name = d.LiveAnchorName,
+                                      };
+            return ResultData<List<LiveAnchorBaseInfoIdAndNameVo>>.Success().AddData("liveAnchorBaseInfos", liveAnchorBaseInfos.ToList());
+        }
+
+        /// <summary>
         /// 获取主播基础信息列表
         /// </summary>
         /// <param name="name"></param>

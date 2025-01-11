@@ -64,4 +64,16 @@ ALTER TABLE `amiyadb`.`tbl_content_platform_order_deal_info`
 ADD COLUMN `last_deal_info_create_date` DATETIME NULL AFTER `last_deal_info_id`,
 ADD COLUMN `replenishment_create_date` DATETIME NULL AFTER `last_deal_info_create_date`;
 ADD COLUMN `is_need_customerservice_help` BIT(1) NOT NULL AFTER `is_need_hospital_help`;
+
+------------------------------------余建明 2025/01/09 BEGIN--------------------------------------
+--小黄车登记列表新增归属公司
+ALTER TABLE `amiyadb`.`tbl_shopping_cart_registration` 
+ADD COLUMN `belong_company` INT NOT NULL DEFAULT 0 AFTER `is_repeate_create_order`;
+
+--内容平台订单列表新增归属公司
+ALTER TABLE `amiyadb`.`tbl_content_platform_order` 
+ADD COLUMN `order_belong_company` INT NOT NULL DEFAULT 0 AFTER `is_ribuluo_living`;
+
+------------------------------------余建明 2025/01/09 END--------------------------------------
 --------------------------------------------------------------------------------------------------------以上部分已更新到线上--------------------------------------
+

@@ -738,7 +738,7 @@ namespace Fx.Amiya.Service
             return performanceInfoDto;
         }
         /// <summary>
-        /// 根据年份获取业绩目标
+        /// 根据年份获取主播业绩目标
         /// </summary>
         /// <param name="year"></param>
         /// <param name="liveAnchorIds">各个平台的主播ID集合</param>

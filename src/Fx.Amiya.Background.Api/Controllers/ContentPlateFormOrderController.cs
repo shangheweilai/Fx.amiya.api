@@ -175,6 +175,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                 addDto.BelongChannel = addVo.BelongChannel;
                 addDto.ConsultingContent2 = addVo.ConsultingContent2;
                 addDto.IsRiBuLuoLiving = addVo.IsRiBuLuoLiving;
+                addDto.BelongCompanyEnumId = addVo.BelongCompanyEnumId;
                 await _orderService.AddContentPlateFormOrderAsync(addDto);
 
 
@@ -232,12 +233,13 @@ namespace Fx.Amiya.Background.Api.Controllers
         /// <param name="contentPlateFormId">内容平台</param>
         /// <param name="orderSource">订单来源(-1查询全部)</param>
         /// <param name="belongEmpId">归属客服id</param>
+        /// <param name="belongCompany">归属公司</param>
         /// <param name="pageNum">第/页</param>
         /// <param name="pageSize">每页显示/行</param>
         /// <returns></returns>
         [HttpGet("contentPlateFormOrderLlistWithPage")]
         [FxInternalAuthorize]
-        public async Task<ResultData<FxPageInfo<ContentPlatFormOrderInfoVo>>> GetOrderListWithPageAsync(string baseLiveAnchorId, int? getCustomerType, int? liveAnchorId, string liveAnchorWechatId, DateTime? startDate, DateTime? endDate, DateTime? appointmentStartDate, DateTime? appointmentEndDate, int? belongMonth, decimal? minAddOrderPrice, decimal? maxAddOrderPrice, int? appointmentHospital, int? consultationType, string hospitalDepartmentId, string keyword, int? orderStatus, string contentPlateFormId, int? belongEmpId, int orderSource, int pageNum, int pageSize)
+        public async Task<ResultData<FxPageInfo<ContentPlatFormOrderInfoVo>>> GetOrderListWithPageAsync(string baseLiveAnchorId, int? getCustomerType, int? liveAnchorId, string liveAnchorWechatId, DateTime? startDate, DateTime? endDate, DateTime? appointmentStartDate, DateTime? appointmentEndDate, int? belongMonth, decimal? minAddOrderPrice, decimal? maxAddOrderPrice, int? appointmentHospital, int? consultationType, string hospitalDepartmentId, string keyword, int? orderStatus, string contentPlateFormId, int? belongEmpId, int? belongCompany, int orderSource, int pageNum, int pageSize)
         {
             try
             {
@@ -269,7 +271,8 @@ namespace Fx.Amiya.Background.Api.Controllers
                         liveAnchorIds.Add(liveAnchorId.Value);
                     }
                 }
-                var q = await _orderService.GetOrderListWithPageAsync(liveAnchorIds, getCustomerType, liveAnchorWechatId, startDate, endDate, appointmentStartDate, appointmentEndDate, belongMonth, minAddOrderPrice, maxAddOrderPrice, appointmentHospital, consultationType, hospitalDepartmentId, keyword, orderStatus, contentPlateFormId, belongEmpId, employeeId, orderSource, pageNum, pageSize);
+                var q = await _orderService.GetOrderListWithPageAsync(liveAnchorIds, getCustomerType, liveAnchorWechatId, startDate, endDate, appointmentStartDate, appointmentEndDate, belongMonth, minAddOrderPrice, maxAddOrderPrice, appointmentHospital, consultationType, hospitalDepartmentId, keyword, orderStatus, contentPlateFormId, belongEmpId, employeeId, belongCompany
+                    , orderSource, pageNum, pageSize);
                 List<ContentPlatFormOrderInfoVo> contentPlatFormOrderInfoVoList = new List<ContentPlatFormOrderInfoVo>();
                 var resutList = q.List.ToList();
                 foreach (var x in resutList)
@@ -328,6 +331,7 @@ namespace Fx.Amiya.Background.Api.Controllers
                     resultVo.OtherContentPlatFormOrderId = x.OtherContentPlatFormOrderId;
                     resultVo.IsRepeatProfundityOrder = x.IsRepeatProfundityOrder;
                     resultVo.ConsultingContent2 = x.ConsultingContent2;
+                    resultVo.OrderBelongCompany = x.OrderBelongCompany;
                     //    if (x.BelongEmpId != 0)
                     //    {
                     //        var empInfo = await amiyaEmployeeService.GetByIdAsync(x.BelongEmpId.Value);
@@ -958,6 +962,8 @@ namespace Fx.Amiya.Background.Api.Controllers
             orderUpdateInfo.BelongChannelText = order.BelongChannelText;
             orderUpdateInfo.ConsultingContent2 = order.ConsultingContent2;
             orderUpdateInfo.IsRiBuLuoLiving = order.IsRiBuLuoLiving;
+            orderUpdateInfo.BelongCompanyEnumId = order.BelongCompanyEnumId;
+            orderUpdateInfo.BelongCompany = order.BelongCompanyName;
             return ResultData<ContentPlateFormOrderVo>.Success().AddData("orderInfo", orderUpdateInfo);
         }
 
@@ -1096,6 +1102,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             updateDto.BelongChannel = updateVo.BelongChannel;
             updateDto.ConsultingContent2 = updateVo.ConsultingContent2;
             updateDto.IsRiBuLuoLiving = updateVo.IsRiBuLuoLiving;
+            updateDto.BelongCompanyEnumId = updateVo.BelongCompanyEnumId;
             await _orderService.UpdateContentPlateFormOrderAsync(updateDto);
 
 

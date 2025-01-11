@@ -92,5 +92,17 @@ namespace Fx.Amiya.Background.Api.Vo.AmiyaOperationsBoard.Result
         public List<PerformanceYearDataVo> JiNaPerformanceData { get; set; }
     }
 
+    public class AssistantPerformanceYearDataListVo
+    {
+        /// <summary>
+        /// 刀刀组业绩
+        /// </summary>
+        public List<PerformanceYearDataVo> DaoDaoPerformanceData { get; set; }
+        /// <summary>
+        /// 吉娜组业绩
+        /// </summary>
+        public List<PerformanceYearDataVo> JiNaPerformanceData { get; set; }
+    }
+
 
 }

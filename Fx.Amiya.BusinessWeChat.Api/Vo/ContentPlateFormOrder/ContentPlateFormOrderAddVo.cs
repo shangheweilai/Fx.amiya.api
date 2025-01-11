@@ -185,5 +185,10 @@ namespace Fx.Amiya.BusinessWeChat.Api.Vo.ContentPlateFormOrder
         /// 是否为日不落直播顾客
         /// </summary>
         public bool IsRiBuLuoLiving { get; set; }
+
+        /// <summary>
+        /// 归属公司
+        /// </summary>
+        public int BelongCompanyEnumId { get; set; }
     }
 }

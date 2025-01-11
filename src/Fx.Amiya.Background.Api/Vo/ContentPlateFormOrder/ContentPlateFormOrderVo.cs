@@ -445,5 +445,15 @@ namespace Fx.Amiya.Background.Api.Vo.ContentPlateFormOrder
         /// 是否为日不落直播顾客
         /// </summary>
         public bool IsRiBuLuoLiving { get; set; }
+
+        /// <summary>
+        /// 归属公司id
+        /// </summary>
+        public int BelongCompanyEnumId { get; set; }
+
+        /// <summary>
+        /// 归属公司名称
+        /// </summary>
+        public string BelongCompany { get; set; }
     }
 }

@@ -20,5 +20,10 @@ namespace Fx.Amiya.Background.Api.Vo.AmiyaOperationsBoard.Input
         /// 部门
         /// </summary>
         public int BelongChannel { get; set; }
+
+        /// <summary>
+        /// 助理id
+        /// </summary>
+        public int? AssistantId { get; set; }
     }
 }

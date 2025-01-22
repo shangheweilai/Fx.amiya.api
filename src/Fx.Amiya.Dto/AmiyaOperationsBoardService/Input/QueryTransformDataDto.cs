@@ -44,5 +44,10 @@ namespace Fx.Amiya.Dto.AmiyaOperationsBoardService.Input
         /// 是否是当月数据
         /// </summary>
         public bool? IsCurrentMonth { get; set; }
+
+        /// <summary>
+        /// 助理id
+        /// </summary>
+        public int? AssistantId { get; set; }
     }
 }

@@ -491,6 +491,8 @@ namespace Fx.Amiya.BusinessWechat.Api.Controllers
             orderUpdateInfo.BelongChannelText = order.BelongChannelText;
             orderUpdateInfo.ConsultingContent2 = order.ConsultingContent2;
             orderUpdateInfo.IsRiBuLuoLiving = order.IsRiBuLuoLiving;
+            orderUpdateInfo.BelongCompanyEnumId = order.BelongCompanyEnumId;
+            orderUpdateInfo.BelongCompanyName = order.BelongCompanyName;
             return ResultData<ContentPlateFormOrderVo>.Success().AddData("orderInfo", orderUpdateInfo);
         }
 

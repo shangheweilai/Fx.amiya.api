@@ -1696,9 +1696,9 @@ namespace Fx.Amiya.Service
                 groupData.NewCustomerDealCount = groupBaseData.NewCustomerDealCount;
                 groupData.OldCustomerDealCount = groupBaseData.OldCustomerDealCount;
                 groupData.DealRate = DecimalExtension.CalculateTargetComplete(groupData.DealCount, groupBaseData.ToHospitalCount).Value;
-                groupData.NewCustomerPerformance = performanceData.Where(z => z.BelongEmployeeId == assistantData.Id&&z.IsOldCustomer==false).Sum(x => x.Price);
+                groupData.NewCustomerPerformance = performanceData.Where(z => z.BelongEmployeeId == assistantData.Id && z.IsOldCustomer == false).Sum(x => x.Price);
                 groupData.OldCustomerPerformance = performanceData.Where(z => z.BelongEmployeeId == assistantData.Id && z.IsOldCustomer == true).Sum(x => x.Price);
-                groupData.TotalPerformance = performanceData.Where(z=>z.BelongEmployeeId==assistantData.Id).Sum(x=>x.Price);
+                groupData.TotalPerformance = performanceData.Where(z => z.BelongEmployeeId == assistantData.Id).Sum(x => x.Price);
                 groupData.OldCustomerUnitPrice = DecimalExtension.Division(groupData.OldCustomerPerformance, groupBaseData.OldCustomerDealCount).Value;
                 groupData.NewCustomerUnitPrice = DecimalExtension.Division(groupData.NewCustomerPerformance, groupBaseData.NewCustomerDealCount).Value;
                 groupData.CustomerUnitPrice = DecimalExtension.Division(groupData.NewCustomerPerformance + groupData.OldCustomerPerformance, groupBaseData.OldCustomerDealCount + groupBaseData.NewCustomerDealCount).Value;
@@ -1746,6 +1746,70 @@ namespace Fx.Amiya.Service
             //    item.Rate = DecimalExtension.CalculateTargetComplete(item.NewCustomerPerformance + item.OldCustomerPerformance, dataListHistory.Sum(e => e.NewCustomerPerformance) + dataListHistory.Sum(e => e.OldCustomerPerformance)).Value;
             //}
             //dataListThisMonth.AddRange(dataListHistory);
+            return dataListThisMonth;
+        }
+
+        /// <summary>
+        /// 获取助理年度业绩转化分析
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<FlowTransFormDataDto>> GetAssistantYearFlowTransFormNewDataAsync(QueryTransformDataDto query)
+        {
+            var selectDate = DateTimeExtension.GetSequentialDateByStartAndEndDate(query.EndDate.Year, query.EndDate.Month);
+
+            var assistantInfo = await amiyaEmployeeService.GetByIdAsync(query.AssistantId.Value);
+            var liveAnchorTotal = await liveAnchorService.GetAllLiveAnchorListByBaseInfoId(assistantInfo.LiveAnchorBaseId);
+            var LiveAnchorInfo = liveAnchorTotal.Select(x => x.Id).ToList();
+            query.ContentPlatFormIds = GetContentPlatformIdList(query);
+            List<FlowTransFormDataDto> dataListThisMonth = new List<FlowTransFormDataDto>();
+
+            for (int month = 1; month < 13; month++)
+            {
+                var baseDataStartDate = Convert.ToDateTime(selectDate.EndDate.Year + "-" + month + "-01");
+                var baseDataEndDate = DateTime.Now;
+              
+                if (month != 12)
+                {
+                    baseDataEndDate = Convert.ToDateTime(selectDate.EndDate.Year + "-" + (month + 1) + "-01");
+                }
+                else
+                {
+                    baseDataEndDate = Convert.ToDateTime((selectDate.EndDate.Year + 1) + "-01-01");
+                }
+                var groupBaseData = await shoppingCartRegistrationService.GetAssistantFlowAndCustomerTransformDataAsync(baseDataStartDate, baseDataEndDate, assistantInfo.Id, query.ContentPlatFormIds);
+                FlowTransFormDataDto groupData = new FlowTransFormDataDto();
+                groupData.GroupName = $"{assistantInfo.Name}";
+                groupData.YearAndMonth = selectDate.StartDate.Year + "/" + month;
+                groupData.ClueCount = groupBaseData.ClueCount;
+                groupData.SendOrderCount = groupBaseData.SendOrderCount;
+                groupData.DistributeConsulationNum = groupBaseData.TotalCount;
+                groupData.ClueEffectiveRate = DecimalExtension.CalculateTargetComplete(groupData.DistributeConsulationNum, groupData.ClueCount).Value;
+                groupData.AddWechatCount = groupBaseData.AddWechatCount;
+                groupData.AddWechatRate = DecimalExtension.CalculateTargetComplete(groupBaseData.AddWechatCount, groupData.DistributeConsulationNum).Value;
+                groupData.SendOrderRate = DecimalExtension.CalculateTargetComplete(groupBaseData.SendOrderCount, groupBaseData.AddWechatCount).Value;
+                groupData.ToHospitalCount = groupBaseData.ToHospitalCount;
+                groupData.ToHospitalRate = DecimalExtension.CalculateTargetComplete(groupBaseData.ToHospitalCount, groupBaseData.SendOrderCount).Value;
+                groupData.DealCount = groupBaseData.NewCustomerDealCount;
+                groupData.NewCustomerDealCount = groupBaseData.NewCustomerDealCount;
+                groupData.OldCustomerDealCount = groupBaseData.OldCustomerDealCount;
+                groupData.DealRate = DecimalExtension.CalculateTargetComplete(groupData.DealCount, groupBaseData.ToHospitalCount).Value;
+
+                var performanceData = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.EndDate.Year, month, LiveAnchorInfo, null);
+                groupData.NewCustomerPerformance = performanceData.Where(z => z.BelongEmployeeId == assistantInfo.Id && z.IsOldCustomer == false).Sum(x => x.Price);
+                groupData.OldCustomerPerformance = performanceData.Where(z => z.BelongEmployeeId == assistantInfo.Id && z.IsOldCustomer == true).Sum(x => x.Price);
+                groupData.TotalPerformance = performanceData.Where(z => z.BelongEmployeeId == assistantInfo.Id).Sum(x => x.Price);
+                groupData.OldCustomerUnitPrice = DecimalExtension.Division(groupData.OldCustomerPerformance, groupBaseData.OldCustomerDealCount).Value;
+                groupData.NewCustomerUnitPrice = DecimalExtension.Division(groupData.NewCustomerPerformance, groupBaseData.NewCustomerDealCount).Value;
+                groupData.CustomerUnitPrice = DecimalExtension.Division(groupData.NewCustomerPerformance + groupData.OldCustomerPerformance, groupBaseData.OldCustomerDealCount + groupBaseData.NewCustomerDealCount).Value;
+                groupData.NewAndOldCustomerRate = DecimalExtension.CalculateAccounted(groupData.NewCustomerPerformance, groupData.OldCustomerPerformance);
+                var totalCustomer = await bindCustomerServiceService.GetBindCustomerServiceCountByAssistantAndPricePhone(assistantInfo.Id, 199);
+                groupData.OldCustomerBuyRate = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(groupBaseData.OldCustomerDealCount), Convert.ToDecimal(totalCustomer)).Value;
+                dataListThisMonth.Add(groupData);
+            }
+            foreach (var item in dataListThisMonth)
+            {
+                item.Rate = DecimalExtension.CalculateTargetComplete(item.NewCustomerPerformance + item.OldCustomerPerformance, dataListThisMonth.Sum(e => e.NewCustomerPerformance) + dataListThisMonth.Sum(e => e.OldCustomerPerformance)).Value;
+            }
             return dataListThisMonth;
         }
         /// <summary>
@@ -1806,7 +1870,7 @@ namespace Fx.Amiya.Service
 
 
         /// <summary>
-        /// 获取医美（年度）业绩趋势
+        /// 获取医美（年度）业绩趋势（运营看板转化）
         /// </summary>
         /// <returns></returns>
         public async Task<PerformanceYearDataListDto> GetTotalAchievementByYearAsync(QueryPerfomanceYearDataDto query)
@@ -2360,7 +2424,280 @@ namespace Fx.Amiya.Service
         }
 
         /// <summary>
-        /// 获取医美（年度）线索趋势
+        /// 获取助理（年度）业绩趋势（助理看板转化）
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AssistantPersonalPerformanceYearDataListDto> GetTotalAssistantPersonalAchievementByYearAsync(QueryPerfomanceYearDataDto query)
+        {
+            #region 实例化输出项
+            AssistantPersonalPerformanceYearDataListDto result = new AssistantPersonalPerformanceYearDataListDto();
+            result.TotalPerformanceData = new List<PerformanceYearDataDto>();
+            result.NewCustomerPerformanceData = new List<PerformanceYearDataDto>();
+            result.OldCustomerPerformanceData = new List<PerformanceYearDataDto>();
+            #endregion
+
+            #region 获取主播信息
+            var assistantInfo = await amiyaEmployeeService.GetByIdAsync(query.AssistantId.Value);
+            var liveAnchorTotal = await liveAnchorService.GetAllLiveAnchorListByBaseInfoId(assistantInfo.LiveAnchorBaseId);
+            var LiveAnchorInfo = liveAnchorTotal.Select(x => x.Id).ToList();
+            #endregion
+
+            #region 获取直播后年度目标
+            var targetAfterLiving = await employeePerformanceTargetService.GetEmployeeTargetByAssistantIdAndYearListAsync(query.Year, query.AssistantId.Value);
+            #endregion
+
+            #region 获取直播后本年度业绩
+            var totalPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(Convert.ToDateTime(query.Year + "-01-01"), Convert.ToDateTime(query.Year + "-12-31"), LiveAnchorInfo, query.IsOldCustomer);
+            #endregion
+
+            #region 获取直播后上年度业绩
+            var totalPerformanceLastYear = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(Convert.ToDateTime(query.Year - 1 + "-01-01"), Convert.ToDateTime(query.Year - 1 + "-12-31"), LiveAnchorInfo, query.IsOldCustomer);
+            #endregion
+            int totalCount = 3;
+            for (int y = 0; y <= totalCount; y++)
+            {
+                PerformanceYearDataDto totalPerformanceYearData = new PerformanceYearDataDto();
+                PerformanceYearDataDto newPerformanceYearData = new PerformanceYearDataDto();
+                PerformanceYearDataDto oldPerformanceYearData = new PerformanceYearDataDto();
+                switch (y)
+                {
+                    case 0:
+                        totalPerformanceYearData.SortName = newPerformanceYearData.SortName = oldPerformanceYearData.SortName = query.Year + "年预算目标";
+                        #region 整体
+                        totalPerformanceYearData.JanuaryPerformance = targetAfterLiving.Where(x => x.BelongMonth == 1).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.FebruaryPerformance = targetAfterLiving.Where(x => x.BelongMonth == 2).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.MarchPerformance = targetAfterLiving.Where(x => x.BelongMonth == 3).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.AprilPerformance = targetAfterLiving.Where(x => x.BelongMonth == 4).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.MayPerformance = targetAfterLiving.Where(x => x.BelongMonth == 5).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.JunePerformance = targetAfterLiving.Where(x => x.BelongMonth == 6).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.JulyPerformance = targetAfterLiving.Where(x => x.BelongMonth == 7).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.AugustPerformance = targetAfterLiving.Where(x => x.BelongMonth == 8).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.SeptemberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 9).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.OctoberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 10).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.NovemberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 11).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.DecemberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 12).Sum(t => t.PerformanceTarget).ToString();
+                        totalPerformanceYearData.SumPerformance = targetAfterLiving.Sum(x => x.PerformanceTarget).ToString();
+                        totalPerformanceYearData.AveragePerformance = Math.Round(targetAfterLiving.Sum(x => x.PerformanceTarget) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        #region 新客
+                        newPerformanceYearData.JanuaryPerformance = targetAfterLiving.Where(x => x.BelongMonth == 1).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.FebruaryPerformance = targetAfterLiving.Where(x => x.BelongMonth == 2).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.MarchPerformance = targetAfterLiving.Where(x => x.BelongMonth == 3).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.AprilPerformance = targetAfterLiving.Where(x => x.BelongMonth == 4).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.MayPerformance = targetAfterLiving.Where(x => x.BelongMonth == 5).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.JunePerformance = targetAfterLiving.Where(x => x.BelongMonth == 6).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.JulyPerformance = targetAfterLiving.Where(x => x.BelongMonth == 7).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.AugustPerformance = targetAfterLiving.Where(x => x.BelongMonth == 8).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.SeptemberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 9).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.OctoberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 10).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.NovemberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 11).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.DecemberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 12).Sum(t => t.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.SumPerformance = targetAfterLiving.Sum(x => x.NewCustomerPerformanceTarget).ToString();
+                        newPerformanceYearData.AveragePerformance = Math.Round(targetAfterLiving.Sum(x => x.NewCustomerPerformanceTarget) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        #region 老客
+                        oldPerformanceYearData.JanuaryPerformance = targetAfterLiving.Where(x => x.BelongMonth == 1).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.FebruaryPerformance = targetAfterLiving.Where(x => x.BelongMonth == 2).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.MarchPerformance = targetAfterLiving.Where(x => x.BelongMonth == 3).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.AprilPerformance = targetAfterLiving.Where(x => x.BelongMonth == 4).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.MayPerformance = targetAfterLiving.Where(x => x.BelongMonth == 5).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.JunePerformance = targetAfterLiving.Where(x => x.BelongMonth == 6).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.JulyPerformance = targetAfterLiving.Where(x => x.BelongMonth == 7).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.AugustPerformance = targetAfterLiving.Where(x => x.BelongMonth == 8).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.SeptemberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 9).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.OctoberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 10).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.NovemberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 11).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.DecemberPerformance = targetAfterLiving.Where(x => x.BelongMonth == 12).Sum(t => t.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.SumPerformance = targetAfterLiving.Sum(x => x.OldCustomerPerformanceTarget).ToString();
+                        oldPerformanceYearData.AveragePerformance = Math.Round(targetAfterLiving.Sum(x => x.OldCustomerPerformanceTarget) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        break;
+                    case 1:
+
+                        totalPerformanceYearData.SortName = newPerformanceYearData.SortName = oldPerformanceYearData.SortName = query.Year + "年实际业绩";
+                        #region 整体
+                        var JanTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 1, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.JanuaryPerformance = JanTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var FebTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 2, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.FebruaryPerformance = FebTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var MarTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 3, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.MarchPerformance = MarTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var AprTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 4, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.AprilPerformance = AprTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var MayTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 5, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.MayPerformance = MayTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var JunTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 6, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.JunePerformance = JunTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var JulTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 7, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.JulyPerformance = JulTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var AugTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 8, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.AugustPerformance = AugTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var SepTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 9, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.SeptemberPerformance = SepTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var OctTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 10, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.OctoberPerformance = OctTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var NovTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 11, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.NovemberPerformance = NovTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var DecTotalLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 12, LiveAnchorInfo, query.IsOldCustomer);
+                        totalPerformanceYearData.DecemberPerformance = DecTotalLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.SumPerformance = totalPerformance.Sum(x => x.Price).ToString();
+                        totalPerformanceYearData.AveragePerformance = Math.Round(Convert.ToDecimal(totalPerformanceYearData.SumPerformance) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        #region 新客
+                        var JanDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 1, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.JanuaryPerformance = JanDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var FebDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 2, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.FebruaryPerformance = FebDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var MarDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 3, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.MarchPerformance = MarDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var AprDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 4, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.AprilPerformance = AprDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var MayDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 5, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.MayPerformance = MayDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var JunDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 6, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.JunePerformance = JunDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var JulDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 7, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.JulyPerformance = JulDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var AugDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 8, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.AugustPerformance = AugDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var SepDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 9, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.SeptemberPerformance = SepDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var OctDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 10, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.OctoberPerformance = OctDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var NovDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 11, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.NovemberPerformance = NovDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var DecDaoDaoLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 12, LiveAnchorInfo, query.IsOldCustomer);
+                        newPerformanceYearData.DecemberPerformance = DecDaoDaoLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        newPerformanceYearData.SumPerformance = totalPerformance.Where(x => x.IsOldCustomer == false && x.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        newPerformanceYearData.AveragePerformance = Math.Round(Convert.ToDecimal(newPerformanceYearData.SumPerformance) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+
+
+                        #endregion
+                        #region 老客
+
+                        var JanJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 1, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.JanuaryPerformance = JanJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var FebJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 2, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.FebruaryPerformance = FebJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var MarJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 3, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.MarchPerformance = MarJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var AprJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 4, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.AprilPerformance = AprJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var MayJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 5, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.MayPerformance = MayJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var JunJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 6, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.JunePerformance = JunJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var JulJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 7, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.JulyPerformance = JulJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var AugJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 8, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.AugustPerformance = AugJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var SepJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 9, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.SeptemberPerformance = SepJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var OctJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 10, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.OctoberPerformance = OctJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var NovJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 11, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.NovemberPerformance = NovJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        var DecJiNaLossPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.Year, 12, LiveAnchorInfo, query.IsOldCustomer);
+                        oldPerformanceYearData.DecemberPerformance = DecJiNaLossPerformance.Where(k => k.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        oldPerformanceYearData.SumPerformance = totalPerformance.Where(x => x.IsOldCustomer == true && x.BelongEmployeeId == query.AssistantId.Value).Sum(x => x.Price).ToString();
+                        oldPerformanceYearData.AveragePerformance = Math.Round(Convert.ToDecimal(oldPerformanceYearData.SumPerformance) / 12, 2, MidpointRounding.AwayFromZero).ToString();
+                        #endregion
+                        break;
+                    case 2:
+
+                        totalPerformanceYearData.SortName = newPerformanceYearData.SortName = oldPerformanceYearData.SortName = "目标达成率";
+                        #region 整体
+                        var targetTotal = result.TotalPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年预算目标");
+                        var completeTotal = result.TotalPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        totalPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.JanuaryPerformance), Convert.ToDecimal(targetTotal.JanuaryPerformance)).ToString();
+                        totalPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.FebruaryPerformance), Convert.ToDecimal(targetTotal.FebruaryPerformance)).ToString();
+                        totalPerformanceYearData.MarchPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.MarchPerformance), Convert.ToDecimal(targetTotal.MarchPerformance)).ToString();
+                        totalPerformanceYearData.AprilPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.AprilPerformance), Convert.ToDecimal(targetTotal.AprilPerformance)).ToString();
+                        totalPerformanceYearData.MayPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.MayPerformance), Convert.ToDecimal(targetTotal.MayPerformance)).ToString();
+                        totalPerformanceYearData.JunePerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.JunePerformance), Convert.ToDecimal(targetTotal.JunePerformance)).ToString();
+                        totalPerformanceYearData.JulyPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.JulyPerformance), Convert.ToDecimal(targetTotal.JulyPerformance)).ToString();
+                        totalPerformanceYearData.AugustPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.AugustPerformance), Convert.ToDecimal(targetTotal.AugustPerformance)).ToString();
+                        totalPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.SeptemberPerformance), Convert.ToDecimal(targetTotal.SeptemberPerformance)).ToString();
+                        totalPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.OctoberPerformance), Convert.ToDecimal(targetTotal.OctoberPerformance)).ToString();
+                        totalPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.NovemberPerformance), Convert.ToDecimal(targetTotal.NovemberPerformance)).ToString();
+                        totalPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.DecemberPerformance), Convert.ToDecimal(targetTotal.DecemberPerformance)).ToString();
+                        totalPerformanceYearData.SumPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeTotal.SumPerformance), Convert.ToDecimal(targetTotal.SumPerformance)).ToString();
+                        totalPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+
+                        #region 新客
+                        var targetDaoDao = result.NewCustomerPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年预算目标");
+                        var completeDaoDao = result.NewCustomerPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        newPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.JanuaryPerformance), Convert.ToDecimal(targetDaoDao.JanuaryPerformance)).ToString();
+                        newPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.FebruaryPerformance), Convert.ToDecimal(targetDaoDao.FebruaryPerformance)).ToString();
+                        newPerformanceYearData.MarchPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.MarchPerformance), Convert.ToDecimal(targetDaoDao.MarchPerformance)).ToString();
+                        newPerformanceYearData.AprilPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.AprilPerformance), Convert.ToDecimal(targetDaoDao.AprilPerformance)).ToString();
+                        newPerformanceYearData.MayPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.MayPerformance), Convert.ToDecimal(targetDaoDao.MayPerformance)).ToString();
+                        newPerformanceYearData.JunePerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.JunePerformance), Convert.ToDecimal(targetDaoDao.JunePerformance)).ToString();
+                        newPerformanceYearData.JulyPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.JulyPerformance), Convert.ToDecimal(targetDaoDao.JulyPerformance)).ToString();
+                        newPerformanceYearData.AugustPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.AugustPerformance), Convert.ToDecimal(targetDaoDao.AugustPerformance)).ToString();
+                        newPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.SeptemberPerformance), Convert.ToDecimal(targetDaoDao.SeptemberPerformance)).ToString();
+                        newPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.OctoberPerformance), Convert.ToDecimal(targetDaoDao.OctoberPerformance)).ToString();
+                        newPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.NovemberPerformance), Convert.ToDecimal(targetDaoDao.NovemberPerformance)).ToString();
+                        newPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.DecemberPerformance), Convert.ToDecimal(targetDaoDao.DecemberPerformance)).ToString();
+                        newPerformanceYearData.SumPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeDaoDao.SumPerformance), Convert.ToDecimal(targetDaoDao.SumPerformance)).ToString();
+                        totalPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+
+                        #region 老客
+                        var targetJiNa = result.OldCustomerPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年预算目标");
+                        var completeJiNa = result.OldCustomerPerformanceData.SingleOrDefault(x => x.SortName == query.Year + "年实际业绩");
+                        oldPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.JanuaryPerformance), Convert.ToDecimal(targetJiNa.JanuaryPerformance)).ToString();
+                        oldPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.FebruaryPerformance), Convert.ToDecimal(targetJiNa.FebruaryPerformance)).ToString();
+                        oldPerformanceYearData.MarchPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.MarchPerformance), Convert.ToDecimal(targetJiNa.MarchPerformance)).ToString();
+                        oldPerformanceYearData.AprilPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.AprilPerformance), Convert.ToDecimal(targetJiNa.AprilPerformance)).ToString();
+                        oldPerformanceYearData.MayPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.MayPerformance), Convert.ToDecimal(targetJiNa.MayPerformance)).ToString();
+                        oldPerformanceYearData.JunePerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.JunePerformance), Convert.ToDecimal(targetJiNa.JunePerformance)).ToString();
+                        oldPerformanceYearData.JulyPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.JulyPerformance), Convert.ToDecimal(targetJiNa.JulyPerformance)).ToString();
+                        oldPerformanceYearData.AugustPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.AugustPerformance), Convert.ToDecimal(targetJiNa.AugustPerformance)).ToString();
+                        oldPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.SeptemberPerformance), Convert.ToDecimal(targetJiNa.SeptemberPerformance)).ToString();
+                        oldPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.OctoberPerformance), Convert.ToDecimal(targetJiNa.OctoberPerformance)).ToString();
+                        oldPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.NovemberPerformance), Convert.ToDecimal(targetJiNa.NovemberPerformance)).ToString();
+                        oldPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.DecemberPerformance), Convert.ToDecimal(targetJiNa.DecemberPerformance)).ToString();
+                        oldPerformanceYearData.SumPerformance = DecimalExtension.CalculateTargetComplete(Convert.ToDecimal(completeJiNa.SumPerformance), Convert.ToDecimal(targetJiNa.SumPerformance)).ToString();
+                        totalPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+                        break;
+                    case 3:
+                        totalPerformanceYearData.SortName = query.Year + "年新/老客占比";
+
+                        #region 整体
+                        var totalNewCustomer = await contentPlatFormOrderDealInfoService.GetNewOrOldCustomerNumByDateAsync(Convert.ToDateTime(query.Year + "-01-01"), Convert.ToDateTime(query.Year + "-12-31"), false, LiveAnchorInfo);
+                        var totalOldCustomer = await contentPlatFormOrderDealInfoService.GetNewOrOldCustomerNumByDateAsync(Convert.ToDateTime(query.Year + "-01-01"), Convert.ToDateTime(query.Year + "-12-31"), true, LiveAnchorInfo);
+                        totalPerformanceYearData.JanuaryPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 1).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 1).Count());
+                        totalPerformanceYearData.FebruaryPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 2).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 2).Count());
+                        totalPerformanceYearData.MarchPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 3).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 3).Count());
+                        totalPerformanceYearData.AprilPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 4).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 4).Count());
+                        totalPerformanceYearData.MayPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 5).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 5).Count());
+                        totalPerformanceYearData.JunePerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 6).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 6).Count());
+                        totalPerformanceYearData.JulyPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 7).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 7).Count());
+                        totalPerformanceYearData.AugustPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 8).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 8).Count());
+                        totalPerformanceYearData.SeptemberPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 9).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 9).Count());
+                        totalPerformanceYearData.OctoberPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 10).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 10).Count());
+                        totalPerformanceYearData.NovemberPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 11).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 11).Count());
+                        totalPerformanceYearData.DecemberPerformance = DecimalExtension.CalculateAccounted(totalNewCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 12).Count(), totalOldCustomer.Where(x => x.BelongEmployeeId == query.AssistantId && x.CreateDate.Month == 12).Count());
+                        totalPerformanceYearData.SumPerformance = "/";
+                        totalPerformanceYearData.AveragePerformance = "/";
+                        #endregion
+
+                        break;
+                }
+
+                result.TotalPerformanceData.Add(totalPerformanceYearData);
+                result.NewCustomerPerformanceData.Add(newPerformanceYearData);
+                result.OldCustomerPerformanceData.Add(oldPerformanceYearData);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 获取医美（年度）线索趋势（运营看板转化）
         /// </summary>
         /// <returns></returns>
         public async Task<PerformanceYearDataListDto> GetTotalCluesByYearAsync(QueryPerfomanceYearDataDto query)
@@ -2603,7 +2940,7 @@ namespace Fx.Amiya.Service
 
 
         /// <summary>
-        /// 获取助理（年度）业绩趋势
+        /// 获取助理（年度）业绩趋势(客服主管看板转化)
         /// </summary>
         /// <returns></returns>
         public async Task<AssistantPerformanceYearDataListDto> GetTotalAssistantAchievementByYearAsync(QueryPerfomanceYearDataDto query)
@@ -2648,8 +2985,8 @@ namespace Fx.Amiya.Service
             liveAnchorBaseIds.Add("af69dcf5-f749-41ea-8b50-fe685facdd8b");
             //获取助理
             var assistant = await amiyaEmployeeService.GetCustomerServiceByLiveAnchorBaseIdAsync(liveAnchorBaseIds);
-            #endregion 
-            
+            #endregion
+
             #region 获取直播后本年度业绩
             var totalPerformance = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(Convert.ToDateTime(query.Year + "-01-01"), Convert.ToDateTime(query.Year + "-12-31"), LiveAnchorInfo, query.IsOldCustomer);
             var daoDaoPerformance = totalPerformance.Where(x => LiveAnchorInfoDaoDao.Contains(x.LiveAnchorId)).ToList();
@@ -3537,8 +3874,8 @@ namespace Fx.Amiya.Service
             //var lossData = await contentPlatFormOrderDealInfoService.GetLossOrderDealInfoDataByMonthAndLiveAnchorAsync(selectDate.StartDate.Year, selectDate.StartDate.Month, new List<int>(), null);
 
             #endregion
-            var thisMonthData= await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.EndDate.Year, query.EndDate.Month, LiveAnchorInfo, null); 
-            var historyMonthData= await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(sequData.LastMonthEndDate.Year, sequData.LastMonthEndDate.Month, LiveAnchorInfo, null);
+            var thisMonthData = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(query.EndDate.Year, query.EndDate.Month, LiveAnchorInfo, null);
+            var historyMonthData = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(sequData.LastMonthEndDate.Year, sequData.LastMonthEndDate.Month, LiveAnchorInfo, null);
             foreach (var assistant in assistantNameList)
             {
                 AssitantTargetCompleteDto data = new AssitantTargetCompleteDto();
@@ -3614,7 +3951,7 @@ namespace Fx.Amiya.Service
             var lastMonthContentOrderList = await contentPlatFormOrderDealInfoService.GetSimplePerformanceDetailByDateAsync(sequentialDate.LastMonthEndDate.Year, sequentialDate.LastMonthEndDate.Month, LiveAnchorInfo, null);
             var lastYearContentOrderList = await contentPlatFormOrderDealInfoService.GetPerformanceDetailByDateAndAssistantIdListAsync(sequentialDate.LastYearThisMonthStartDate, sequentialDate.LastYearThisMonthEndDate, assistantIdList);
             AssistantPerformanceDto assistantPerformance = new AssistantPerformanceDto();
-            assistantPerformance.NewCustomerPerformance = currentContentOrderList.Where(e => e.IsOldCustomer == false&&e.BelongEmployeeId==query.AssistantId).Sum(e => e.Price);
+            assistantPerformance.NewCustomerPerformance = currentContentOrderList.Where(e => e.IsOldCustomer == false && e.BelongEmployeeId == query.AssistantId).Sum(e => e.Price);
             assistantPerformance.OldCustomerPerformance = currentContentOrderList.Where(e => e.IsOldCustomer == true && e.BelongEmployeeId == query.AssistantId).Sum(e => e.Price);
             assistantPerformance.TotalPerformance = currentContentOrderList.Where(e => e.BelongEmployeeId == query.AssistantId).Sum(e => e.Price);
             assistantPerformance.TodayNewCustomerPerformance = todayPerformance.Where(e => e.IsOldCustomer == false).Sum(e => e.Price);

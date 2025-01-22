@@ -862,7 +862,7 @@ namespace Fx.Amiya.Background.Api.Controllers
         }
 
         /// <summary>
-        /// 助理流量和客户转化情况
+        /// 助理（月度）业绩转化分析
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
@@ -908,6 +908,56 @@ namespace Fx.Amiya.Background.Api.Controllers
             }).ToList();
 
             return ResultData<List<FlowTransFormDataVo>>.Success().AddData("data", res.OrderByDescending(z => z.TotalPerformance).ToList());
+        }
+
+        /// <summary>
+        /// 助理月度线索转化情况（助理看板转化）
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        [HttpGet("assistantYearTransformData")]
+        public async Task<ResultData<List<FlowTransFormDataVo>>> GetAssistantYearFlowTransformDataAsync([FromQuery] QueryTransformDataVo query)
+        {
+            QueryTransformDataDto queryDto = new QueryTransformDataDto();
+            queryDto.StartDate = query.StartDate;
+            queryDto.EndDate = query.EndDate;
+            queryDto.ShowTikTok = query.ShowTikTok;
+            queryDto.ShowWechatVideo = query.ShowWechatVideo;
+            queryDto.ShowXiaoHongShu = query.ShowXiaoHongShu;
+            queryDto.ShowPrivateDomain = query.ShowPrivateDomain;
+            queryDto.IsCurrentMonth = query.IsCurrentMonth;
+            queryDto.BaseLiveAnchorId = query.BaseLiveAnchorId;
+            queryDto.AssistantId = query.AssistantId;
+            var resultData = await amiyaOperationsBoardService.GetAssistantYearFlowTransFormNewDataAsync(queryDto);
+
+            var res = resultData.Select(e => new FlowTransFormDataVo
+            {
+                GroupName = e.GroupName,
+                YearAndMonth = e.YearAndMonth,
+                ClueCount = e.ClueCount,
+                ClueEffectiveRate = e.ClueEffectiveRate,
+                SendOrderCount = e.SendOrderCount,
+                DistributeConsulationNum = e.DistributeConsulationNum,
+                AddWechatCount = e.AddWechatCount,
+                AddWechatRate = e.AddWechatRate,
+                SendOrderRate = e.SendOrderRate,
+                ToHospitalCount = e.ToHospitalCount,
+                ToHospitalRate = e.ToHospitalRate,
+                DealCount = e.DealCount,
+                NewCustomerDealCount = e.NewCustomerDealCount,
+                OldCustomerDealCount = e.OldCustomerDealCount,
+                DealRate = e.DealRate,
+                NewCustomerPerformance = e.NewCustomerPerformance,
+                NewAndOldCustomerRate = e.NewAndOldCustomerRate,
+                OldCustomerPerformance = e.OldCustomerPerformance,
+                NewCustomerUnitPrice = e.NewCustomerUnitPrice,
+                OldCustomerUnitPrice = e.OldCustomerUnitPrice,
+                CustomerUnitPrice = e.CustomerUnitPrice,
+                Rate = e.Rate,
+                TotalPerformance = e.TotalPerformance
+            }).ToList();
+
+            return ResultData<List<FlowTransFormDataVo>>.Success().AddData("data", res.ToList());
         }
 
         /// <summary>
@@ -1139,6 +1189,7 @@ namespace Fx.Amiya.Background.Api.Controllers
             QueryPerfomanceYearDataDto queryDto = new QueryPerfomanceYearDataDto();
             queryDto.Year = query.Year;
             queryDto.IsOldCustomer = query.IsOldCustomer;
+            queryDto.AssistantId = query.AssistantId;
             var result = await amiyaOperationsBoardService.GetTotalAssistantAchievementByYearAsync(queryDto);
             AssistantPerformanceYearDataListVo resultData = new AssistantPerformanceYearDataListVo();
             var res2 = result.DaoDaoPerformanceData.Select(e => new PerformanceYearDataVo
@@ -1185,6 +1236,85 @@ namespace Fx.Amiya.Background.Api.Controllers
             return ResultData<AssistantPerformanceYearDataListVo>.Success().AddData("data", resultData);
         }
 
+
+
+        /// <summary>
+        /// 助理月度业绩目标达成情况（助理看板转化）
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        [HttpGet("getAssistantTotalAchievementByYear")]
+        public async Task<ResultData<AssistantPersonalPerformanceYearDataListVo>> GetAssistantTotalAchievementByYearAsync([FromQuery] QueryPerfomanceYearDataVo query)
+        {
+            QueryPerfomanceYearDataDto queryDto = new QueryPerfomanceYearDataDto();
+            queryDto.Year = query.Year;
+            queryDto.IsOldCustomer = query.IsOldCustomer;
+            queryDto.AssistantId = query.AssistantId;
+            var result = await amiyaOperationsBoardService.GetTotalAssistantPersonalAchievementByYearAsync(queryDto);
+            AssistantPersonalPerformanceYearDataListVo resultData = new AssistantPersonalPerformanceYearDataListVo();
+            var res1 = result.TotalPerformanceData.Select(e => new PerformanceYearDataVo
+            {
+                GroupName = e.GroupName,
+                SortName = e.SortName,
+                JanuaryPerformance = e.JanuaryPerformance,
+                FebruaryPerformance = e.FebruaryPerformance,
+                MarchPerformance = e.MarchPerformance,
+                AprilPerformance = e.AprilPerformance,
+                MayPerformance = e.MayPerformance,
+                JunePerformance = e.JunePerformance,
+                JulyPerformance = e.JulyPerformance,
+                AugustPerformance = e.AugustPerformance,
+                SeptemberPerformance = e.SeptemberPerformance,
+                OctoberPerformance = e.OctoberPerformance,
+                NovemberPerformance = e.NovemberPerformance,
+                DecemberPerformance = e.DecemberPerformance,
+                SumPerformance = e.SumPerformance,
+                AveragePerformance = e.AveragePerformance,
+            }).ToList();
+            resultData.TotalPerformanceData = res1;
+            var res2 = result.NewCustomerPerformanceData.Select(e => new PerformanceYearDataVo
+            {
+                GroupName = e.GroupName,
+                SortName = e.SortName,
+                JanuaryPerformance = e.JanuaryPerformance,
+                FebruaryPerformance = e.FebruaryPerformance,
+                MarchPerformance = e.MarchPerformance,
+                AprilPerformance = e.AprilPerformance,
+                MayPerformance = e.MayPerformance,
+                JunePerformance = e.JunePerformance,
+                JulyPerformance = e.JulyPerformance,
+                AugustPerformance = e.AugustPerformance,
+                SeptemberPerformance = e.SeptemberPerformance,
+                OctoberPerformance = e.OctoberPerformance,
+                NovemberPerformance = e.NovemberPerformance,
+                DecemberPerformance = e.DecemberPerformance,
+                SumPerformance = e.SumPerformance,
+                AveragePerformance = e.AveragePerformance,
+            }).ToList();
+            resultData.NewCustomerPerformanceData = res2;
+
+            var res3 = result.OldCustomerPerformanceData.Select(e => new PerformanceYearDataVo
+            {
+                GroupName = e.GroupName,
+                SortName = e.SortName,
+                JanuaryPerformance = e.JanuaryPerformance,
+                FebruaryPerformance = e.FebruaryPerformance,
+                MarchPerformance = e.MarchPerformance,
+                AprilPerformance = e.AprilPerformance,
+                MayPerformance = e.MayPerformance,
+                JunePerformance = e.JunePerformance,
+                JulyPerformance = e.JulyPerformance,
+                AugustPerformance = e.AugustPerformance,
+                SeptemberPerformance = e.SeptemberPerformance,
+                OctoberPerformance = e.OctoberPerformance,
+                NovemberPerformance = e.NovemberPerformance,
+                DecemberPerformance = e.DecemberPerformance,
+                SumPerformance = e.SumPerformance,
+                AveragePerformance = e.AveragePerformance,
+            }).ToList();
+            resultData.OldCustomerPerformanceData = res3;
+            return ResultData<AssistantPersonalPerformanceYearDataListVo>.Success().AddData("data", resultData);
+        }
 
         #endregion
 

@@ -169,6 +169,12 @@ namespace Fx.Amiya.IService
         /// <returns></returns>
         Task<List<FlowTransFormDataDto>> GetAssistantFlowTransFormNewDataAsync(QueryTransformDataDto query);
         /// <summary>
+        /// 获取助理年度业绩转化分析
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        Task<List<FlowTransFormDataDto>> GetAssistantYearFlowTransFormNewDataAsync(QueryTransformDataDto query);
+        /// <summary>
         /// 根据时间获取全国机构运营数据概况
         /// </summary>
         /// <param name="year"></param>
@@ -178,6 +184,7 @@ namespace Fx.Amiya.IService
         Task<List<HospitalPerformanceDto>> GetHospitalPerformanceByDateAsync(QueryHospitalTransformDataDto query);
 
         Task<PerformanceYearDataListDto> GetTotalAchievementByYearAsync(QueryPerfomanceYearDataDto query);
+        Task<AssistantPersonalPerformanceYearDataListDto> GetTotalAssistantPersonalAchievementByYearAsync(QueryPerfomanceYearDataDto query);
 
         Task<PerformanceYearDataListDto> GetTotalCluesByYearAsync(QueryPerfomanceYearDataDto query);
 

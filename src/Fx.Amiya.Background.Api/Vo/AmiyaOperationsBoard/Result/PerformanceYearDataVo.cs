@@ -105,4 +105,21 @@ namespace Fx.Amiya.Background.Api.Vo.AmiyaOperationsBoard.Result
     }
 
 
+    public class AssistantPersonalPerformanceYearDataListVo
+    {
+
+        /// <summary>
+        /// 总业绩
+        /// </summary>
+        public List<PerformanceYearDataVo> TotalPerformanceData { get; set; }
+
+        /// <summary>
+        /// 新客业绩
+        /// </summary>
+        public List<PerformanceYearDataVo> NewCustomerPerformanceData { get; set; }
+        /// <summary>
+        /// 老客业绩
+        /// </summary>
+        public List<PerformanceYearDataVo> OldCustomerPerformanceData { get; set; }
+    }
 }

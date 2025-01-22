@@ -1373,6 +1373,7 @@ namespace Fx.Amiya.Service
                             new ContentPlatFormOrderDealInfoDto
                             {
                                 CreateDate = data.CreateDate,
+                                BelongEmployeeId = data.ContentPlatFormOrder.IsSupportOrder == true ? data.ContentPlatFormOrder.SupportEmpId : data.ContentPlatFormOrder.BelongEmpId.Value,
                             }
                 ).ToListAsync();
             return performance;
@@ -2524,7 +2525,7 @@ namespace Fx.Amiya.Service
                     BelongLiveAnchor = ContentPlatFOrmOrderDealInfo.ContentPlatFormOrder.LiveAnchor.LiveAnchorBaseId,
                     LastDealHospitalId = ContentPlatFOrmOrderDealInfo.LastDealHospitalId,
                     DealDate = ContentPlatFOrmOrderDealInfo.DealDate,
-                    BelongEmployeeId = ContentPlatFOrmOrderDealInfo.ContentPlatFormOrder.BelongEmpId.Value,
+                    BelongEmployeeId = ContentPlatFOrmOrderDealInfo.ContentPlatFormOrder.IsSupportOrder == true ? ContentPlatFOrmOrderDealInfo.ContentPlatFormOrder.SupportEmpId : ContentPlatFOrmOrderDealInfo.ContentPlatFormOrder.BelongEmpId.Value,
                     IsSupportOrder = ContentPlatFOrmOrderDealInfo.ContentPlatFormOrder.IsSupportOrder,
                     SupportEmpId = ContentPlatFOrmOrderDealInfo.ContentPlatFormOrder.SupportEmpId,
                 }

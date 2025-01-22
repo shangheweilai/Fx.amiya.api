@@ -290,6 +290,39 @@ namespace Fx.Amiya.Service
                     PotentialConsulationCardTarget = e.PotentialConsulationCardTarget,
                     OldCustomerPerformanceTarget = e.OldCustomerPerformanceTarget,
                     NewCustomerPerformanceTarget = e.NewCustomerPerformanceTarget,
+                    PerformanceTarget = e.PerformanceTarget,
+                    NewCustomerVisitTarget = e.NewCustomerVisitTarget,
+                    OldCustomerVisitTarget = e.OldCustomerVisitTarget,
+                    SendOrderTarget = e.SendOrderTarget,
+                    NewCustomerDealNumTarget = e.NewCustomerDealTarget,
+                    OldCustomerDealNumTarget = e.OldCustomerDealTarget
+                }).ToListAsync();
+        }
+
+        /// <summary>
+        /// 根据助理id获取助理年目标
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="month"></param>
+        /// <param name="baseLiveAnchorId"></param>
+        /// <returns></returns>
+        public async Task<List<EmployeeTargetInfoDto>> GetEmployeeTargetByAssistantIdAndYearListAsync(int year, int assistantIds)
+        {
+
+            return await dalEmployeePerformanceTarget.GetAll()
+                .Where(e => e.Valid == true && e.BelongYear == year && assistantIds == e.EmployeeId)
+                .Select(e => new EmployeeTargetInfoDto
+                {
+                    BelongYear = e.BelongYear,
+                    BelongMonth = e.BelongMonth,
+                    EmployeeId = e.EmployeeId,
+                    EffectiveAddWechatTarget = e.EffectiveAddWechatTarget,
+                    PotentialAddWechatTarget = e.PotentialAddWechatTarget,
+                    EffectiveConsulationCardTarget = e.EffectiveConsulationCardTarget,
+                    PotentialConsulationCardTarget = e.PotentialConsulationCardTarget,
+                    OldCustomerPerformanceTarget = e.OldCustomerPerformanceTarget,
+                    NewCustomerPerformanceTarget = e.NewCustomerPerformanceTarget,
+                    PerformanceTarget = e.PerformanceTarget,
                     NewCustomerVisitTarget = e.NewCustomerVisitTarget,
                     OldCustomerVisitTarget = e.OldCustomerVisitTarget,
                     SendOrderTarget = e.SendOrderTarget,

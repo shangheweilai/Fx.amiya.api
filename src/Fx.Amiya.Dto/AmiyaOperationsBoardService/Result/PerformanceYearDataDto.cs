@@ -96,6 +96,25 @@ namespace Fx.Amiya.Dto.AmiyaOperationsBoardService.Result
         public List<PerformanceYearDataDto> JiNaPerformanceData { get; set; }
     }
 
+
+    public class AssistantPersonalPerformanceYearDataListDto
+    {
+
+        /// <summary>
+        /// 总业绩
+        /// </summary>
+        public List<PerformanceYearDataDto> TotalPerformanceData { get; set; }
+
+        /// <summary>
+        /// 新客业绩
+        /// </summary>
+        public List<PerformanceYearDataDto> NewCustomerPerformanceData { get; set; }
+        /// <summary>
+        /// 老客业绩
+        /// </summary>
+        public List<PerformanceYearDataDto> OldCustomerPerformanceData { get; set; }
+    }
+
     public class AssistantPerformanceYearDataListDto
     {
                 /// <summary>

@@ -8,6 +8,14 @@ namespace Fx.Amiya.Dto.EmployeePerformanceTarget.Result
 {
     public class EmployeeTargetInfoDto
     {
+        /// <summary>
+        /// 归属年份
+        /// </summary>
+        public int BelongYear { get; set; }
+        /// <summary>
+        /// 归属月份
+        /// </summary>
+        public int BelongMonth { get; set; }
         public int EmployeeId { get; set; }
         /// <summary>
         /// 派单目标
@@ -34,6 +42,10 @@ namespace Fx.Amiya.Dto.EmployeePerformanceTarget.Result
         /// 新客业绩目标
         /// </summary>
         public decimal NewCustomerPerformanceTarget { get; set; }
+        /// <summary>
+        /// 总业绩目标
+        /// </summary>
+        public decimal PerformanceTarget { get; set; }
         /// <summary>
         /// 老客业绩目标
         /// </summary>

@@ -49,5 +49,12 @@ namespace Fx.Amiya.IService
         /// <param name="baseLiveAnchorId"></param>
         /// <returns></returns>
         Task<List<EmployeeTargetInfoDto>> GetEmployeeTargetByAssistantIdListAsync(int year, int month, List<int> assistantIds);
+        /// <summary>
+        /// 根据助理id获取助理年目标
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="assistantIds"></param>
+        /// <returns></returns>
+        Task<List<EmployeeTargetInfoDto>> GetEmployeeTargetByAssistantIdAndYearListAsync(int year, int assistantIds);
     }
 }
